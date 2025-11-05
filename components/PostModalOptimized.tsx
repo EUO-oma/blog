@@ -1,35 +1,58 @@
 'use client'
 
 import { BlogPost } from '@/lib/firebase'
+import { BlogPostSummary, getFullPost } from '@/lib/firebase-posts-optimized'
 import ReactMarkdown from 'react-markdown'
-import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { deletePost } from '@/lib/firebase-posts'
-import EditModal from './EditModal'
 
-interface PostModalProps {
-  post: BlogPost | null
+interface PostModalOptimizedProps {
+  postSummary: BlogPostSummary | null
   isOpen: boolean
   onClose: () => void
   onUpdate?: () => void
 }
 
-export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModalProps) {
+export default function PostModalOptimized({ 
+  postSummary, 
+  isOpen, 
+  onClose, 
+  onUpdate 
+}: PostModalOptimizedProps) {
   const { user } = useAuth()
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [fullPost, setFullPost] = useState<BlogPost | null>(null)
+  const [loading, setLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   
-  if (!isOpen || !post) return null
+  useEffect(() => {
+    if (isOpen && postSummary?.id) {
+      setLoading(true)
+      getFullPost(postSummary.id)
+        .then(post => {
+          setFullPost(post)
+          setLoading(false)
+        })
+        .catch(error => {
+          console.error('Error loading full post:', error)
+          setLoading(false)
+        })
+    } else if (!isOpen) {
+      // 모달이 닫힐 때 메모리 정리
+      setFullPost(null)
+    }
+  }, [isOpen, postSummary?.id])
   
-  const isAuthor = user && post.authorEmail === user.email
+  if (!isOpen || !postSummary) return null
+  
+  const isAuthor = user && postSummary.authorEmail === user.email
   
   const handleDelete = async () => {
-    if (!post.id || !window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) return
+    if (!postSummary.id || !window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) return
     
     setIsDeleting(true)
     try {
-      await deletePost(post.id)
+      await deletePost(postSummary.id)
       onClose()
       if (onUpdate) onUpdate()
     } catch (error) {
@@ -45,9 +68,7 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
       className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto"
       onClick={onClose}
     >
-      <div 
-        className="min-h-screen px-4 flex items-center justify-center"
-      >
+      <div className="min-h-screen px-4 flex items-center justify-center">
         <div 
           className="bg-white dark:bg-gray-900 rounded-lg max-w-3xl w-full my-8 p-8 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
@@ -58,7 +79,7 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
               {isAuthor && (
                 <>
                   <button
-                    onClick={() => setIsEditModalOpen(true)}
+                    onClick={() => console.log('Edit functionality')}
                     className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                     title="수정하기"
                   >
@@ -91,15 +112,15 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
 
           <article>
             <header className="mb-8">
-              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+              <h1 className="text-4xl font-bold mb-4">{postSummary.title}</h1>
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
+                <time>{new Date(postSummary.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                 <span>•</span>
-                <span>{post.authorName}</span>
+                <span>{postSummary.authorName}</span>
               </div>
-              {post.tags.length > 0 && (
+              {postSummary.tags.length > 0 && (
                 <div className="flex gap-2 mt-4">
-                  {post.tags.map((tag) => (
+                  {postSummary.tags.map((tag) => (
                     <span
                       key={tag}
                       className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full"
@@ -112,23 +133,19 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
             </header>
 
             <div className="prose dark:prose-invert prose-lg max-w-none">
-              <ReactMarkdown>{post.content}</ReactMarkdown>
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+                </div>
+              ) : fullPost ? (
+                <ReactMarkdown>{fullPost.content}</ReactMarkdown>
+              ) : (
+                <p className="text-gray-500">포스트를 불러올 수 없습니다.</p>
+              )}
             </div>
           </article>
         </div>
       </div>
-      
-      {isEditModalOpen && (
-        <EditModal
-          post={post}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
-            setIsEditModalOpen(false)
-            if (onUpdate) onUpdate()
-          }}
-        />
-      )}
     </div>
   )
 }

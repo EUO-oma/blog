@@ -29,7 +29,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🔐 AuthContext: Setting up auth state listener')
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('🔐 AuthContext: Auth state changed', user ? `User: ${user.email}` : 'No user')
       setUser(user)
       setLoading(false)
     })

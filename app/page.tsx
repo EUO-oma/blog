@@ -15,6 +15,11 @@ export default function HomePage() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
+  
+  // 디버그용 로그
+  useEffect(() => {
+    console.log('🏠 HomePage: Current user state', user ? `Logged in as ${user.email}` : 'Not logged in')
+  }, [user])
 
   const loadPosts = async () => {
     try {
@@ -137,6 +142,7 @@ export default function HomePage() {
           setIsModalOpen(false)
           setSelectedPost(null)
         }}
+        onUpdate={loadPosts}
       />
 
       <WriteModal

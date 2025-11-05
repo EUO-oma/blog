@@ -11,12 +11,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 }
 
-// Firebase 초기화 확인용 (개발 환경에서만)
-if (process.env.NODE_ENV === 'development') {
-  console.log('Firebase Config:', {
-    ...firebaseConfig,
-    apiKey: firebaseConfig.apiKey ? '***' + firebaseConfig.apiKey.slice(-4) : 'undefined',
-  })
+// Firebase 초기화 확인용 - 프로덕션에서도 한시적으로 로그 출력
+console.log('🔥 Firebase Config Status:', {
+  apiKey: firebaseConfig.apiKey ? 'configured' : 'missing',
+  authDomain: firebaseConfig.authDomain ? 'configured' : 'missing',
+  projectId: firebaseConfig.projectId ? 'configured' : 'missing',
+  storageBucket: firebaseConfig.storageBucket ? 'configured' : 'missing',
+  messagingSenderId: firebaseConfig.messagingSenderId ? 'configured' : 'missing',
+  appId: firebaseConfig.appId ? 'configured' : 'missing',
+  environment: process.env.NODE_ENV
+})
+
+// Firebase Auth 초기화 상태 확인
+if (!firebaseConfig.apiKey) {
+  console.error('❌ Firebase API Key is missing! Authentication will not work.')
 }
 
 const app = initializeApp(firebaseConfig)
