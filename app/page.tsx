@@ -15,9 +15,9 @@ export default function HomePage() {
   useEffect(() => {
     async function loadPosts() {
       try {
-        console.log('Loading posts from Firebase...')
+        // console.log('Loading posts from Firebase...')
         const fetchedPosts = await getPosts()
-        console.log('Fetched posts:', fetchedPosts)
+        // console.log('Fetched posts:', fetchedPosts)
         setPosts(fetchedPosts)
       } catch (error) {
         console.error('Error loading posts:', error)

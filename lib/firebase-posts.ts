@@ -2,7 +2,6 @@ import {
   collection, 
   doc, 
   getDocs, 
-  getDoc, 
   addDoc, 
   updateDoc, 
   deleteDoc,
@@ -18,17 +17,17 @@ const POSTS_COLLECTION = 'posts'
 
 export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
   try {
-    console.log('Fetching posts from Firebase collection:', POSTS_COLLECTION)
+    // console.log('Fetching posts from Firebase collection:', POSTS_COLLECTION)
     
     // 인덱스 문제를 피하기 위해 orderBy 제거
     const postsRef = collection(db, POSTS_COLLECTION)
     
     const snapshot = await getDocs(postsRef)
-    console.log('Found', snapshot.size, 'posts in Firebase')
+    // console.log('Found', snapshot.size, 'posts in Firebase')
     
     const posts = snapshot.docs.map(doc => {
       const data = doc.data()
-      console.log('Post data:', { id: doc.id, title: data.title, published: data.published })
+      // console.log('Post data:', { id: doc.id, title: data.title, published: data.published })
       return {
         id: doc.id,
         ...data
@@ -44,11 +43,7 @@ export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
     
     return posts
   } catch (error) {
-    console.error('Error fetching posts - Full error:', error)
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
+    console.error('Error fetching posts:', error)
     return []
   }
 }
