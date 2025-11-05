@@ -84,17 +84,24 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
         endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
       }
 
-      const scheduleData: Omit<Schedule, 'id'> = {
+      const scheduleData: any = {
         title: formData.title,
         description: formData.description,
         startDate: Timestamp.fromDate(startDateTime),
-        endDate: endDateTime ? Timestamp.fromDate(endDateTime) : undefined,
-        location: formData.location || undefined,
         color: formData.color,
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: schedule?.createdAt || Timestamp.now(),
         updatedAt: Timestamp.now()
+      }
+      
+      // optional 필드는 값이 있을 때만 추가
+      if (endDateTime) {
+        scheduleData.endDate = Timestamp.fromDate(endDateTime)
+      }
+      
+      if (formData.location && formData.location.trim()) {
+        scheduleData.location = formData.location.trim()
       }
 
       if (schedule?.id) {

@@ -68,11 +68,19 @@ export async function createSchedule(data: Omit<Schedule, 'id'>): Promise<string
       throw new Error('제목과 설명은 필수입니다.')
     }
     
-    const scheduleData = {
-      ...data,
+    // undefined 필드 제거
+    const scheduleData: any = {
       createdAt: data.createdAt || Timestamp.now(),
       updatedAt: Timestamp.now()
     }
+    
+    // 필수 필드 추가
+    Object.keys(data).forEach(key => {
+      const value = (data as any)[key]
+      if (value !== undefined && value !== null) {
+        scheduleData[key] = value
+      }
+    })
     
     console.log('📅 Final schedule data:', scheduleData)
     
