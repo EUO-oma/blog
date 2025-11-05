@@ -24,25 +24,29 @@ export default function WritePage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          excerpt,
-          content,
-          tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        }),
-      })
+      // 슬러그 생성
+      const slug = title
+        .toLowerCase()
+        .replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim()
 
-      if (response.ok) {
-        const { slug } = await response.json()
-        router.push(`/blog/posts/${slug}`)
-      } else {
-        throw new Error('Failed to create post')
+      const postData = {
+        title,
+        slug,
+        excerpt,
+        content,
+        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        authorEmail: session.user?.email || '',
+        authorName: session.user?.name || session.user?.email || '',
+        published: true
       }
+
+      const { createPost } = await import('@/lib/firebase-posts')
+      await createPost(postData)
+      
+      router.push(`/posts/${slug}`)
     } catch (error) {
       console.error('Error creating post:', error)
       alert('포스트 생성에 실패했습니다.')

@@ -1,62 +1,86 @@
-import Link from 'next/link'
-import { getPosts } from '@/lib/posts'
+'use client'
 
-export default async function HomePage() {
-  const posts = await getPosts()
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { BlogPost } from '@/lib/firebase'
+import { getPosts } from '@/lib/firebase-posts'
+
+export default function HomePage() {
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        const fetchedPosts = await getPosts()
+        setPosts(fetchedPosts)
+      } catch (error) {
+        console.error('Error loading posts:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPosts()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-8">
-      <section className="text-center py-16">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-          Welcome to euo-oma
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          Thoughts, stories, and ideas
+    <>
+      <section className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">Welcome to euo-oma</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400">
+          다크모드를 지원하는 모던한 블로그입니다.
         </p>
       </section>
 
-      <section className="grid gap-6">
+      <section>
+        <h2 className="text-2xl font-bold mb-6">최신 포스트</h2>
+        
         {posts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-600 dark:text-gray-400">No posts yet. Check back later!</p>
-          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            아직 작성된 포스트가 없습니다.
+          </p>
         ) : (
-          posts.map((post) => (
-            <article
-              key={post.slug}
-              className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Link href={`/posts/${post.slug}`} className="space-y-3">
-                <div>
-                  <h2 className="text-2xl font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          <div className="grid gap-8 md:grid-cols-2">
+            {posts.map((post) => (
+              <article key={post.id} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link href={`/posts/${post.slug}`}>
+                  <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     {post.title}
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {new Date(post.date).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-2">
+                  </h3>
+                </Link>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {post.excerpt}
                 </p>
-                <div className="flex gap-2">
-                  {post.tags?.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
+                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
+                  <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
+                  {post.tags.length > 0 && (
+                    <div className="flex gap-2">
+                      {post.tags.slice(0, 3).map((tag) => (
+                        <Link
+                          key={tag}
+                          href={`/tags/${encodeURIComponent(tag)}`}
+                          className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          #{tag}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </Link>
-            </article>
-          ))
+              </article>
+            ))}
+          </div>
         )}
       </section>
-    </div>
+    </>
   )
 }
