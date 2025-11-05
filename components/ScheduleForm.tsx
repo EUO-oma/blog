@@ -35,8 +35,8 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    startDate: currentDate,
-    startTime: currentTime,
+    startDate: '',
+    startTime: '',
     endDate: '',
     endTime: '',
     location: '',
@@ -61,11 +61,17 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
     } else {
       // 신규 일정일 때 현재 시간으로 초기화
       const now = new Date()
-      setFormData(prev => ({
-        ...prev,
+      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
+      setFormData({
+        title: '',
+        description: '',
         startDate: now.toISOString().split('T')[0],
-        startTime: now.toTimeString().slice(0, 5)
-      }))
+        startTime: now.toTimeString().slice(0, 5),
+        endDate: oneHourLater.toISOString().split('T')[0],
+        endTime: oneHourLater.toTimeString().slice(0, 5),
+        location: '',
+        color: '#6366f1'
+      })
     }
   }, [schedule])
 
@@ -77,11 +83,25 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
 
     setLoading(true)
     try {
-      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
-      let endDateTime = null
+      // 기본값 설정
+      const now = new Date()
+      const defaultDate = now.toISOString().split('T')[0]
+      const defaultTime = now.toTimeString().slice(0, 5)
       
-      if (formData.endDate && formData.endTime) {
-        endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
+      // 시작 날짜/시간이 비어있으면 현재 시간으로 설정
+      const finalStartDate = formData.startDate || defaultDate
+      const finalStartTime = formData.startTime || defaultTime
+      
+      const startDateTime = new Date(`${finalStartDate}T${finalStartTime}`)
+      
+      // 종료 시간 설정 - 비어있으면 시작 시간 + 1시간
+      let endDateTime = null
+      if (formData.endDate || formData.endTime) {
+        const finalEndDate = formData.endDate || finalStartDate
+        const finalEndTime = formData.endTime || 
+          (formData.endDate ? finalStartTime : // 날짜만 있으면 시작 시간과 동일
+          new Date(startDateTime.getTime() + 60 * 60 * 1000).toTimeString().slice(0, 5)) // 아니면 1시간 후
+        endDateTime = new Date(`${finalEndDate}T${finalEndTime}`)
       }
 
       const scheduleData: any = {
@@ -180,28 +200,28 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium mb-1">
-                  시작 날짜 *
+                  시작 날짜 <span className="text-gray-400 text-xs">(비워두면 오늘)</span>
                 </label>
                 <input
                   type="date"
                   id="startDate"
-                  required
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                  placeholder="오늘 날짜"
                 />
               </div>
               <div>
                 <label htmlFor="startTime" className="block text-sm font-medium mb-1">
-                  시작 시간 *
+                  시작 시간 <span className="text-gray-400 text-xs">(비워두면 지금)</span>
                 </label>
                 <input
                   type="time"
                   id="startTime"
-                  required
                   value={formData.startTime}
                   onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                  placeholder="현재 시간"
                 />
               </div>
             </div>
@@ -258,7 +278,7 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium mb-1">
-                  종료 날짜
+                  종료 날짜 <span className="text-gray-400 text-xs">(선택)</span>
                 </label>
                 <input
                   type="date"
@@ -270,7 +290,7 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
               </div>
               <div>
                 <label htmlFor="endTime" className="block text-sm font-medium mb-1">
-                  종료 시간
+                  종료 시간 <span className="text-gray-400 text-xs">(선택)</span>
                 </label>
                 <input
                   type="time"

@@ -53,8 +53,7 @@ export default function HomePage() {
   return (
     <>
       <section className="mb-12">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold">Welcome to euo-oma</h1>
+        <div className="flex justify-end items-center mb-4">
           <div className="flex gap-3">
             {user ? (
               <button
@@ -76,9 +75,6 @@ export default function HomePage() {
             )}
           </div>
         </div>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
-          다크모드를 지원하는 모던한 블로그입니다.
-        </p>
       </section>
 
       <section>

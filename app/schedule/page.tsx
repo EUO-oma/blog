@@ -50,12 +50,21 @@ export default function SchedulePage() {
 
   const formatDate = (timestamp: any) => {
     if (!timestamp || !timestamp.toDate) return ''
-    return new Date(timestamp.toDate()).toLocaleDateString('ko-KR', {
+    const date = new Date(timestamp.toDate())
+    return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+  }
+
+  const formatTime = (timestamp: any) => {
+    if (!timestamp || !timestamp.toDate) return ''
+    const date = new Date(timestamp.toDate())
+    return date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     })
   }
 
@@ -89,58 +98,102 @@ export default function SchedulePage() {
           등록된 일정이 없습니다.
         </p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {schedules.map((schedule) => (
-            <div
-              key={schedule.id}
-              className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative"
-              onClick={() => setSelectedSchedule(schedule)}
-              style={{
-                borderLeft: `4px solid ${schedule.color || '#6366f1'}`
-              }}
-            >
-              <h3 className="text-xl font-semibold mb-2">{schedule.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-                {schedule.description}
-              </p>
-              <div className="text-sm text-gray-500 dark:text-gray-500">
-                <p>📅 {formatDate(schedule.startDate)}</p>
-                {schedule.endDate && (
-                  <p>~ {formatDate(schedule.endDate)}</p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-700">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  날짜
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  시간
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  내용
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  장소
+                </th>
+                {user && (
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    관리
+                  </th>
                 )}
-                {schedule.location && (
-                  <p className="mt-1">📍 {schedule.location}</p>
-                )}
-              </div>
-              
-              {user && schedule.authorEmail === user.email && (
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEdit(schedule)
-                    }}
-                    className="p-2 text-indigo-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (schedule.id) handleDelete(schedule.id)
-                    }}
-                    className="p-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {schedules.map((schedule) => (
+                <tr
+                  key={schedule.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatDate(schedule.startDate)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                      {formatTime(schedule.startDate)}
+                      {schedule.endDate && (
+                        <span className="text-gray-500">
+                          {' ~ '}
+                          {formatTime(schedule.endDate)}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div
+                        className="w-3 h-3 rounded-full mr-3 flex-shrink-0"
+                        style={{ backgroundColor: schedule.color || '#6366f1' }}
+                      />
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {schedule.title}
+                        </span>
+                        <span className="text-gray-500 dark:text-gray-400 ml-2">
+                          - {schedule.description}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                      {schedule.location || '-'}
+                    </div>
+                  </td>
+                  {user && (
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {schedule.authorEmail === user.email && (
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleEdit(schedule)}
+                            className="text-indigo-600 hover:text-indigo-900 p-1"
+                            title="수정"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => schedule.id && handleDelete(schedule.id)}
+                            className="text-red-600 hover:text-red-900 p-1"
+                            title="삭제"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
