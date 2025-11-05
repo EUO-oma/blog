@@ -54,7 +54,7 @@ export default function HomePage() {
           <div className="grid gap-8 md:grid-cols-2">
             {posts.map((post) => (
               <article key={post.id} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <Link href={`/posts/${post.slug}`}>
+                <Link href={`/blog/post?slug=${post.slug}`}>
                   <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     {post.title}
                   </h3>
@@ -69,7 +69,7 @@ export default function HomePage() {
                       {post.tags.slice(0, 3).map((tag) => (
                         <Link
                           key={tag}
-                          href={`/tags/${encodeURIComponent(tag)}`}
+                          href={`/blog/tags?tag=${encodeURIComponent(tag)}`}
                           className="text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
                           #{tag}

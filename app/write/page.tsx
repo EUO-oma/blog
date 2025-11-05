@@ -41,7 +41,7 @@ export default function WritePage() {
       const { createPost } = await import('@/lib/firebase-posts')
       await createPost(postData)
       
-      router.push(`/blog/posts/${slug}`)
+      router.push(`/blog/post?slug=${slug}`)
     } catch (error) {
       console.error('Error creating post:', error)
       alert('포스트 생성에 실패했습니다.')

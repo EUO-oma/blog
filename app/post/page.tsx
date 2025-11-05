@@ -1,36 +1,37 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, notFound } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import Link from 'next/link'
 import { BlogPost } from '@/lib/firebase'
 import { getPost } from '@/lib/firebase-posts'
 
-// 빌드 시 정적 경로 생성 (GitHub Pages용)
-export async function generateStaticParams() {
-  // 빌드 시점에는 Firebase 연결이 안되므로 빈 배열 반환
-  // 실제 포스트는 클라이언트에서 동적으로 로드
-  return []
-}
-
-export default function PostPage() {
-  const params = useParams()
-  const slug = params.slug as string
+function PostContent() {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug')
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     async function loadPost() {
+      if (!slug) {
+        setError(true)
+        setLoading(false)
+        return
+      }
+
       try {
         const fetchedPost = await getPost(slug)
         if (!fetchedPost) {
-          notFound()
+          setError(true)
+        } else {
+          setPost(fetchedPost)
         }
-        setPost(fetchedPost)
       } catch (error) {
         console.error('Error loading post:', error)
-        notFound()
+        setError(true)
       } finally {
         setLoading(false)
       }
@@ -47,8 +48,18 @@ export default function PostPage() {
     )
   }
 
-  if (!post) {
-    return notFound()
+  if (error || !post) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <h2 className="text-2xl font-bold mb-4">게시글을 찾을 수 없습니다</h2>
+        <Link
+          href="/blog"
+          className="text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          ← 목록으로 돌아가기
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -65,7 +76,7 @@ export default function PostPage() {
             {post.tags.map((tag) => (
               <Link
                 key={tag}
-                href={`/blog/tags/${encodeURIComponent(tag)}`}
+                href={`/blog/tags?tag=${encodeURIComponent(tag)}`}
                 className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 #{tag}
@@ -88,5 +99,17 @@ export default function PostPage() {
         </Link>
       </footer>
     </article>
+  )
+}
+
+export default function PostPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    }>
+      <PostContent />
+    </Suspense>
   )
 }
