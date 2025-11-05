@@ -44,9 +44,6 @@ export default function Header() {
             <Link href="/schedule" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               일정
             </Link>
-            <Link href="/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              About
-            </Link>
             <Link href="/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>

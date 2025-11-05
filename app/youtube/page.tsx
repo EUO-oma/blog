@@ -1,175 +1,218 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-
-// Sample YouTube video data - replace with your actual videos
-const YOUTUBE_VIDEOS = [
-  {
-    id: 'dQw4w9WgXcQ',
-    title: 'Sample Video 1',
-    description: 'This is a sample video description. Replace with your actual video content.',
-    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    duration: '3:52',
-    views: '1.2M',
-    uploadDate: '2024-01-15'
-  },
-  {
-    id: 'M7lc1UVf-VE',
-    title: 'Sample Video 2',
-    description: 'Another sample video for demonstration purposes.',
-    thumbnail: 'https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg',
-    duration: '5:21',
-    views: '823K',
-    uploadDate: '2024-02-10'
-  },
-  {
-    id: 'ZbZSe6N_BXs',
-    title: 'Sample Video 3',
-    description: 'Learn something new with this sample video.',
-    thumbnail: 'https://img.youtube.com/vi/ZbZSe6N_BXs/maxresdefault.jpg',
-    duration: '10:34',
-    views: '2.5M',
-    uploadDate: '2024-03-05'
-  },
-  {
-    id: 'y6120QOlsfU',
-    title: 'Sample Video 4',
-    description: 'Educational content placeholder.',
-    thumbnail: 'https://img.youtube.com/vi/y6120QOlsfU/maxresdefault.jpg',
-    duration: '7:45',
-    views: '456K',
-    uploadDate: '2024-03-20'
-  }
-]
-
-interface YouTubeVideo {
-  id: string
-  title: string
-  description: string
-  thumbnail: string
-  duration: string
-  views: string
-  uploadDate: string
-}
+import { YouTubeVideo } from '@/lib/firebase'
+import { getYouTubeVideos, deleteYouTubeVideo } from '@/lib/firebase-youtube'
+import YouTubeForm from '@/components/YouTubeForm'
 
 export default function YouTubePage() {
   const { user } = useAuth()
+  const [videos, setVideos] = useState<YouTubeVideo[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showPlayer, setShowPlayer] = useState(false)
+  const [showFormModal, setShowFormModal] = useState(false)
+  const [editingVideo, setEditingVideo] = useState<YouTubeVideo | null>(null)
+  
+  useEffect(() => {
+    loadVideos()
+  }, [])
+  
+  const loadVideos = async () => {
+    setLoading(true)
+    try {
+      const fetchedVideos = await getYouTubeVideos()
+      setVideos(fetchedVideos)
+    } catch (error) {
+      console.error('Error loading videos:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('정말로 이 비디오를 삭제하시겠습니까?')) return
 
-  const handleVideoClick = (video: YouTubeVideo) => {
-    setSelectedVideo(video)
-    setIsModalOpen(true)
+    try {
+      await deleteYouTubeVideo(id)
+      await loadVideos()
+    } catch (error) {
+      console.error('Error deleting video:', error)
+      alert('비디오 삭제 중 오류가 발생했습니다.')
+    }
+  }
+  
+  const handleEdit = (video: YouTubeVideo) => {
+    setEditingVideo(video)
+    setShowFormModal(true)
   }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
+  const openPlayer = (video: YouTubeVideo) => {
+    setSelectedVideo(video)
+    setShowPlayer(true)
+  }
+
+  const closePlayer = () => {
+    setShowPlayer(false)
     setSelectedVideo(null)
+  }
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    )
   }
 
   return (
-    <>
-      <section className="mb-12">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold">YouTube 채널</h1>
-        </div>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
-          최신 동영상 콘텐츠를 확인해보세요
-        </p>
-      </section>
+    <div className="max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">YouTube Videos</h1>
+        {user && (
+          <button
+            onClick={() => {
+              setEditingVideo(null)
+              setShowFormModal(true)
+            }}
+            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+          >
+            + 새 비디오 추가
+          </button>
+        )}
+      </div>
 
-      <section>
-        <h2 className="text-2xl font-bold mb-6">최신 동영상</h2>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {YOUTUBE_VIDEOS.map((video) => (
-            <article 
-              key={video.id} 
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden group"
-              onClick={() => handleVideoClick(video)}
+      {videos.length === 0 ? (
+        <p className="text-gray-600 dark:text-gray-400 text-center py-8">
+          등록된 비디오가 없습니다.
+        </p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {videos.map((video) => (
+            <div
+              key={video.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
             >
-              <div className="relative aspect-video overflow-hidden">
-                <img 
-                  src={video.thumbnail} 
+              <div 
+                className="relative aspect-video cursor-pointer group"
+                onClick={() => openPlayer(video)}
+              >
+                <img
+                  src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
                   alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`
+                  }}
                 />
-                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-                  {video.duration}
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center">
+                  <svg 
+                    className="w-16 h-16 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                  </svg>
                 </div>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg className="w-16 h-16 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
+                {video.duration && (
+                  <span className="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded">
+                    {video.duration}
+                  </span>
+                )}
               </div>
               
               <div className="p-4">
-                <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <h3 className="font-semibold text-lg line-clamp-2 mb-2">
                   {video.title}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
                   {video.description}
                 </p>
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                   <span>{video.views} views</span>
-                  <time>{new Date(video.uploadDate).toLocaleDateString('ko-KR')}</time>
+                  <span>{video.uploadDate}</span>
                 </div>
+                
+                {user && video.authorEmail === user.email && (
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => handleEdit(video)}
+                      className="text-indigo-600 hover:text-indigo-800 text-sm"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => video.id && handleDelete(video.id)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
-            </article>
+            </div>
           ))}
         </div>
-      </section>
+      )}
 
       {/* Video Player Modal */}
-      {isModalOpen && selectedVideo && (
+      {showPlayer && selectedVideo && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
-          onClick={closeModal}
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={closePlayer}
         >
           <div 
-            className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="relative w-full max-w-5xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{selectedVideo.title}</h2>
-              <button
-                onClick={closeModal}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                aria-label="Close modal"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <button
+              onClick={closePlayer}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             
-            <div className="aspect-video bg-black">
+            <div className="aspect-video bg-black rounded-lg overflow-hidden">
               <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=1`}
+                src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1`}
                 title={selectedVideo.title}
-                frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                className="w-full h-full"
               />
             </div>
             
-            <div className="p-6">
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {selectedVideo.description}
-              </p>
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
-                <span>{selectedVideo.views} views</span>
-                <time>업로드: {new Date(selectedVideo.uploadDate).toLocaleDateString('ko-KR')}</time>
+            <div className="mt-4 text-white">
+              <h2 className="text-2xl font-semibold mb-2">{selectedVideo.title}</h2>
+              <p className="text-gray-300 mb-4">{selectedVideo.description}</p>
+              <div className="flex gap-4 text-sm text-gray-400">
+                {selectedVideo.views && <span>{selectedVideo.views} views</span>}
+                {selectedVideo.uploadDate && <span>Uploaded on {selectedVideo.uploadDate}</span>}
               </div>
             </div>
           </div>
         </div>
       )}
-    </>
+
+      {/* YouTube Form Modal */}
+      {showFormModal && (
+        <YouTubeForm
+          video={editingVideo}
+          isOpen={showFormModal}
+          onClose={() => {
+            setShowFormModal(false)
+            setEditingVideo(null)
+          }}
+          onSuccess={() => {
+            setShowFormModal(false)
+            setEditingVideo(null)
+            loadVideos()
+          }}
+        />
+      )}
+    </div>
   )
 }

@@ -86,4 +86,20 @@ export interface Schedule {
   updatedAt: Timestamp
 }
 
+// YouTube Video type
+export interface YouTubeVideo {
+  id?: string
+  videoId: string
+  title: string
+  description: string
+  thumbnail?: string
+  duration?: string
+  views?: string
+  uploadDate?: string
+  authorEmail: string
+  authorName: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export { Timestamp }
