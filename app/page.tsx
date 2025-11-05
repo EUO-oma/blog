@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BlogPost } from '@/lib/firebase'
 import { getPosts } from '@/lib/firebase-posts'
+import PostModal from '@/components/PostModal'
 
 export default function HomePage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadPosts() {
@@ -53,12 +56,17 @@ export default function HomePage() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2">
             {posts.map((post) => (
-              <article key={post.id} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <Link href={`/blog/post?slug=${post.slug}`}>
-                  <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                    {post.title}
-                  </h3>
-                </Link>
+              <article 
+                key={post.id} 
+                className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedPost(post)
+                  setIsModalOpen(true)
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  {post.title}
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {post.excerpt}
                 </p>
@@ -83,6 +91,15 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      <PostModal 
+        post={selectedPost}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedPost(null)
+        }}
+      />
     </>
   )
 }
