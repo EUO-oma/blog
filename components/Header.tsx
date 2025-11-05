@@ -1,14 +1,21 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTheme } from './ThemeProvider'
 import AuthButton from './AuthButton'
 // import { useSession } from 'next-auth/react'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
+  const router = useRouter()
   // const { data: session } = useSession()
   const session = null // 임시로 비활성화
+  
+  const handleWriteClick = () => {
+    console.log('글쓰기 버튼 클릭됨')
+    router.push('/blog/write')
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
@@ -28,9 +35,12 @@ export default function Header() {
             <Link href="/blog/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>
-            <Link href="/blog/write" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+            <button
+              onClick={handleWriteClick}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium cursor-pointer relative z-10"
+            >
               ✍️ 글쓰기
-            </Link>
+            </button>
             
             <button
               onClick={toggleTheme}
