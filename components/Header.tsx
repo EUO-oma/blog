@@ -13,8 +13,8 @@ export default function Header() {
   const session = null // 임시로 비활성화
   
   const handleWriteClick = () => {
-    console.log('글쓰기 버튼 클릭됨')
-    router.push('/blog/write')
+    // 메인 페이지로 이동 (글쓰기는 메인 페이지의 모달로 처리)
+    router.push('/blog')
   }
 
   return (
