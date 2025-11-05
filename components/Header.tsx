@@ -1,24 +1,36 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { useTheme } from './ThemeProvider'
-import AuthButton from './AuthButton'
-// import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
+import LoginModal from './LoginModal'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
-  const router = useRouter()
-  // const { data: session } = useSession()
-  const session = null // 임시로 비활성화
+  const { user, logout } = useAuth()
+  const [showLoginModal, setShowLoginModal] = useState(false)
   
   const handleWriteClick = () => {
-    // 메인 페이지로 이동 (글쓰기는 메인 페이지의 모달로 처리)
-    router.push('/blog')
+    const event = new CustomEvent('openWriteModal')
+    window.dispatchEvent(event)
   }
 
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setShowLoginModal(true)
+    }
+    
+    window.addEventListener('openLoginModal', handleOpenLoginModal)
+    
+    return () => {
+      window.removeEventListener('openLoginModal', handleOpenLoginModal)
+    }
+  }, [])
+
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <>
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <nav className="container mx-auto px-4 py-4 max-w-5xl">
         <div className="flex items-center justify-between">
           <Link href="/blog" className="text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
@@ -35,12 +47,6 @@ export default function Header() {
             <Link href="/blog/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>
-            <button
-              onClick={handleWriteClick}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium cursor-pointer relative z-10"
-            >
-              ✍️ 글쓰기
-            </button>
             
             <button
               onClick={toggleTheme}
@@ -58,10 +64,35 @@ export default function Header() {
               )}
             </button>
             
-            <AuthButton />
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {user.displayName || user.email}
+                </span>
+                <button
+                  onClick={logout}
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-sm bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                로그인
+              </button>
+            )}
           </div>
         </div>
       </nav>
-    </header>
+      </header>
+    
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
+    </>
   )
 }

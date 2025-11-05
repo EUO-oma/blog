@@ -6,8 +6,10 @@ import { BlogPost } from '@/lib/firebase'
 import { getPosts } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomePage() {
+  const { user } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
@@ -31,6 +33,18 @@ export default function HomePage() {
     loadPosts()
   }, [])
 
+  useEffect(() => {
+    const handleOpenWriteModal = () => {
+      setIsWriteModalOpen(true)
+    }
+    
+    window.addEventListener('openWriteModal', handleOpenWriteModal)
+    
+    return () => {
+      window.removeEventListener('openWriteModal', handleOpenWriteModal)
+    }
+  }, [])
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -44,12 +58,26 @@ export default function HomePage() {
       <section className="mb-12">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-4xl font-bold">Welcome to euo-oma</h1>
-          <button
-            onClick={() => setIsWriteModalOpen(true)}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-          >
-            ✍️ 새 글 작성
-          </button>
+          <div className="flex gap-3">
+            {user ? (
+              <button
+                onClick={() => setIsWriteModalOpen(true)}
+                className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              >
+                ✍️ 새 글 작성
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openLoginModal')
+                  window.dispatchEvent(event)
+                }}
+                className="bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium"
+              >
+                🔐 로그인
+              </button>
+            )}
+          </div>
         </div>
         <p className="text-lg text-gray-600 dark:text-gray-400">
           다크모드를 지원하는 모던한 블로그입니다.

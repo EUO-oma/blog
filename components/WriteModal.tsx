@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createPost } from '@/lib/firebase-posts'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface WriteModalProps {
   isOpen: boolean
@@ -10,6 +11,7 @@ interface WriteModalProps {
 }
 
 export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalProps) {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
@@ -40,8 +42,8 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
         excerpt: formData.excerpt,
         content: formData.content,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        authorEmail: 'guest@example.com',
-        authorName: 'Guest Writer',
+        authorEmail: user?.email || 'guest@example.com',
+        authorName: user?.displayName || user?.email || 'Guest Writer',
         published: formData.published
       }
 
