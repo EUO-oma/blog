@@ -20,10 +20,10 @@ export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
   try {
     console.log('Fetching posts from Firebase collection:', POSTS_COLLECTION)
     
-    // 임시로 모든 게시글 가져오기 (published 필터 제거)
-    const q = query(collection(db, POSTS_COLLECTION), orderBy('createdAt', 'desc'))
+    // 인덱스 문제를 피하기 위해 orderBy 제거
+    const postsRef = collection(db, POSTS_COLLECTION)
     
-    const snapshot = await getDocs(q)
+    const snapshot = await getDocs(postsRef)
     console.log('Found', snapshot.size, 'posts in Firebase')
     
     const posts = snapshot.docs.map(doc => {
@@ -35,9 +35,20 @@ export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
       } as BlogPost
     })
     
+    // 클라이언트 사이드에서 정렬
+    posts.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis() || 0
+      const bTime = b.createdAt?.toMillis() || 0
+      return bTime - aTime
+    })
+    
     return posts
   } catch (error) {
-    console.error('Error fetching posts:', error)
+    console.error('Error fetching posts - Full error:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return []
   }
 }
