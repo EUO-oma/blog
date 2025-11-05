@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+  }
+
+  .dark {
+    --background: 15 15 15;
+    --foreground: 255 255 255;
+  }
+}
+
+body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer utilities {
+  .prose-dark {
+    @apply prose-invert prose-headings:text-white prose-p:text-gray-200 
+           prose-a:text-indigo-400 prose-strong:text-white
+           prose-blockquote:text-gray-300 prose-code:text-gray-200;
+  }
+}
