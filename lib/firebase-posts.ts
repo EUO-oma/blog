@@ -18,19 +18,24 @@ const POSTS_COLLECTION = 'posts'
 
 export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
   try {
-    const q = isAdmin 
-      ? query(collection(db, POSTS_COLLECTION), orderBy('createdAt', 'desc'))
-      : query(
-          collection(db, POSTS_COLLECTION), 
-          where('published', '==', true),
-          orderBy('createdAt', 'desc')
-        )
+    console.log('Fetching posts from Firebase collection:', POSTS_COLLECTION)
+    
+    // 임시로 모든 게시글 가져오기 (published 필터 제거)
+    const q = query(collection(db, POSTS_COLLECTION), orderBy('createdAt', 'desc'))
     
     const snapshot = await getDocs(q)
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost))
+    console.log('Found', snapshot.size, 'posts in Firebase')
+    
+    const posts = snapshot.docs.map(doc => {
+      const data = doc.data()
+      console.log('Post data:', { id: doc.id, title: data.title, published: data.published })
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost
+    })
+    
+    return posts
   } catch (error) {
     console.error('Error fetching posts:', error)
     return []
