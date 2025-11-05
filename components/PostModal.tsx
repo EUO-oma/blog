@@ -24,6 +24,13 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
   
   const isAuthor = user && post.authorEmail === user.email
   
+  // 디버깅용 로그
+  console.log('📝 PostModal Debug:', {
+    currentUserEmail: user?.email,
+    postAuthorEmail: post.authorEmail,
+    isAuthor: isAuthor
+  })
+  
   const handleDelete = async () => {
     if (!post.id || !window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) return
     
