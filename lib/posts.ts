@@ -2,6 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
+// @ts-ignore
+const fileData: any = matter
+
 export interface Post {
   slug: string
   title: string
@@ -27,7 +30,7 @@ export async function getPosts(): Promise<Post[]> {
       const slug = fileName.replace(/\.md$/, '')
       const fullPath = path.join(postsDirectory, fileName)
       const fileContents = fs.readFileSync(fullPath, 'utf8')
-      const { data, content } = matter(fileContents)
+      const { data, content } = fileData(fileContents)
 
       return {
         slug,
