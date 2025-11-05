@@ -14,22 +14,22 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <nav className="container mx-auto px-4 py-4 max-w-5xl">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          <Link href="/blog" className="text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             euo-oma
           </Link>
 
           <div className="flex items-center gap-6">
-            <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/blog" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Home
             </Link>
-            <Link href="/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/blog/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               About
             </Link>
-            <Link href="/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/blog/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>
-            <Link href="/write" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              글쓰기
+            <Link href="/blog/write" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+              ✍️ 글쓰기
             </Link>
             
             <button

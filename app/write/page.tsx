@@ -41,7 +41,7 @@ export default function WritePage() {
       const { createPost } = await import('@/lib/firebase-posts')
       await createPost(postData)
       
-      router.push(`/posts/${slug}`)
+      router.push(`/blog/posts/${slug}`)
     } catch (error) {
       console.error('Error creating post:', error)
       alert('포스트 생성에 실패했습니다.')
@@ -125,7 +125,7 @@ export default function WritePage() {
           
           <button
             type="button"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/blog')}
             className="px-6 py-3 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
             취소
