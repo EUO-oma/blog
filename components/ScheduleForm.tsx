@@ -26,11 +26,17 @@ const colorOptions = [
 export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: ScheduleFormProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  
+  // 현재 시간 기본값 설정
+  const now = new Date()
+  const currentDate = now.toISOString().split('T')[0]
+  const currentTime = now.toTimeString().slice(0, 5)
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    startDate: '',
-    startTime: '',
+    startDate: currentDate,
+    startTime: currentTime,
     endDate: '',
     endTime: '',
     location: '',
@@ -52,6 +58,14 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
         location: schedule.location || '',
         color: schedule.color || '#6366f1'
       })
+    } else {
+      // 신규 일정일 때 현재 시간으로 초기화
+      const now = new Date()
+      setFormData(prev => ({
+        ...prev,
+        startDate: now.toISOString().split('T')[0],
+        startTime: now.toTimeString().slice(0, 5)
+      }))
     }
   }, [schedule])
 
@@ -136,8 +150,8 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-                placeholder="일정 제목"
+                className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="예: 팀 미팅, 프로젝트 발표"
               />
             </div>
 
@@ -183,6 +197,55 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
+            </div>
+
+            <div className="flex gap-2 text-xs">
+              <span className="text-gray-500">빠른 선택:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date()
+                  const after30min = new Date(now.getTime() + 30 * 60 * 1000)
+                  setFormData(prev => ({
+                    ...prev,
+                    endDate: after30min.toISOString().split('T')[0],
+                    endTime: after30min.toTimeString().slice(0, 5)
+                  }))
+                }}
+                className="text-indigo-600 hover:underline"
+              >
+                30분 후
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date()
+                  const after1hour = new Date(now.getTime() + 60 * 60 * 1000)
+                  setFormData(prev => ({
+                    ...prev,
+                    endDate: after1hour.toISOString().split('T')[0],
+                    endTime: after1hour.toTimeString().slice(0, 5)
+                  }))
+                }}
+                className="text-indigo-600 hover:underline"
+              >
+                1시간 후
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date()
+                  const after2hours = new Date(now.getTime() + 120 * 60 * 1000)
+                  setFormData(prev => ({
+                    ...prev,
+                    endDate: after2hours.toISOString().split('T')[0],
+                    endTime: after2hours.toTimeString().slice(0, 5)
+                  }))
+                }}
+                className="text-indigo-600 hover:underline"
+              >
+                2시간 후
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
