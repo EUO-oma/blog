@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { BlogPost } from '@/lib/firebase'
+import { getPosts } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
-import InfiniteScrollPosts from '@/components/InfiniteScrollPosts'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomePage() {
