@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 
 export default function WritePage() {
   const router = useRouter()
-  const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
@@ -16,10 +14,7 @@ export default function WritePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!session) {
-      alert('로그인이 필요합니다.')
-      return
-    }
+    // 로그인 체크 제거 - 나중에 추가 가능
 
     setIsSubmitting(true)
 
@@ -32,14 +27,14 @@ export default function WritePage() {
         .replace(/-+/g, '-')
         .trim()
 
-      const postData = {
+      const postData: any = {
         title,
         slug,
         excerpt,
         content,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        authorEmail: session.user?.email || '',
-        authorName: session.user?.name || session.user?.email || '',
+        authorEmail: 'guest@example.com',
+        authorName: 'Guest Writer',
         published: true
       }
 
@@ -130,7 +125,7 @@ export default function WritePage() {
           
           <button
             type="button"
-            onClick={() => router.push('/blog')}
+            onClick={() => router.push('/')}
             className="px-6 py-3 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
             취소

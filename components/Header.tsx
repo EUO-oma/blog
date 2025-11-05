@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { useTheme } from './ThemeProvider'
 import AuthButton from './AuthButton'
-import { useSession } from 'next-auth/react'
+// import { useSession } from 'next-auth/react'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
-  const { data: session } = useSession()
+  // const { data: session } = useSession()
+  const session = null // 임시로 비활성화
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
@@ -27,11 +28,9 @@ export default function Header() {
             <Link href="/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>
-            {session && (
-              <Link href="/write" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                글쓰기
-              </Link>
-            )}
+            <Link href="/write" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              글쓰기
+            </Link>
             
             <button
               onClick={toggleTheme}
