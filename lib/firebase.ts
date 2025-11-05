@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore, Timestamp } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
+import type { Firestore } from 'firebase/firestore'
+import type { Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -40,8 +42,8 @@ if (firebaseConfig.authDomain && firebaseConfig.projectId) {
 }
 
 let app
-let db
-let auth
+let db: Firestore
+let auth: Auth
 
 try {
   app = initializeApp(firebaseConfig)
@@ -68,6 +70,20 @@ export interface BlogPost {
   createdAt: Timestamp
   updatedAt: Timestamp
   published: boolean
+}
+
+export interface Schedule {
+  id?: string
+  title: string
+  description: string
+  startDate: Timestamp
+  endDate?: Timestamp
+  location?: string
+  color?: string
+  authorEmail: string
+  authorName: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 
 export { Timestamp }
