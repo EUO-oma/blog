@@ -14,8 +14,8 @@ const firebaseConfig = {
 // Firebase 초기화 확인용 - 프로덕션에서도 한시적으로 로그 출력
 console.log('🔥 Firebase Config Status:', {
   apiKey: firebaseConfig.apiKey ? 'configured' : 'missing',
-  authDomain: firebaseConfig.authDomain ? 'configured' : 'missing',
-  projectId: firebaseConfig.projectId ? 'configured' : 'missing',
+  authDomain: firebaseConfig.authDomain ? `configured: ${firebaseConfig.authDomain}` : 'missing',
+  projectId: firebaseConfig.projectId ? `configured: ${firebaseConfig.projectId}` : 'missing',
   storageBucket: firebaseConfig.storageBucket ? 'configured' : 'missing',
   messagingSenderId: firebaseConfig.messagingSenderId ? 'configured' : 'missing',
   appId: firebaseConfig.appId ? 'configured' : 'missing',
@@ -27,10 +27,34 @@ if (!firebaseConfig.apiKey) {
   console.error('❌ Firebase API Key is missing! Authentication will not work.')
 }
 
-const app = initializeApp(firebaseConfig)
+if (!firebaseConfig.authDomain) {
+  console.error('❌ Firebase Auth Domain is missing! Google Sign-in will not work.')
+}
 
-export const db = getFirestore(app)
-export const auth = getAuth(app)
+// authDomain과 projectId 일치 확인
+if (firebaseConfig.authDomain && firebaseConfig.projectId) {
+  const expectedAuthDomain = `${firebaseConfig.projectId}.firebaseapp.com`
+  if (firebaseConfig.authDomain !== expectedAuthDomain) {
+    console.warn(`⚠️ Auth domain mismatch. Expected: ${expectedAuthDomain}, Got: ${firebaseConfig.authDomain}`)
+  }
+}
+
+let app
+let db
+let auth
+
+try {
+  app = initializeApp(firebaseConfig)
+  db = getFirestore(app)
+  auth = getAuth(app)
+  
+  console.log('✅ Firebase initialized successfully')
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error)
+  throw new Error('Failed to initialize Firebase. Please check your configuration.')
+}
+
+export { db, auth }
 
 export interface BlogPost {
   id?: string

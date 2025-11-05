@@ -46,10 +46,27 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setLoading(true)
     
     try {
+      console.log('🔐 LoginModal: Attempting Google sign-in')
       await signInWithGoogle()
+      console.log('🔐 LoginModal: Google sign-in successful')
       onClose()
     } catch (error: any) {
-      setError(error.message || '구글 로그인 중 오류가 발생했습니다.')
+      console.error('🔐 LoginModal: Google sign-in error', error)
+      
+      // 더 구체적인 오류 메시지 제공
+      let errorMessage = '구글 로그인 중 오류가 발생했습니다.'
+      
+      if (error.code === 'auth/configuration-not-found') {
+        errorMessage = 'Firebase 인증 설정 오류: Google 로그인이 Firebase Console에서 활성화되지 않았습니다.'
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = '팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.'
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

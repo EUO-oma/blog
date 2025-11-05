@@ -60,10 +60,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      console.log('🔐 Google Sign-in: Starting authentication process')
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-    } catch (error) {
-      console.error('구글 로그인 오류:', error)
+      
+      // 추가 스코프 설정 (선택사항)
+      provider.addScope('profile')
+      provider.addScope('email')
+      
+      // 로그인 프롬프트 강제 표시
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      })
+      
+      console.log('🔐 Google Sign-in: Provider configured, attempting sign-in')
+      const result = await signInWithPopup(auth, provider)
+      console.log('🔐 Google Sign-in: Success', result.user.email)
+    } catch (error: any) {
+      console.error('🔐 Google Sign-in Error:', {
+        code: error.code,
+        message: error.message,
+        fullError: error
+      })
+      
+      // 특정 오류에 대한 더 자세한 메시지 제공
+      if (error.code === 'auth/configuration-not-found') {
+        throw new Error('Firebase 인증 설정을 찾을 수 없습니다. Firebase Console에서 Google 로그인을 활성화했는지 확인해주세요.')
+      } else if (error.code === 'auth/popup-blocked') {
+        throw new Error('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해주세요.')
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        throw new Error('로그인이 취소되었습니다.')
+      }
+      
       throw error
     }
   }
