@@ -2,16 +2,19 @@
 
 import Link from 'next/link'
 import { useTheme } from './ThemeProvider'
+import AuthButton from './AuthButton'
+import { useSession } from 'next-auth/react'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <nav className="container mx-auto px-4 py-4 max-w-5xl">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            My Blog
+            euo-oma
           </Link>
 
           <div className="flex items-center gap-6">
@@ -24,6 +27,11 @@ export default function Header() {
             <Link href="/tags" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Tags
             </Link>
+            {session && (
+              <Link href="/write" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                글쓰기
+              </Link>
+            )}
             
             <button
               onClick={toggleTheme}
@@ -40,6 +48,8 @@ export default function Header() {
                 </svg>
               )}
             </button>
+            
+            <AuthButton />
           </div>
         </div>
       </nav>

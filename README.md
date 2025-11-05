@@ -1,4 +1,4 @@
-# My Blog
+# euo-oma
 
 A modern blog built with Next.js 14, TypeScript, and Tailwind CSS.
 

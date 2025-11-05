@@ -8,7 +8,7 @@ export default async function HomePage() {
     <div className="space-y-8">
       <section className="text-center py-16">
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-          Welcome to My Blog
+          Welcome to euo-oma
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">
           Thoughts, stories, and ideas
