@@ -36,7 +36,7 @@ service cloud.firestore {
       
       // 인증된 관리자만 쓰기 가능
       allow write: if request.auth != null && 
-        request.auth.token.email == "your-email@gmail.com";
+        request.auth.token.email == "icandoit13579@gmail.com";
     }
   }
 }
