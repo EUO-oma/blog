@@ -7,6 +7,13 @@ import Link from 'next/link'
 import { BlogPost } from '@/lib/firebase'
 import { getPost } from '@/lib/firebase-posts'
 
+// 빌드 시 정적 경로 생성 (GitHub Pages용)
+export async function generateStaticParams() {
+  // 빌드 시점에는 Firebase 연결이 안되므로 빈 배열 반환
+  // 실제 포스트는 클라이언트에서 동적으로 로드
+  return []
+}
+
 export default function PostPage() {
   const params = useParams()
   const slug = params.slug as string
@@ -58,7 +65,7 @@ export default function PostPage() {
             {post.tags.map((tag) => (
               <Link
                 key={tag}
-                href={`/tags/${encodeURIComponent(tag)}`}
+                href={`/blog/tags/${encodeURIComponent(tag)}`}
                 className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 #{tag}
@@ -74,7 +81,7 @@ export default function PostPage() {
 
       <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
         <Link
-          href="/"
+          href="/blog"
           className="text-indigo-600 dark:text-indigo-400 hover:underline"
         >
           ← 목록으로 돌아가기
