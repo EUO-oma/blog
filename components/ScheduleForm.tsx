@@ -92,9 +92,10 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
       }
 
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving schedule:', error)
-      alert('일정 저장 중 오류가 발생했습니다.')
+      const errorMessage = error.message || '일정 저장 중 오류가 발생했습니다.'
+      alert(`오류: ${errorMessage}`)
     } finally {
       setLoading(false)
     }

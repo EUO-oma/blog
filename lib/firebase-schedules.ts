@@ -61,15 +61,27 @@ export async function getSchedulesByDateRange(startDate: Date, endDate: Date): P
 // 일정 생성
 export async function createSchedule(data: Omit<Schedule, 'id'>): Promise<string> {
   try {
-    const docRef = await addDoc(collection(db, SCHEDULES_COLLECTION), {
+    console.log('📅 Creating schedule with data:', data)
+    
+    // 데이터 검증
+    if (!data.title || !data.description) {
+      throw new Error('제목과 설명은 필수입니다.')
+    }
+    
+    const scheduleData = {
       ...data,
-      createdAt: Timestamp.now(),
+      createdAt: data.createdAt || Timestamp.now(),
       updatedAt: Timestamp.now()
-    })
-    console.log('📅 Schedule created:', docRef.id)
+    }
+    
+    console.log('📅 Final schedule data:', scheduleData)
+    
+    const docRef = await addDoc(collection(db, SCHEDULES_COLLECTION), scheduleData)
+    console.log('📅 Schedule created successfully:', docRef.id)
     return docRef.id
-  } catch (error) {
-    console.error('Error creating schedule:', error)
+  } catch (error: any) {
+    console.error('❌ Error creating schedule:', error)
+    console.error('Error details:', error.message)
     throw error
   }
 }
