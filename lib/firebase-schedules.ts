@@ -19,20 +19,45 @@ export async function getSchedules(): Promise<Schedule[]> {
   try {
     console.log('📅 Fetching schedules from Firebase...')
     
+    // Firebase 초기화 확인
+    if (!db) {
+      console.error('Firebase database not initialized')
+      throw new Error('Database connection not ready')
+    }
+    
     const schedulesRef = collection(db, SCHEDULES_COLLECTION)
     const q = query(schedulesRef, orderBy('startDate', 'asc'))
     
     const snapshot = await getDocs(q)
-    const schedules = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Schedule))
+    const schedules = snapshot.docs.map(doc => {
+      const data = doc.data()
+      // Timestamp 객체 검증
+      if (data.startDate && !(data.startDate instanceof Timestamp)) {
+        console.warn(`Invalid startDate for document ${doc.id}:`, data.startDate)
+      }
+      return {
+        id: doc.id,
+        ...data
+      } as Schedule
+    })
     
     console.log(`📅 Found ${schedules.length} schedules`)
     return schedules
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching schedules:', error)
-    return []
+    console.error('Error details:', error.message, error.code)
+    
+    // Firebase 권한 오류 처리
+    if (error.code === 'permission-denied') {
+      throw new Error('일정을 불러올 권한이 없습니다.')
+    }
+    
+    // 네트워크 오류 처리
+    if (error.code === 'unavailable') {
+      throw new Error('네트워크 연결을 확인해주세요.')
+    }
+    
+    throw error
   }
 }
 

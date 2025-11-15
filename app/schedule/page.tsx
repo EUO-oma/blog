@@ -15,6 +15,7 @@ export default function SchedulePage() {
   const { user } = useAuth();
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
@@ -23,16 +24,27 @@ export default function SchedulePage() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    loadSchedules();
+    // Firebase 초기화 후 약간의 지연을 두고 데이터 로드
+    const timer = setTimeout(() => {
+      loadSchedules();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const loadSchedules = async () => {
     setLoading(true);
+    setError(null);
     try {
       const fetchedSchedules = await getSchedules();
-      setSchedules(fetchedSchedules);
+      // 데이터 유효성 검증
+      const validSchedules = fetchedSchedules.filter(schedule => 
+        schedule && schedule.startDate && typeof schedule.startDate.toDate === 'function'
+      );
+      setSchedules(validSchedules);
     } catch (error) {
       console.error('Error loading schedules:', error);
+      setError('일정을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -56,32 +68,48 @@ export default function SchedulePage() {
   };
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp || !timestamp.toDate) return '';
-    const date = new Date(timestamp.toDate());
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+    try {
+      if (!timestamp || typeof timestamp.toDate !== 'function') return '-';
+      const date = timestamp.toDate();
+      if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return '-';
+    }
   };
 
   const formatTime = (timestamp: any) => {
-    if (!timestamp || !timestamp.toDate) return '';
-    const date = new Date(timestamp.toDate());
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    try {
+      if (!timestamp || typeof timestamp.toDate !== 'function') return '-';
+      const date = timestamp.toDate();
+      if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
+      return date.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    } catch (error) {
+      console.error('Time formatting error:', error);
+      return '-';
+    }
   };
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768);
+      }
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
   }, []);
 
   if (loading) {
@@ -92,20 +120,48 @@ export default function SchedulePage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-800 dark:text-red-200">{error}</p>
+          <button
+            onClick={loadSchedules}
+            className="mt-3 text-sm text-red-600 dark:text-red-400 hover:underline"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // 오늘의 일정 필터링
   const todaySchedules = schedules.filter(schedule => {
-    const today = new Date();
-    const scheduleDate = schedule.startDate?.toDate ? new Date(schedule.startDate.toDate()) : new Date();
-    return scheduleDate.toDateString() === today.toDateString();
+    try {
+      if (!schedule.startDate || typeof schedule.startDate.toDate !== 'function') return false;
+      const today = new Date();
+      const scheduleDate = schedule.startDate.toDate();
+      return scheduleDate.toDateString() === today.toDateString();
+    } catch (error) {
+      console.error('Error filtering today schedules:', error);
+      return false;
+    }
   });
 
   // 다가올 일정 필터링 (오늘 이후 7일)
   const upcomingSchedules = schedules.filter(schedule => {
-    const today = new Date();
-    const weekLater = new Date();
-    weekLater.setDate(today.getDate() + 7);
-    const scheduleDate = schedule.startDate?.toDate ? new Date(schedule.startDate.toDate()) : new Date();
-    return scheduleDate > today && scheduleDate <= weekLater;
+    try {
+      if (!schedule.startDate || typeof schedule.startDate.toDate !== 'function') return false;
+      const today = new Date();
+      const weekLater = new Date();
+      weekLater.setDate(today.getDate() + 7);
+      const scheduleDate = schedule.startDate.toDate();
+      return scheduleDate > today && scheduleDate <= weekLater;
+    } catch (error) {
+      console.error('Error filtering upcoming schedules:', error);
+      return false;
+    }
   });
 
   return (

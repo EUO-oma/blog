@@ -86,14 +86,26 @@ export function exportSchedulesToCSV(schedules: Schedule[]): void {
 
 // 날짜 포맷팅 헬퍼 함수
 function formatDate(timestamp: any): string {
-  if (!timestamp || !timestamp.toDate) return ''
-  const date = timestamp.toDate()
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  try {
+    if (!timestamp || typeof timestamp.toDate !== 'function') return ''
+    const date = timestamp.toDate()
+    if (!(date instanceof Date) || isNaN(date.getTime())) return ''
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  } catch (error) {
+    console.error('Date formatting error in export:', error)
+    return ''
+  }
 }
 
 // 시간 포맷팅 헬퍼 함수
 function formatTime(timestamp: any): string {
-  if (!timestamp || !timestamp.toDate) return ''
-  const date = timestamp.toDate()
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  try {
+    if (!timestamp || typeof timestamp.toDate !== 'function') return ''
+    const date = timestamp.toDate()
+    if (!(date instanceof Date) || isNaN(date.getTime())) return ''
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  } catch (error) {
+    console.error('Time formatting error in export:', error)
+    return ''
+  }
 }
