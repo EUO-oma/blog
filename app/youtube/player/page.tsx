@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { YouTubeVideo } from '@/lib/firebase';
 import { getYouTubeVideos } from '@/lib/firebase-youtube';
 
-export default function YouTubePlayerPage() {
+function YouTubePlayer() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mode = searchParams.get('mode'); // 'all' or 'shuffle'
@@ -135,11 +135,11 @@ export default function YouTubePlayerPage() {
           onLoad={() => {
             // YouTube Player API를 사용하여 비디오 종료 감지
             const iframe = playerRef.current?.querySelector('iframe');
-            if (iframe && window.YT && window.YT.Player) {
-              const player = new window.YT.Player(iframe, {
+            if (iframe && (window as any).YT && (window as any).YT.Player) {
+              const player = new (window as any).YT.Player(iframe, {
                 events: {
                   onStateChange: (event: any) => {
-                    if (event.data === window.YT.PlayerState.ENDED) {
+                    if (event.data === (window as any).YT.PlayerState.ENDED) {
                       playNext();
                     }
                   },
@@ -207,5 +207,13 @@ export default function YouTubePlayerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function YouTubePlayerPage() {
+  return (
+    <Suspense fallback={<div className="bg-black min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>}>
+      <YouTubePlayer />
+    </Suspense>
   );
 }

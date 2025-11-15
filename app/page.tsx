@@ -89,6 +89,7 @@ export default function HomePage() {
       window.removeEventListener('openWriteModal', handleOpenWriteModal)
     }
   }, [])
+  
 
   return (
     <>
@@ -128,10 +129,9 @@ export default function HomePage() {
           </p>
         ) : (
           <div className="grid gap-8 md:grid-cols-2">
-            {posts.map((post, index) => (
+            {posts.map((post) => (
               <article 
-                key={post.id}
-                ref={index === posts.length - 1 ? lastPostRef : null}
+                key={post.id} 
                 className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => {
                   setSelectedPost(post)
@@ -162,23 +162,6 @@ export default function HomePage() {
               </article>
             ))}
           </div>
-
-          {/* 로딩 인디케이터 */}
-          {hasMore && (
-            <div className="flex justify-center mt-8 py-4">
-              {loadingMore ? (
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-              ) : (
-                <div className="text-gray-500 text-sm">스크롤하여 더 보기...</div>
-              )}
-            </div>
-          )}
-
-          {!hasMore && posts.length > 0 && (
-            <p className="text-center text-gray-500 dark:text-gray-400 mt-8">
-              모든 포스트를 불러왔습니다.
-            </p>
-          )}
         )}
       </section>
 
