@@ -20,6 +20,7 @@ export default function SchedulePage() {
   );
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     loadSchedules();
@@ -74,17 +75,6 @@ export default function SchedulePage() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
-      </div>
-    );
-  }
-
-  // 모바일 뷰인지 확인
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -93,6 +83,14 @@ export default function SchedulePage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    );
+  }
 
   // 오늘의 일정 필터링
   const todaySchedules = schedules.filter(schedule => {
