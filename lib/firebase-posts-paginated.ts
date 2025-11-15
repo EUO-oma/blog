@@ -46,6 +46,8 @@ export async function getPostsPaginated(
         limit(pageSize + 1)
       )
     }
+    
+    console.log('Query conditions:', { isAdmin, pageSize, hasLastDoc: !!lastDoc })
 
     // 이전 페이지가 있으면 그 다음부터 시작
     if (lastDoc) {
@@ -60,12 +62,17 @@ export async function getPostsPaginated(
 
     const snapshot = await getDocs(q)
     const docs = snapshot.docs
+    console.log(`📄 Firebase returned ${docs.length} documents`)
     
     // 실제 표시할 포스트
-    const posts = docs.slice(0, pageSize).map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost))
+    const posts = docs.slice(0, pageSize).map(doc => {
+      const data = doc.data()
+      console.log(`Post: ${data.title}, published: ${data.published}, createdAt: ${data.createdAt}`)
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost
+    })
     
     // 다음 페이지 존재 여부
     const hasMore = docs.length > pageSize
