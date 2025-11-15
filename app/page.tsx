@@ -119,6 +119,8 @@ export default function HomePage() {
       </section>
 
       <section>
+        <h2 className="text-2xl font-bold mb-6">최신 포스트</h2>
+        
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
