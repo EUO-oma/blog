@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { BlogPost } from '@/lib/firebase'
-import { getPostsPaginated, PaginatedResult } from '@/lib/firebase-posts-paginated'
+import { getPosts } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,29 +11,21 @@ export default function HomePage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [lastDoc, setLastDoc] = useState<any>(null)
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
-  
-  const observer = useRef<IntersectionObserver | null>(null)
   
   // 디버그용 로그
   useEffect(() => {
     console.log('🏠 HomePage: Current user state', user ? `Logged in as ${user.email}` : 'Not logged in')
   }, [user])
 
-  // 초기 포스트 로드
-  const loadInitialPosts = async () => {
+  const loadPosts = async () => {
     try {
-      console.log('Loading initial posts from Firebase...')
-      const result: PaginatedResult = await getPostsPaginated(6)
-      setPosts(result.posts)
-      setLastDoc(result.lastDoc)
-      setHasMore(result.hasMore)
-      console.log(`Loaded ${result.posts.length} posts, hasMore: ${result.hasMore}`)
+      console.log('Loading posts from Firebase...')
+      const fetchedPosts = await getPosts()
+      console.log('Fetched posts:', fetchedPosts)
+      setPosts(fetchedPosts)
     } catch (error) {
       console.error('Error loading posts:', error)
     } finally {
@@ -41,41 +33,8 @@ export default function HomePage() {
     }
   }
 
-  // 추가 포스트 로드
-  const loadMorePosts = async () => {
-    if (loadingMore || !hasMore || !lastDoc) return
-    
-    setLoadingMore(true)
-    try {
-      const result: PaginatedResult = await getPostsPaginated(6, lastDoc)
-      setPosts(prev => [...prev, ...result.posts])
-      setLastDoc(result.lastDoc)
-      setHasMore(result.hasMore)
-      console.log(`Loaded ${result.posts.length} more posts, hasMore: ${result.hasMore}`)
-    } catch (error) {
-      console.error('Error loading more posts:', error)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
-
-  // 무한 스크롤을 위한 옵저버
-  const lastPostRef = useCallback((node: HTMLElement | null) => {
-    if (loading || loadingMore) return
-    
-    if (observer.current) observer.current.disconnect()
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMorePosts()
-      }
-    })
-    
-    if (node) observer.current.observe(node)
-  }, [loading, loadingMore, hasMore])
-
   useEffect(() => {
-    loadInitialPosts()
+    loadPosts()
   }, [])
 
   useEffect(() => {
@@ -172,14 +131,14 @@ export default function HomePage() {
           setIsModalOpen(false)
           setSelectedPost(null)
         }}
-        onUpdate={loadInitialPosts}
+        onUpdate={loadPosts}
       />
 
       <WriteModal
         isOpen={isWriteModalOpen}
         onClose={() => setIsWriteModalOpen(false)}
         onSuccess={() => {
-          loadInitialPosts() // 글 작성 후 목록 새로고침
+          loadPosts() // 글 작성 후 목록 새로고침
         }}
       />
     </>
