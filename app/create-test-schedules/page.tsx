@@ -1,39 +1,39 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import { createSchedule } from '@/lib/firebase-schedules'
-import { Timestamp } from '@/lib/firebase'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { createSchedule } from '@/lib/firebase-schedules';
+import { Timestamp } from '@/lib/firebase';
 
 export default function CreateTestSchedulesPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState<string[]>([])
-  const [error, setError] = useState('')
+  const { user } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string[]>([]);
+  const [error, setError] = useState('');
 
   const addStatus = (message: string) => {
-    setStatus(prev => [...prev, message])
-  }
+    setStatus((prev) => [...prev, message]);
+  };
 
   const createAllSchedules = async () => {
     if (!user) {
-      setError('로그인이 필요합니다!')
-      return
+      setError('로그인이 필요합니다!');
+      return;
     }
 
-    setLoading(true)
-    setStatus([])
-    setError('')
+    setLoading(true);
+    setStatus([]);
+    setError('');
 
     try {
-      addStatus('🚀 테스트 일정 생성을 시작합니다...')
+      addStatus('🚀 테스트 일정 생성을 시작합니다...');
 
       // 1. 오늘 오후 미팅
-      const today = new Date()
-      today.setHours(15, 0, 0, 0)
-      
+      const today = new Date();
+      today.setHours(15, 0, 0, 0);
+
       const meeting = {
         title: '팀 정기 회의',
         description: '주간 업무 진행 상황 공유 및 다음 주 계획 수립',
@@ -44,82 +44,88 @@ export default function CreateTestSchedulesPage() {
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }
-      
-      await createSchedule(meeting)
-      addStatus('✅ 팀 정기 회의 일정이 생성되었습니다')
+        updatedAt: Timestamp.now(),
+      };
+
+      await createSchedule(meeting);
+      addStatus('✅ 팀 정기 회의 일정이 생성되었습니다');
 
       // 2. 내일 코드 리뷰
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(10, 30, 0, 0)
-      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(10, 30, 0, 0);
+
       const codeReview = {
         title: '코드 리뷰 세션',
         description: '신규 기능 PR 리뷰 및 코드 품질 개선 논의',
         startDate: Timestamp.fromDate(tomorrow),
-        endDate: Timestamp.fromDate(new Date(tomorrow.getTime() + 60 * 60 * 1000)), // 1시간
+        endDate: Timestamp.fromDate(
+          new Date(tomorrow.getTime() + 60 * 60 * 1000)
+        ), // 1시간
         location: '온라인 (Google Meet)',
         color: '#22c55e', // 초록색
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }
-      
-      await createSchedule(codeReview)
-      addStatus('✅ 코드 리뷰 세션이 생성되었습니다')
+        updatedAt: Timestamp.now(),
+      };
+
+      await createSchedule(codeReview);
+      addStatus('✅ 코드 리뷰 세션이 생성되었습니다');
 
       // 3. 이번 주 금요일 스프린트 회고
-      const friday = new Date()
-      const daysUntilFriday = (5 - friday.getDay() + 7) % 7 || 7
-      friday.setDate(friday.getDate() + daysUntilFriday)
-      friday.setHours(16, 0, 0, 0)
-      
+      const friday = new Date();
+      const daysUntilFriday = (5 - friday.getDay() + 7) % 7 || 7;
+      friday.setDate(friday.getDate() + daysUntilFriday);
+      friday.setHours(16, 0, 0, 0);
+
       const retrospective = {
         title: '스프린트 회고',
         description: '이번 스프린트 성과 검토 및 개선점 도출',
         startDate: Timestamp.fromDate(friday),
-        endDate: Timestamp.fromDate(new Date(friday.getTime() + 120 * 60 * 1000)), // 2시간
+        endDate: Timestamp.fromDate(
+          new Date(friday.getTime() + 120 * 60 * 1000)
+        ), // 2시간
         location: '대회의실',
         color: '#f97316', // 주황색
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }
-      
-      await createSchedule(retrospective)
-      addStatus('✅ 스프린트 회고가 생성되었습니다')
+        updatedAt: Timestamp.now(),
+      };
+
+      await createSchedule(retrospective);
+      addStatus('✅ 스프린트 회고가 생성되었습니다');
 
       // 4. 다음 주 월요일 프로젝트 킥오프
-      const nextMonday = new Date()
-      const daysUntilMonday = (1 - nextMonday.getDay() + 7) % 7 || 7
-      nextMonday.setDate(nextMonday.getDate() + daysUntilMonday)
-      nextMonday.setHours(9, 0, 0, 0)
-      
+      const nextMonday = new Date();
+      const daysUntilMonday = (1 - nextMonday.getDay() + 7) % 7 || 7;
+      nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
+      nextMonday.setHours(9, 0, 0, 0);
+
       const kickoff = {
         title: '신규 프로젝트 킥오프',
         description: '새로운 기능 개발 프로젝트 시작 미팅',
         startDate: Timestamp.fromDate(nextMonday),
-        endDate: Timestamp.fromDate(new Date(nextMonday.getTime() + 180 * 60 * 1000)), // 3시간
+        endDate: Timestamp.fromDate(
+          new Date(nextMonday.getTime() + 180 * 60 * 1000)
+        ), // 3시간
         location: '본사 1층 대강당',
         color: '#ec4899', // 분홍색
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }
-      
-      await createSchedule(kickoff)
-      addStatus('✅ 신규 프로젝트 킥오프가 생성되었습니다')
+        updatedAt: Timestamp.now(),
+      };
+
+      await createSchedule(kickoff);
+      addStatus('✅ 신규 프로젝트 킥오프가 생성되었습니다');
 
       // 5. 2주 후 기술 워크샵
-      const workshop = new Date()
-      workshop.setDate(workshop.getDate() + 14)
-      workshop.setHours(14, 0, 0, 0)
-      
+      const workshop = new Date();
+      workshop.setDate(workshop.getDate() + 14);
+      workshop.setHours(14, 0, 0, 0);
+
       const techWorkshop = {
         title: '기술 워크샵: Next.js 14 신기능',
         description: 'Next.js 14의 새로운 기능과 Best Practice 공유',
@@ -129,27 +135,26 @@ export default function CreateTestSchedulesPage() {
         authorEmail: user.email!,
         authorName: user.displayName || user.email!,
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }
-      
-      await createSchedule(techWorkshop)
-      addStatus('✅ 기술 워크샵이 생성되었습니다')
+        updatedAt: Timestamp.now(),
+      };
 
-      addStatus('')
-      addStatus('🎉 모든 테스트 일정이 성공적으로 생성되었습니다!')
-      addStatus('3초 후 일정 페이지로 이동합니다...')
+      await createSchedule(techWorkshop);
+      addStatus('✅ 기술 워크샵이 생성되었습니다');
+
+      addStatus('');
+      addStatus('🎉 모든 테스트 일정이 성공적으로 생성되었습니다!');
+      addStatus('3초 후 일정 페이지로 이동합니다...');
 
       setTimeout(() => {
-        router.push('/schedule')
-      }, 3000)
-
+        router.push('/schedule');
+      }, 3000);
     } catch (err: any) {
-      console.error('Error creating schedules:', err)
-      setError(`오류 발생: ${err.message}`)
+      console.error('Error creating schedules:', err);
+      setError(`오류 발생: ${err.message}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -182,13 +187,15 @@ export default function CreateTestSchedulesPage() {
               <li className="flex items-start">
                 <span className="inline-block w-4 h-4 rounded-full bg-orange-500 mt-0.5 mr-2"></span>
                 <div>
-                  <strong>스프린트 회고</strong> - 이번 주 금요일 오후 4시 (대회의실)
+                  <strong>스프린트 회고</strong> - 이번 주 금요일 오후 4시
+                  (대회의실)
                 </div>
               </li>
               <li className="flex items-start">
                 <span className="inline-block w-4 h-4 rounded-full bg-pink-500 mt-0.5 mr-2"></span>
                 <div>
-                  <strong>신규 프로젝트 킥오프</strong> - 다음 주 월요일 오전 9시 (본사 1층 대강당)
+                  <strong>신규 프로젝트 킥오프</strong> - 다음 주 월요일 오전
+                  9시 (본사 1층 대강당)
                 </div>
               </li>
               <li className="flex items-start">
@@ -229,8 +236,10 @@ export default function CreateTestSchedulesPage() {
       )}
 
       <div className="mt-8 text-sm text-gray-600 dark:text-gray-400">
-        <p>💡 팁: 생성된 일정은 일정 페이지에서 수정하거나 삭제할 수 있습니다.</p>
+        <p>
+          💡 팁: 생성된 일정은 일정 페이지에서 수정하거나 삭제할 수 있습니다.
+        </p>
       </div>
     </div>
-  )
+  );
 }

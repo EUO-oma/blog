@@ -1,80 +1,85 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Schedule } from '@/lib/firebase'
-import { getSchedules, deleteSchedule } from '@/lib/firebase-schedules'
-import ScheduleModal from '@/components/ScheduleModal'
-import ScheduleForm from '@/components/ScheduleForm'
-import { exportSchedulesToExcel, exportSchedulesToCSV } from '@/lib/export-schedules'
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Schedule } from '@/lib/firebase';
+import { getSchedules, deleteSchedule } from '@/lib/firebase-schedules';
+import ScheduleModal from '@/components/ScheduleModal';
+import ScheduleForm from '@/components/ScheduleForm';
+import {
+  exportSchedulesToExcel,
+  exportSchedulesToCSV,
+} from '@/lib/export-schedules';
 
 export default function SchedulePage() {
-  const { user } = useAuth()
-  const [schedules, setSchedules] = useState<Schedule[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
-  const [showFormModal, setShowFormModal] = useState(false)
-  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null)
+  const { user } = useAuth();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
 
   useEffect(() => {
-    loadSchedules()
-  }, [])
+    loadSchedules();
+  }, []);
 
   const loadSchedules = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const fetchedSchedules = await getSchedules()
-      setSchedules(fetchedSchedules)
+      const fetchedSchedules = await getSchedules();
+      setSchedules(fetchedSchedules);
     } catch (error) {
-      console.error('Error loading schedules:', error)
+      console.error('Error loading schedules:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('정말로 이 일정을 삭제하시겠습니까?')) return
+    if (!window.confirm('정말로 이 일정을 삭제하시겠습니까?')) return;
 
     try {
-      await deleteSchedule(id)
-      await loadSchedules()
+      await deleteSchedule(id);
+      await loadSchedules();
     } catch (error) {
-      console.error('Error deleting schedule:', error)
-      alert('일정 삭제 중 오류가 발생했습니다.')
+      console.error('Error deleting schedule:', error);
+      alert('일정 삭제 중 오류가 발생했습니다.');
     }
-  }
+  };
 
   const handleEdit = (schedule: Schedule) => {
-    setEditingSchedule(schedule)
-    setShowFormModal(true)
-  }
+    setEditingSchedule(schedule);
+    setShowFormModal(true);
+  };
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp || !timestamp.toDate) return ''
-    const date = new Date(timestamp.toDate())
+    if (!timestamp || !timestamp.toDate) return '';
+    const date = new Date(timestamp.toDate());
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
-    })
-  }
+      day: '2-digit',
+    });
+  };
 
   const formatTime = (timestamp: any) => {
-    if (!timestamp || !timestamp.toDate) return ''
-    const date = new Date(timestamp.toDate())
+    if (!timestamp || !timestamp.toDate) return '';
+    const date = new Date(timestamp.toDate());
     return date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
-    })
-  }
+      hour12: false,
+    });
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,8 +93,18 @@ export default function SchedulePage() {
                 onClick={() => exportSchedulesToExcel(schedules)}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                  />
                 </svg>
                 Excel 다운로드
               </button>
@@ -104,8 +119,8 @@ export default function SchedulePage() {
           {user && (
             <button
               onClick={() => {
-                setEditingSchedule(null)
-                setShowFormModal(true)
+                setEditingSchedule(null);
+                setShowFormModal(true);
               }}
               className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
@@ -195,17 +210,39 @@ export default function SchedulePage() {
                             className="text-indigo-600 hover:text-indigo-900 p-1"
                             title="수정"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </button>
                           <button
-                            onClick={() => schedule.id && handleDelete(schedule.id)}
+                            onClick={() =>
+                              schedule.id && handleDelete(schedule.id)
+                            }
                             className="text-red-600 hover:text-red-900 p-1"
                             title="삭제"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -234,16 +271,16 @@ export default function SchedulePage() {
           schedule={editingSchedule}
           isOpen={showFormModal}
           onClose={() => {
-            setShowFormModal(false)
-            setEditingSchedule(null)
+            setShowFormModal(false);
+            setEditingSchedule(null);
           }}
           onSuccess={() => {
-            setShowFormModal(false)
-            setEditingSchedule(null)
-            loadSchedules()
+            setShowFormModal(false);
+            setEditingSchedule(null);
+            loadSchedules();
           }}
         />
       )}
     </div>
-  )
+  );
 }

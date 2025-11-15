@@ -69,7 +69,7 @@ export default function YouTubePage() {
     setIsPlaying(false)
   }
   
-  // 전체 재생 시작
+  // 전체 재생 시작 (모달)
   const playAll = () => {
     if (videos.length > 0) {
       setPlaylist(videos)
@@ -78,7 +78,7 @@ export default function YouTubePage() {
     }
   }
   
-  // 셔플 재생 시작
+  // 셔플 재생 시작 (모달)
   const shufflePlay = () => {
     if (videos.length > 0) {
       // Fisher-Yates 셔플 알고리즘
