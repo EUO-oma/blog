@@ -89,7 +89,6 @@ export default function HomePage() {
       window.removeEventListener('openWriteModal', handleOpenWriteModal)
     }
   }, [])
-  
 
   return (
     <>
@@ -119,7 +118,6 @@ export default function HomePage() {
       </section>
 
       <section>
-        
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
