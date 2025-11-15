@@ -26,5 +26,15 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
         request.auth.token.email == resource.data.authorEmail;
     }
+    
+    // youtube 컬렉션에 대한 규칙
+    match /youtube/{videoId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+        request.auth.token.email == resource.data.authorEmail;
+      allow delete: if request.auth != null && 
+        request.auth.token.email == resource.data.authorEmail;
+    }
   }
 }

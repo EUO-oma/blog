@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { BlogPost } from '@/lib/firebase'
-import { getPosts } from '@/lib/firebase-posts'
+import { getPostsPaginated, PaginatedResult } from '@/lib/firebase-posts-paginated'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,21 +11,29 @@ export default function HomePage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [lastDoc, setLastDoc] = useState<any>(null)
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
+  
+  const observer = useRef<IntersectionObserver | null>(null)
   
   // 디버그용 로그
   useEffect(() => {
     console.log('🏠 HomePage: Current user state', user ? `Logged in as ${user.email}` : 'Not logged in')
   }, [user])
 
-  const loadPosts = async () => {
+  // 초기 포스트 로드
+  const loadInitialPosts = async () => {
     try {
-      console.log('Loading posts from Firebase...')
-      const fetchedPosts = await getPosts()
-      console.log('Fetched posts:', fetchedPosts)
-      setPosts(fetchedPosts)
+      console.log('Loading initial posts from Firebase...')
+      const result: PaginatedResult = await getPostsPaginated(6)
+      setPosts(result.posts)
+      setLastDoc(result.lastDoc)
+      setHasMore(result.hasMore)
+      console.log(`Loaded ${result.posts.length} posts, hasMore: ${result.hasMore}`)
     } catch (error) {
       console.error('Error loading posts:', error)
     } finally {
@@ -33,8 +41,41 @@ export default function HomePage() {
     }
   }
 
+  // 추가 포스트 로드
+  const loadMorePosts = async () => {
+    if (loadingMore || !hasMore || !lastDoc) return
+    
+    setLoadingMore(true)
+    try {
+      const result: PaginatedResult = await getPostsPaginated(6, lastDoc)
+      setPosts(prev => [...prev, ...result.posts])
+      setLastDoc(result.lastDoc)
+      setHasMore(result.hasMore)
+      console.log(`Loaded ${result.posts.length} more posts, hasMore: ${result.hasMore}`)
+    } catch (error) {
+      console.error('Error loading more posts:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
+
+  // 무한 스크롤을 위한 옵저버
+  const lastPostRef = useCallback((node: HTMLElement | null) => {
+    if (loading || loadingMore) return
+    
+    if (observer.current) observer.current.disconnect()
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePosts()
+      }
+    })
+    
+    if (node) observer.current.observe(node)
+  }, [loading, loadingMore, hasMore])
+
   useEffect(() => {
-    loadPosts()
+    loadInitialPosts()
   }, [])
 
   useEffect(() => {
@@ -78,7 +119,6 @@ export default function HomePage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-6">최신 포스트</h2>
         
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
@@ -90,9 +130,10 @@ export default function HomePage() {
           </p>
         ) : (
           <div className="grid gap-8 md:grid-cols-2">
-            {posts.map((post) => (
+            {posts.map((post, index) => (
               <article 
-                key={post.id} 
+                key={post.id}
+                ref={index === posts.length - 1 ? lastPostRef : null}
                 className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => {
                   setSelectedPost(post)
@@ -123,6 +164,23 @@ export default function HomePage() {
               </article>
             ))}
           </div>
+          
+          {/* 로딩 인디케이터 */}
+          {hasMore && (
+            <div className="flex justify-center mt-8 py-4">
+              {loadingMore ? (
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+              ) : (
+                <div className="text-gray-500 text-sm">스크롤하여 더 보기...</div>
+              )}
+            </div>
+          )}
+          
+          {!hasMore && posts.length > 0 && (
+            <p className="text-center text-gray-500 dark:text-gray-400 mt-8">
+              모든 포스트를 불러왔습니다.
+            </p>
+          )}
         )}
       </section>
 
@@ -133,14 +191,14 @@ export default function HomePage() {
           setIsModalOpen(false)
           setSelectedPost(null)
         }}
-        onUpdate={loadPosts}
+        onUpdate={loadInitialPosts}
       />
 
       <WriteModal
         isOpen={isWriteModalOpen}
         onClose={() => setIsWriteModalOpen(false)}
         onSuccess={() => {
-          loadPosts() // 글 작성 후 목록 새로고침
+          loadInitialPosts() // 글 작성 후 목록 새로고침
         }}
       />
     </>

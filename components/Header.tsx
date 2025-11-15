@@ -34,7 +34,7 @@ export default function Header() {
       <nav className="container mx-auto px-4 py-4 max-w-5xl">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            euo-oma
+            Blog
           </Link>
 
           <div className="flex items-center gap-6">
