@@ -2,6 +2,7 @@ import {
   collection, 
   doc, 
   getDocs, 
+  getDoc,
   addDoc, 
   updateDoc, 
   deleteDoc,
@@ -53,7 +54,27 @@ export async function getPosts(isAdmin = false): Promise<BlogPost[]> {
   }
 }
 
-export async function getPost(slug: string): Promise<BlogPost | null> {
+export async function getPost(id: string): Promise<BlogPost | null> {
+  try {
+    const postRef = doc(db, POSTS_COLLECTION, id)
+    const postSnap = await getDoc(postRef)
+    
+    if (!postSnap.exists()) {
+      console.log('No such document!')
+      return null
+    }
+    
+    return {
+      id: postSnap.id,
+      ...postSnap.data()
+    } as BlogPost
+  } catch (error) {
+    console.error('Error fetching post:', error)
+    return null
+  }
+}
+
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const q = query(
       collection(db, POSTS_COLLECTION),
@@ -70,7 +91,7 @@ export async function getPost(slug: string): Promise<BlogPost | null> {
       ...doc.data()
     } as BlogPost
   } catch (error) {
-    console.error('Error fetching post:', error)
+    console.error('Error fetching post by slug:', error)
     return null
   }
 }

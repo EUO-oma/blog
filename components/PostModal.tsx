@@ -4,8 +4,8 @@ import { BlogPost } from '@/lib/firebase'
 import ReactMarkdown from 'react-markdown'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { useState } from 'react'
-import { deletePost } from '@/lib/firebase-posts'
+import { useState, useEffect } from 'react'
+import { deletePost, getPost } from '@/lib/firebase-posts'
 import EditModal from './EditModal'
 
 interface PostModalProps {
@@ -19,24 +19,42 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
   const { user } = useAuth()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [currentPost, setCurrentPost] = useState<BlogPost | null>(post)
   
-  if (!isOpen || !post) return null
+  useEffect(() => {
+    setCurrentPost(post)
+  }, [post])
   
-  const isAuthor = user && post.authorEmail === user.email
+  const refreshPost = async () => {
+    if (currentPost?.id) {
+      try {
+        const updatedPost = await getPost(currentPost.id)
+        if (updatedPost) {
+          setCurrentPost(updatedPost)
+        }
+      } catch (error) {
+        console.error('Error refreshing post:', error)
+      }
+    }
+  }
+  
+  if (!isOpen || !currentPost) return null
+  
+  const isAuthor = user && currentPost.authorEmail === user.email
   
   // 디버깅용 로그
   console.log('📝 PostModal Debug:', {
     currentUserEmail: user?.email,
-    postAuthorEmail: post.authorEmail,
+    postAuthorEmail: currentPost.authorEmail,
     isAuthor: isAuthor
   })
   
   const handleDelete = async () => {
-    if (!post.id || !window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) return
+    if (!currentPost.id || !window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) return
     
     setIsDeleting(true)
     try {
-      await deletePost(post.id)
+      await deletePost(currentPost.id)
       onClose()
       if (onUpdate) onUpdate()
     } catch (error) {
@@ -98,15 +116,15 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
 
           <article>
             <header className="mb-8">
-              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+              <h1 className="text-4xl font-bold mb-4">{currentPost.title}</h1>
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
+                <time>{new Date(currentPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                 <span>•</span>
-                <span>{post.authorName}</span>
+                <span>{currentPost.authorName}</span>
               </div>
-              {post.tags.length > 0 && (
+              {currentPost.tags.length > 0 && (
                 <div className="flex gap-2 mt-4">
-                  {post.tags.map((tag) => (
+                  {currentPost.tags.map((tag) => (
                     <span
                       key={tag}
                       className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full"
@@ -119,7 +137,7 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
             </header>
 
             <div className="prose dark:prose-invert prose-lg max-w-none">
-              <ReactMarkdown>{post.content}</ReactMarkdown>
+              <ReactMarkdown>{currentPost.content}</ReactMarkdown>
             </div>
           </article>
         </div>
@@ -127,11 +145,12 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
       
       {isEditModalOpen && (
         <EditModal
-          post={post}
+          post={currentPost}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
+          onSuccess={async () => {
             setIsEditModalOpen(false)
+            await refreshPost() // 수정 후 즉시 포스트 새로고침
             if (onUpdate) onUpdate()
           }}
         />
