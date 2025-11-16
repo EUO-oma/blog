@@ -65,17 +65,12 @@ export default function Header() {
             </button>
             
             {user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {user.displayName || user.email}
-                </span>
-                <button
-                  onClick={logout}
-                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  로그아웃
-                </button>
-              </div>
+              <button
+                onClick={logout}
+                className="text-sm bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                로그아웃
+              </button>
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
