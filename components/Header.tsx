@@ -41,6 +41,9 @@ export default function Header() {
             <Link href="/schedule" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               일정
             </Link>
+            <Link href="/notice" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              공지사항
+            </Link>
             <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               YouTube
             </Link>
