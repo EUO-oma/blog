@@ -61,14 +61,15 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
     } else {
       // 신규 일정일 때 현재 시간으로 초기화
       const now = new Date()
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
+      const currentDate = now.toISOString().split('T')[0]
+      const currentTime = now.toTimeString().slice(0, 5)
       setFormData({
         title: '',
         description: '',
-        startDate: now.toISOString().split('T')[0],
-        startTime: now.toTimeString().slice(0, 5),
-        endDate: oneHourLater.toISOString().split('T')[0],
-        endTime: oneHourLater.toTimeString().slice(0, 5),
+        startDate: currentDate,
+        startTime: currentTime,
+        endDate: currentDate,  // 시작날짜와 동일
+        endTime: currentTime,  // 시작시간과 동일
         location: '',
         color: '#6366f1'
       })
@@ -206,7 +207,12 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                   type="date"
                   id="startDate"
                   value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    startDate: e.target.value,
+                    // 종료날짜가 비어있거나 시작날짜보다 이전이면 시작날짜로 자동 설정
+                    endDate: !formData.endDate || formData.endDate < e.target.value ? e.target.value : formData.endDate
+                  })}
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
                   placeholder="오늘 날짜"
                 />
@@ -219,7 +225,12 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                   type="time"
                   id="startTime"
                   value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    startTime: e.target.value,
+                    // 종료시간이 비어있으면 시작시간과 동일하게 자동 설정
+                    endTime: !formData.endTime ? e.target.value : formData.endTime
+                  })}
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
                   placeholder="현재 시간"
                 />
@@ -231,8 +242,9 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
               <button
                 type="button"
                 onClick={() => {
-                  const now = new Date()
-                  const after30min = new Date(now.getTime() + 30 * 60 * 1000)
+                  // 시작시간 기준으로 30분 후 계산
+                  const startDateTime = new Date(`${formData.startDate || new Date().toISOString().split('T')[0]}T${formData.startTime || new Date().toTimeString().slice(0, 5)}`)
+                  const after30min = new Date(startDateTime.getTime() + 30 * 60 * 1000)
                   setFormData(prev => ({
                     ...prev,
                     endDate: after30min.toISOString().split('T')[0],
@@ -241,13 +253,14 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                 }}
                 className="text-indigo-600 hover:underline"
               >
-                30분 후
+                +30분
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  const now = new Date()
-                  const after1hour = new Date(now.getTime() + 60 * 60 * 1000)
+                  // 시작시간 기준으로 1시간 후 계산
+                  const startDateTime = new Date(`${formData.startDate || new Date().toISOString().split('T')[0]}T${formData.startTime || new Date().toTimeString().slice(0, 5)}`)
+                  const after1hour = new Date(startDateTime.getTime() + 60 * 60 * 1000)
                   setFormData(prev => ({
                     ...prev,
                     endDate: after1hour.toISOString().split('T')[0],
@@ -256,13 +269,14 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                 }}
                 className="text-indigo-600 hover:underline"
               >
-                1시간 후
+                +1시간
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  const now = new Date()
-                  const after2hours = new Date(now.getTime() + 120 * 60 * 1000)
+                  // 시작시간 기준으로 2시간 후 계산
+                  const startDateTime = new Date(`${formData.startDate || new Date().toISOString().split('T')[0]}T${formData.startTime || new Date().toTimeString().slice(0, 5)}`)
+                  const after2hours = new Date(startDateTime.getTime() + 120 * 60 * 1000)
                   setFormData(prev => ({
                     ...prev,
                     endDate: after2hours.toISOString().split('T')[0],
@@ -271,7 +285,7 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                 }}
                 className="text-indigo-600 hover:underline"
               >
-                2시간 후
+                +2시간
               </button>
             </div>
 
