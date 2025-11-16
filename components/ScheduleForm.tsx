@@ -146,12 +146,10 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto"
-      onClick={onClose}
     >
       <div className="min-h-screen px-4 flex items-center justify-center">
         <div 
           className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full my-8 p-8"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">

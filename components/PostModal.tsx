@@ -68,14 +68,12 @@ export default function PostModal({ post, isOpen, onClose, onUpdate }: PostModal
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto"
-      onClick={onClose}
     >
       <div 
         className="min-h-screen px-4 flex items-center justify-center"
       >
         <div 
           className="bg-white dark:bg-gray-900 rounded-lg max-w-3xl w-full my-8 p-8 max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-start">
             <div className="flex-1" />
