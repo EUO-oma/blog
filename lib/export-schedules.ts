@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx'
 import { Schedule } from './firebase'
 
 export function exportSchedulesToExcel(schedules: Schedule[]): void {
-  // 엑셀에 들어갈 데이터 준비
+  // 엑셀에 들어갈 데이터 준비 (작성자 정보 제외)
   const excelData = schedules.map(schedule => ({
     '제목': schedule.title,
     '설명': schedule.description,
@@ -10,9 +10,7 @@ export function exportSchedulesToExcel(schedules: Schedule[]): void {
     '시작 시간': formatTime(schedule.startDate),
     '종료 날짜': schedule.endDate ? formatDate(schedule.endDate) : '',
     '종료 시간': schedule.endDate ? formatTime(schedule.endDate) : '',
-    '장소': schedule.location || '',
-    '작성자': schedule.authorName,
-    '작성일': formatDate(schedule.createdAt),
+    '장소': schedule.location || ''
   }))
 
   // 워크시트 생성
@@ -27,8 +25,6 @@ export function exportSchedulesToExcel(schedules: Schedule[]): void {
     { wch: 12 }, // 종료 날짜
     { wch: 10 }, // 종료 시간
     { wch: 20 }, // 장소
-    { wch: 20 }, // 작성자
-    { wch: 12 }, // 작성일
   ]
   worksheet['!cols'] = columnWidths
 

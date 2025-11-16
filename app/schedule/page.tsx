@@ -6,10 +6,7 @@ import { Schedule } from '@/lib/firebase';
 import { getSchedules, deleteSchedule } from '@/lib/firebase-schedules';
 import ScheduleModal from '@/components/ScheduleModal';
 import ScheduleForm from '@/components/ScheduleForm';
-import {
-  exportSchedulesToExcel,
-  exportSchedulesToCSV,
-} from '@/lib/export-schedules';
+import { exportSchedulesToExcel } from '@/lib/export-schedules';
 
 export default function SchedulePage() {
   const { user } = useAuth();
@@ -190,13 +187,6 @@ export default function SchedulePage() {
                 </svg>
                 <span className="hidden sm:inline">Excel 다운로드</span>
                 <span className="sm:hidden">Excel</span>
-              </button>
-              <button
-                onClick={() => exportSchedulesToCSV(schedules)}
-                className="bg-gray-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
-              >
-                <span className="hidden sm:inline">CSV 다운로드</span>
-                <span className="sm:hidden">CSV</span>
               </button>
             </>
           )}
