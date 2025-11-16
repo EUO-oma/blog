@@ -161,6 +161,52 @@ export default function SchedulePage() {
     }
   });
 
+  // 일정을 텍스트로 포맷팅
+  const formatScheduleText = (schedule: Schedule) => {
+    const date = formatDate(schedule.startDate);
+    const time = formatTime(schedule.startDate);
+    const endTime = schedule.endDate ? formatTime(schedule.endDate) : '';
+    
+    let text = `📅 ${schedule.title}\n`;
+    text += `📍 날짜: ${date}\n`;
+    text += `⏰ 시간: ${time}`;
+    if (endTime) text += ` ~ ${endTime}`;
+    text += '\n';
+    if (schedule.location) text += `📌 장소: ${schedule.location}\n`;
+    text += `📝 내용: ${schedule.description}`;
+    
+    return text;
+  };
+
+  // 클립보드에 복사
+  const copyScheduleToClipboard = async (schedule: Schedule) => {
+    const text = formatScheduleText(schedule);
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('일정이 클립보드에 복사되었습니다!');
+    } catch (err) {
+      console.error('복사 실패:', err);
+      alert('복사에 실패했습니다.');
+    }
+  };
+
+  // 모바일 공유
+  const shareSchedule = async (schedule: Schedule) => {
+    const text = formatScheduleText(schedule);
+    
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({
+          title: schedule.title,
+          text: text
+        });
+      } catch (err) {
+        console.error('공유 실패:', err);
+      }
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -265,28 +311,54 @@ export default function SchedulePage() {
                     {schedule.title}
                   </h3>
                 </div>
-                {user && schedule.authorEmail === user.email && (
-                  <div className="flex gap-2">
+                <div className="flex gap-2">
+                  {/* 복사 버튼 - 모든 사용자에게 표시 */}
+                  <button
+                    onClick={() => copyScheduleToClipboard(schedule)}
+                    className="text-blue-600 hover:text-blue-900 p-1"
+                    title="일정 복사"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  
+                  {/* 공유 버튼 - 모바일에서만 표시 */}
+                  {isMobile && typeof navigator !== 'undefined' && 'share' in navigator && (
                     <button
-                      onClick={() => handleEdit(schedule)}
-                      className="text-indigo-600 hover:text-indigo-900 p-1"
-                      title="수정"
+                      onClick={() => shareSchedule(schedule)}
+                      className="text-green-600 hover:text-green-900 p-1"
+                      title="일정 공유"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-5.464 0m5.464 0l-5.464 0" />
                       </svg>
                     </button>
-                    <button
-                      onClick={() => schedule.id && handleDelete(schedule.id)}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      title="삭제"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
+                  )}
+                  
+                  {user && schedule.authorEmail === user.email && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(schedule)}
+                        className="text-indigo-600 hover:text-indigo-900 p-1"
+                        title="수정"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => schedule.id && handleDelete(schedule.id)}
+                        className="text-red-600 hover:text-red-900 p-1"
+                        title="삭제"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
@@ -378,10 +450,21 @@ export default function SchedulePage() {
                       {schedule.location || '-'}
                     </div>
                   </td>
-                  {user && (
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {schedule.authorEmail === user.email && (
-                        <div className="flex gap-2 justify-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex gap-2 justify-center">
+                      {/* 복사 버튼 - 모든 사용자에게 표시 */}
+                      <button
+                        onClick={() => copyScheduleToClipboard(schedule)}
+                        className="text-blue-600 hover:text-blue-900 p-1"
+                        title="일정 복사"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                      
+                      {user && schedule.authorEmail === user.email && (
+                        <>
                           <button
                             onClick={() => handleEdit(schedule)}
                             className="text-indigo-600 hover:text-indigo-900 p-1"
@@ -422,10 +505,10 @@ export default function SchedulePage() {
                               />
                             </svg>
                           </button>
-                        </div>
+                        </>
                       )}
-                    </td>
-                  )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
