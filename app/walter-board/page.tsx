@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
 type WalterCommand = {
   id: string;
   created_at: string;
@@ -6,37 +10,47 @@ type WalterCommand = {
   result_text: string | null;
 };
 
-async function getWalterCommands() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export default function WalterBoardPage() {
+  const [rows, setRows] = useState<WalterCommand[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  if (!url || !anon) {
-    return { error: '환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY', rows: [] as WalterCommand[] };
-  }
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  const endpoint = `${url}/rest/v1/walter_commands?select=id,created_at,command_text,status,result_text&order=created_at.desc&limit=50`;
+        if (!url || !anon) {
+          setError('환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY');
+          return;
+        }
 
-  const res = await fetch(endpoint, {
-    headers: {
-      apikey: anon,
-      Authorization: `Bearer ${anon}`,
-    },
-    cache: 'no-store',
-  });
+        const endpoint = `${url}/rest/v1/walter_commands?select=id,created_at,command_text,status,result_text&order=created_at.desc&limit=50`;
+        const res = await fetch(endpoint, {
+          headers: {
+            apikey: anon,
+            Authorization: `Bearer ${anon}`,
+          },
+        });
 
-  if (!res.ok) {
-    const text = await res.text();
-    return { error: `Supabase 조회 실패 (${res.status}): ${text}`, rows: [] as WalterCommand[] };
-  }
+        if (!res.ok) {
+          const text = await res.text();
+          setError(`Supabase 조회 실패 (${res.status}): ${text}`);
+          return;
+        }
 
-  const rows = (await res.json()) as WalterCommand[];
-  return { error: '', rows };
-}
+        const data = (await res.json()) as WalterCommand[];
+        setRows(data);
+      } catch (e: any) {
+        setError(`조회 중 오류: ${e?.message ?? e}`);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export const dynamic = 'force-dynamic';
-
-export default async function WalterBoardPage() {
-  const { error, rows } = await getWalterCommands();
+    load();
+  }, []);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-10">
@@ -44,9 +58,7 @@ export default async function WalterBoardPage() {
       <p className="text-sm text-gray-500 mb-6">텔레그램 ↔ Supabase 미러링 작업 현황 (최신순)</p>
 
       {error ? (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 text-red-700 p-4 text-sm whitespace-pre-wrap">
-          {error}
-        </div>
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 text-red-700 p-4 text-sm whitespace-pre-wrap">{error}</div>
       ) : null}
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
@@ -60,11 +72,13 @@ export default async function WalterBoardPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                  표시할 데이터가 없습니다.
-                </td>
+                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">불러오는 중...</td>
+              </tr>
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">표시할 데이터가 없습니다.</td>
               </tr>
             ) : (
               rows.map((row) => (
