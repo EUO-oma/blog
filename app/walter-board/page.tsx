@@ -13,6 +13,14 @@ type WalterCommand = {
 
 const ALLOWED_EMAIL = 'icandoit13579@gmail.com';
 
+function safeText(v: string | null | undefined) {
+  if (!v) return '-';
+  if (v.includes('�') || v.includes('???')) {
+    return '인코딩 깨짐 데이터(폴러 수정 이후 신규 건부터 정상 표시)';
+  }
+  return v;
+}
+
 export default function WalterBoardPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<WalterCommand[]>([]);
@@ -173,11 +181,11 @@ export default function WalterBoardPage() {
               rows.map((row) => (
                 <tr key={row.id} className="border-t border-gray-100 align-top">
                   <td className="px-4 py-3 whitespace-nowrap text-gray-600">{new Date(row.created_at).toLocaleString('ko-KR')}</td>
-                  <td className="px-4 py-3 min-w-[220px]">{row.command_text}</td>
+                  <td className="px-4 py-3 min-w-[220px]">{safeText(row.command_text)}</td>
                   <td className="px-4 py-3">
                     <span className="inline-block rounded-full px-2 py-1 text-xs bg-gray-100 text-gray-700">{row.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-700 whitespace-pre-wrap">{row.result_text || '-'}</td>
+                  <td className="px-4 py-3 text-gray-700 whitespace-pre-wrap">{safeText(row.result_text)}</td>
                 </tr>
               ))
             )}
