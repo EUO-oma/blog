@@ -16,6 +16,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
   const [loading, setLoading] = useState(false)
   const [slugError, setSlugError] = useState('')
   const [preview, setPreview] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -138,10 +139,18 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     >
       <div className="min-h-screen px-2 md:px-6 flex items-center justify-center">
         <div 
-          className="bg-white dark:bg-gray-900 rounded-lg w-[98vw] md:w-[92vw] max-w-6xl my-4 md:my-6 p-4 md:p-8 max-h-[94vh] overflow-y-auto"
+          className={`${isFullscreen ? 'fixed inset-2 z-[70]' : 'w-[98vw] md:w-[92vw] max-w-6xl my-4 md:my-6'} bg-white dark:bg-gray-900 rounded-lg p-4 md:p-8 max-h-[94vh] overflow-y-auto`}
         >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">새 포스트 작성</h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsFullscreen((v) => !v)}
+                className="text-xs px-2 py-1 rounded border"
+              >
+                {isFullscreen ? '일반크기' : '전체화면'}
+              </button>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -150,7 +159,8 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </div>
+            </div>
+          </div
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
