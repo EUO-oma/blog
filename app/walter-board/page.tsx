@@ -70,10 +70,11 @@ export default function WalterBoardPage() {
     load();
   }, []);
 
-  const submitCommand = async () => {
+  const submitCommand = async (presetText?: string) => {
     setSubmitMsg('');
     if (!canWrite) return setSubmitMsg('작성 권한이 없습니다.');
-    if (!newCommand.trim()) return setSubmitMsg('명령을 입력해줘.');
+    const command = (presetText ?? newCommand).trim();
+    if (!command) return setSubmitMsg('명령을 입력해줘.');
 
     try {
       const { url, anon } = supabase();
@@ -91,7 +92,7 @@ export default function WalterBoardPage() {
           {
             owner_id: '8497629423',
             source: 'blog',
-            command_text: newCommand.trim(),
+            command_text: command,
             worker_key: 'WALTER_WORKER_TOKEN_001',
             status: 'queued',
           },
@@ -103,7 +104,7 @@ export default function WalterBoardPage() {
         return setSubmitMsg(`등록 실패 (${res.status}): ${text}`);
       }
 
-      setNewCommand('');
+      if (!presetText) setNewCommand('');
       setSubmitMsg('명령 등록 완료');
       await load();
     } catch (e: any) {
@@ -136,6 +137,32 @@ export default function WalterBoardPage() {
     }
   };
 
+  const clearDoneError = async () => {
+    if (!canWrite) return;
+    if (!confirm('done/error 항목을 모두 삭제할까?')) return;
+
+    try {
+      const { url, anon } = supabase();
+      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
+
+      const endpoint = `${url}/rest/v1/walter_commands?owner_id=eq.8497629423&source=eq.blog&status=in.(done,error)`;
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        return setSubmitMsg(`일괄정리 실패 (${res.status}): ${text}`);
+      }
+
+      setSubmitMsg('done/error 일괄 정리 완료');
+      await load();
+    } catch (e: any) {
+      setSubmitMsg(`일괄정리 오류: ${e?.message ?? e}`);
+    }
+  };
+
   const filteredRows = useMemo(() => {
     if (statusFilter === 'all') return rows;
     return rows.filter((r) => r.status === statusFilter);
@@ -159,9 +186,17 @@ export default function WalterBoardPage() {
             className="flex-1 rounded border px-3 py-2 text-sm bg-white text-gray-900 placeholder:text-gray-400 dark:bg-gray-800 dark:text-gray-100"
             disabled={!canWrite}
           />
-          <button onClick={submitCommand} disabled={!canWrite} className="rounded bg-indigo-600 text-white px-4 py-2 text-sm disabled:bg-gray-400">명령 등록</button>
+          <button onClick={() => submitCommand()} disabled={!canWrite} className="rounded bg-indigo-600 text-white px-4 py-2 text-sm disabled:bg-gray-400">명령 등록</button>
           <button onClick={load} className="rounded bg-gray-700 text-white px-4 py-2 text-sm">새로고침</button>
+          <button onClick={clearDoneError} disabled={!canWrite} className="rounded bg-orange-600 text-white px-4 py-2 text-sm disabled:bg-gray-400">완료항목 정리</button>
         </div>
+
+        <div className="flex flex-wrap gap-2 mb-2">
+          <button onClick={() => submitCommand('배터리 상태 확인')} disabled={!canWrite} className="rounded border px-3 py-1 text-xs bg-white disabled:bg-gray-100">배터리 확인</button>
+          <button onClick={() => submitCommand('큐 상태 확인')} disabled={!canWrite} className="rounded border px-3 py-1 text-xs bg-white disabled:bg-gray-100">큐 확인</button>
+          <button onClick={() => submitCommand('오늘 처리 결과 요약')} disabled={!canWrite} className="rounded border px-3 py-1 text-xs bg-white disabled:bg-gray-100">요약 요청</button>
+        </div>
+
         {submitMsg ? <p className="mt-1 text-sm text-gray-700">{submitMsg}</p> : null}
       </div>
 
