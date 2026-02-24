@@ -13,16 +13,18 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 }
 
-// Firebase 초기화 확인용 - 프로덕션에서도 한시적으로 로그 출력
-console.log('🔥 Firebase Config Status:', {
-  apiKey: firebaseConfig.apiKey ? 'configured' : 'missing',
-  authDomain: firebaseConfig.authDomain ? `configured: ${firebaseConfig.authDomain}` : 'missing',
-  projectId: firebaseConfig.projectId ? `configured: ${firebaseConfig.projectId}` : 'missing',
-  storageBucket: firebaseConfig.storageBucket ? 'configured' : 'missing',
-  messagingSenderId: firebaseConfig.messagingSenderId ? 'configured' : 'missing',
-  appId: firebaseConfig.appId ? 'configured' : 'missing',
-  environment: process.env.NODE_ENV
-})
+// Firebase 초기화 확인용 로그 (개발 모드만)
+if (process.env.NODE_ENV !== 'production') {
+  console.log('🔥 Firebase Config Status:', {
+    apiKey: firebaseConfig.apiKey ? 'configured' : 'missing',
+    authDomain: firebaseConfig.authDomain ? `configured: ${firebaseConfig.authDomain}` : 'missing',
+    projectId: firebaseConfig.projectId ? `configured: ${firebaseConfig.projectId}` : 'missing',
+    storageBucket: firebaseConfig.storageBucket ? 'configured' : 'missing',
+    messagingSenderId: firebaseConfig.messagingSenderId ? 'configured' : 'missing',
+    appId: firebaseConfig.appId ? 'configured' : 'missing',
+    environment: process.env.NODE_ENV
+  })
+}
 
 // Firebase Auth 초기화 상태 확인
 if (!firebaseConfig.apiKey) {
@@ -50,7 +52,9 @@ try {
   db = getFirestore(app)
   auth = getAuth(app)
   
-  console.log('✅ Firebase initialized successfully')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('✅ Firebase initialized successfully')
+  }
 } catch (error) {
   console.error('❌ Firebase initialization error:', error)
   throw new Error('Failed to initialize Firebase. Please check your configuration.')

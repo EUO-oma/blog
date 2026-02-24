@@ -91,10 +91,16 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
         return
       }
 
+      const autoExcerpt = formData.content
+        .replace(/[#>*`\-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 120)
+
       const postData: any = {
         title: formData.title,
         slug,
-        excerpt: formData.excerpt,
+        excerpt: formData.excerpt.trim() || autoExcerpt || '요약 없음',
         content: formData.content,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         authorEmail: user?.email || 'guest@example.com',
@@ -181,16 +187,15 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
 
             <div>
               <label htmlFor="excerpt" className="block text-sm font-medium mb-1">
-                요약 *
+                요약 (선택)
               </label>
               <input
                 type="text"
                 id="excerpt"
-                required
                 value={formData.excerpt}
                 onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
                 className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-                placeholder="포스트 요약을 입력하세요"
+                placeholder="비워두면 본문 첫 문단으로 자동 생성"
               />
             </div>
 
