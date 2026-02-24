@@ -216,9 +216,9 @@ export default function WalterBoardPage() {
 
       {error ? <div className="mb-6 rounded-lg border border-red-200 bg-red-50 text-red-700 p-4 text-sm whitespace-pre-wrap">{error}</div> : null}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700">
+        <table className="min-w-full text-sm text-gray-900 dark:text-gray-100">
+          <thead className="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-200">
             <tr>
               <th className="text-left px-4 py-3">시간</th>
               <th className="text-left px-4 py-3">명령</th>
@@ -234,11 +234,11 @@ export default function WalterBoardPage() {
               <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">표시할 데이터가 없습니다.</td></tr>
             ) : (
               filteredRows.map((row) => (
-                <tr key={row.id} className="border-t border-gray-100 align-top">
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-600">{new Date(row.created_at).toLocaleString('ko-KR')}</td>
-                  <td className="px-4 py-3 min-w-[260px]">{safeText(row.command_text)}</td>
-                  <td className="px-4 py-3"><span className="inline-block rounded-full px-2 py-1 text-xs bg-gray-100 text-gray-700">{row.status}</span></td>
-                  <td className="px-4 py-3 text-gray-700 whitespace-pre-wrap">{safeText(row.result_text)}</td>
+                <tr key={row.id} className="border-t border-gray-100 dark:border-gray-800 align-top">
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">{new Date(row.created_at).toLocaleString('ko-KR')}</td>
+                  <td className="px-4 py-3 min-w-[260px] text-gray-900 dark:text-gray-100">{safeText(row.command_text)}</td>
+                  <td className="px-4 py-3"><span className="inline-block rounded-full px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100">{row.status}</span></td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{safeText(row.result_text)}</td>
                   <td className="px-4 py-3">
                     {canWrite ? (
                       <button onClick={() => deleteCommand(row.id)} className="rounded bg-red-600 text-white px-2 py-1 text-xs hover:bg-red-700">삭제</button>
