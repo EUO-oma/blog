@@ -103,7 +103,11 @@ export default function WalterBoardPage() {
 
       if (!res.ok) {
         const text = await res.text();
-        setSubmitMsg(`등록 실패 (${res.status}): ${text}`);
+        if (res.status === 401 || res.status === 403) {
+          setSubmitMsg(`등록 권한 오류 (${res.status}). RLS/게이트 설정 확인 필요: ${text}`);
+        } else {
+          setSubmitMsg(`등록 실패 (${res.status}): ${text}`);
+        }
         return;
       }
 
@@ -128,7 +132,7 @@ export default function WalterBoardPage() {
             value={newCommand}
             onChange={(e) => setNewCommand(e.target.value)}
             placeholder="예: 배터리 상태 확인"
-            className="flex-1 rounded border px-3 py-2 text-sm"
+            className="flex-1 rounded border px-3 py-2 text-sm bg-white text-gray-900 placeholder:text-gray-400 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
             disabled={!canWrite}
           />
           <button
