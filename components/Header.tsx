@@ -47,9 +47,11 @@ export default function Header() {
             <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               YouTube
             </Link>
-            <Link href="/walter-board" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Walter Board
-            </Link>
+            {user?.email?.toLowerCase() === 'icandoit13579@gmail.com' && (
+              <Link href="/walter-board" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Walter Board">
+                🜂
+              </Link>
+            )}
             
             <button
               onClick={toggleTheme}
