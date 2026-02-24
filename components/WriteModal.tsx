@@ -136,9 +136,9 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto"
     >
-      <div className="min-h-screen px-4 flex items-center justify-center">
+      <div className="min-h-screen px-2 md:px-6 flex items-center justify-center">
         <div 
-          className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full my-8 p-8 max-h-[90vh] overflow-y-auto"
+          className="bg-white dark:bg-gray-900 rounded-lg w-[98vw] md:w-[92vw] max-w-6xl my-4 md:my-6 p-4 md:p-8 max-h-[94vh] overflow-y-auto"
         >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">새 포스트 작성</h2>
@@ -236,7 +236,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
                   required
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={10}
+                  rows={16}
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 font-mono text-sm"
                   placeholder="마크다운 형식으로 포스트 내용을 작성하세요..."
                 />
