@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { createPost } from '@/lib/firebase-posts'
+import { useMemo, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import { createPost, getPostBySlug } from '@/lib/firebase-posts'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface WriteModalProps {
@@ -13,6 +14,8 @@ interface WriteModalProps {
 export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [slugError, setSlugError] = useState('')
+  const [preview, setPreview] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -22,6 +25,15 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     published: true
   })
 
+  const generatedSlug = useMemo(() => {
+    return (formData.slug || formData.title)
+      .toLowerCase()
+      .replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim()
+  }, [formData.slug, formData.title])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,12 +41,20 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     setLoading(true)
 
     try {
-      const slug = formData.slug || formData.title
-        .toLowerCase()
-        .replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim()
+      setSlugError('')
+      const slug = generatedSlug
+      if (!slug) {
+        setSlugError('slug를 만들 수 없어요. 제목을 확인해줘.')
+        setLoading(false)
+        return
+      }
+
+      const existed = await getPostBySlug(slug)
+      if (existed) {
+        setSlugError('이미 같은 slug가 있어. 제목/slug를 바꿔줘.')
+        setLoading(false)
+        return
+      }
 
       const postData: any = {
         title: formData.title,
@@ -107,6 +127,22 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
             </div>
 
             <div>
+              <label htmlFor="slug" className="block text-sm font-medium mb-1">
+                슬러그(선택)
+              </label>
+              <input
+                type="text"
+                id="slug"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                placeholder="비워두면 제목으로 자동 생성"
+              />
+              <p className="text-xs text-gray-500 mt-1">생성 슬러그: {generatedSlug || '(없음)'}</p>
+              {slugError ? <p className="text-xs text-red-500 mt-1">{slugError}</p> : null}
+            </div>
+
+            <div>
               <label htmlFor="excerpt" className="block text-sm font-medium mb-1">
                 요약 *
               </label>
@@ -136,18 +172,33 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
             </div>
 
             <div>
-              <label htmlFor="content" className="block text-sm font-medium mb-1">
-                내용 * (Markdown 지원)
-              </label>
-              <textarea
-                id="content"
-                required
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                rows={10}
-                className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 font-mono text-sm"
-                placeholder="마크다운 형식으로 포스트 내용을 작성하세요..."
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="content" className="block text-sm font-medium">
+                  내용 * (Markdown 지원)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setPreview((v) => !v)}
+                  className="text-xs px-2 py-1 rounded border"
+                >
+                  {preview ? '편집' : '미리보기'}
+                </button>
+              </div>
+              {preview ? (
+                <div className="w-full min-h-[220px] px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 prose prose-sm max-w-none dark:prose-invert overflow-y-auto">
+                  <ReactMarkdown>{formData.content || '_내용을 입력하면 여기에 표시돼요._'}</ReactMarkdown>
+                </div>
+              ) : (
+                <textarea
+                  id="content"
+                  required
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  rows={10}
+                  className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 font-mono text-sm"
+                  placeholder="마크다운 형식으로 포스트 내용을 작성하세요..."
+                />
+              )}
             </div>
 
             <div className="flex items-center">

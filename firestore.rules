@@ -1,50 +1,33 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 모든 문서에 대한 읽기 권한은 허용
+    function isOwner() {
+      return request.auth != null && request.auth.token.email == 'icandoit13579@gmail.com';
+    }
+
+    // 모든 문서 read 허용(공개 블로그)
     match /{document=**} {
       allow read: if true;
     }
-    
-    // posts 컬렉션에 대한 쓰기 권한은 인증된 사용자만
+
+    // posts 컬렉션: owner만 write 허용
     match /posts/{postId} {
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        (request.auth.uid == resource.data.authorId || 
-         request.auth.token.email == resource.data.authorEmail);
-      allow delete: if request.auth != null && 
-        (request.auth.uid == resource.data.authorId || 
-         request.auth.token.email == resource.data.authorEmail);
+      allow create, update, delete: if isOwner();
     }
-    
-    // schedules 컬렉션에 대한 규칙
+
+    // schedules 컬렉션: owner만 write 허용
     match /schedules/{scheduleId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
-      allow delete: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
+      allow create, update, delete: if isOwner();
     }
-    
-    // youtube 컬렉션에 대한 규칙
+
+    // youtube 컬렉션: owner만 write 허용
     match /youtube/{videoId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
-      allow delete: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
+      allow create, update, delete: if isOwner();
     }
-    
-    // notices 컬렉션에 대한 규칙
+
+    // notices 컬렉션: owner만 write 허용
     match /notices/{noticeId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
-      allow delete: if request.auth != null && 
-        request.auth.token.email == resource.data.authorEmail;
+      allow create, update, delete: if isOwner();
     }
   }
 }
