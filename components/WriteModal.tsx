@@ -26,6 +26,8 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     published: true
   })
   const [validationMsg, setValidationMsg] = useState('')
+  const [importUrl, setImportUrl] = useState('')
+  const [importMsg, setImportMsg] = useState('')
   const draftKey = 'walter_blog_write_draft_v1'
 
   useEffect(() => {
@@ -56,6 +58,66 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
   }, [formData.slug, formData.title])
 
   if (!isOpen) return null
+
+  const applyImportedMarkdown = (raw: string) => {
+    const trimmed = raw.replace(/^\uFEFF/, '').trim()
+    let title = ''
+    let excerpt = ''
+    let tags: string[] = []
+    let content = trimmed
+
+    const fm = trimmed.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
+    if (fm) {
+      const meta = fm[1]
+      content = fm[2].trim()
+      const titleMatch = meta.match(/^title:\s*['\"]?(.+?)['\"]?$/m)
+      const excerptMatch = meta.match(/^excerpt:\s*['\"]?(.+?)['\"]?$/m)
+      const tagsMatch = meta.match(/^tags:\s*\[(.+?)\]$/m)
+      if (titleMatch) title = titleMatch[1].trim()
+      if (excerptMatch) excerpt = excerptMatch[1].trim()
+      if (tagsMatch) {
+        tags = tagsMatch[1].split(',').map(t => t.replace(/['\"]/g, '').trim()).filter(Boolean)
+      }
+    }
+
+    if (!title) {
+      const h1 = content.match(/^#\s+(.+)$/m)
+      if (h1) title = h1[1].trim()
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      title: title || prev.title,
+      excerpt: excerpt || prev.excerpt,
+      tags: tags.length ? tags.join(', ') : prev.tags,
+      content: content || prev.content,
+    }))
+  }
+
+  const importFromFile = async (file: File | null) => {
+    if (!file) return
+    try {
+      const text = await file.text()
+      applyImportedMarkdown(text)
+      setImportMsg('MD 파일 불러오기 완료')
+    } catch (e: any) {
+      setImportMsg(`파일 불러오기 실패: ${e?.message ?? e}`)
+    }
+  }
+
+  const importFromUrl = async () => {
+    if (!importUrl.trim()) return setImportMsg('링크를 입력해줘.')
+    try {
+      setImportMsg('링크에서 가져오는 중...')
+      const res = await fetch(importUrl.trim())
+      if (!res.ok) return setImportMsg(`링크 가져오기 실패 (${res.status})`)
+      const text = await res.text()
+      applyImportedMarkdown(text)
+      setImportMsg('링크 가져오기 완료')
+    } catch (e: any) {
+      setImportMsg(`링크 가져오기 오류: ${e?.message ?? e}`)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -163,6 +225,29 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
           </div
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="rounded-md border p-3 bg-gray-50 dark:bg-gray-800/40">
+              <p className="text-sm font-medium mb-2">Markdown 가져오기</p>
+              <div className="flex flex-wrap gap-2 items-center mb-2">
+                <input
+                  type="file"
+                  accept=".md,text/markdown,text/plain"
+                  onChange={(e) => importFromFile(e.target.files?.[0] || null)}
+                  className="text-sm"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  placeholder="https://.../post.md"
+                  className="flex-1 px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                />
+                <button type="button" onClick={importFromUrl} className="px-3 py-2 rounded bg-blue-600 text-white text-sm">링크 가져오기</button>
+              </div>
+              {importMsg ? <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">{importMsg}</p> : null}
+            </div>
+
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-1">
                 제목 *
