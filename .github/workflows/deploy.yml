@@ -45,6 +45,8 @@ jobs:
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: 'euo-oma-blog.firebasestorage.app'
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '571362546310'
           NEXT_PUBLIC_FIREBASE_APP_ID: '1:571362546310:web:33aa43eb0d11a9ee243707'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Check build output
         run: |
