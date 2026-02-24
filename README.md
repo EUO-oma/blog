@@ -67,6 +67,20 @@ The easiest way to deploy is using [Vercel](https://vercel.com):
 - **React Markdown** - Markdown rendering
 - **Gray Matter** - Frontmatter parsing
 
+## Walter Board (Supabase)
+
+`/walter-board` 페이지에서 `walter_commands` 데이터를 게시판 형태로 볼 수 있습니다.
+
+필수 환경변수 (`.env.local`):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_jwt_key
+```
+
+실행 후 접속:
+- `http://localhost:3000/walter-board`
+
 ## License
 
 MIT
