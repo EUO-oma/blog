@@ -5,6 +5,7 @@ import { BlogPost } from '@/lib/firebase'
 import { getPosts } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
+import WalterLineLoader from '@/components/WalterLineLoader'
 import { useAuth } from '@/contexts/AuthContext'
 
 type DateFilter = 'all' | '7d' | '30d' | '365d'
@@ -18,6 +19,7 @@ export default function HomePage() {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
+  const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
 
   const loadPosts = async () => {
     try {
@@ -39,6 +41,20 @@ export default function HomePage() {
     window.addEventListener('openWriteModal', handleOpenWriteModal)
     return () => window.removeEventListener('openWriteModal', handleOpenWriteModal)
   }, [])
+
+  const copyPostToClipboard = async (post: BlogPost) => {
+    try {
+      const base = typeof window !== 'undefined' ? window.location.origin : ''
+      const path = process.env.NODE_ENV === 'production' ? '/blog' : ''
+      const link = `${base}${path}/${post.slug || ''}`
+      const text = `${post.title}\n\n${post.excerpt || ''}\n\n${link}`
+      await navigator.clipboard.writeText(text)
+      setCopiedPostId(post.id || null)
+      setTimeout(() => setCopiedPostId(null), 1500)
+    } catch (e) {
+      console.error('Copy failed', e)
+    }
+  }
 
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -116,7 +132,7 @@ export default function HomePage() {
       <section>
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+            <WalterLineLoader label="포스트를 불러오는 중..." />
           </div>
         ) : filteredPosts.length === 0 ? (
           <p className="text-gray-600 dark:text-gray-400">조건에 맞는 포스트가 없습니다.</p>
@@ -135,7 +151,18 @@ export default function HomePage() {
                         setIsModalOpen(true)
                       }}
                     >
-                      <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            copyPostToClipboard(post)
+                          }}
+                          className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
+                        >
+                          {copiedPostId === post.id ? '복사됨' : '복사'}
+                        </button>
+                      </div>
                       <p className="text-gray-600 dark:text-gray-300 mb-4">{post.excerpt}</p>
                       <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
@@ -154,7 +181,18 @@ export default function HomePage() {
                     setIsModalOpen(true)
                   }}
                 >
-                  <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{post.title}</h3>
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{post.title}</h3>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        copyPostToClipboard(post)
+                      }}
+                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800"
+                    >
+                      {copiedPostId === post.id ? '복사됨' : '복사'}
+                    </button>
+                  </div>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">{post.excerpt}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
                     <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
