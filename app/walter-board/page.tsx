@@ -29,6 +29,7 @@ export default function WalterBoardPage() {
   const [newCommand, setNewCommand] = useState('');
   const [submitMsg, setSubmitMsg] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'queued' | 'running' | 'done' | 'error'>('all');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const canWrite = !!user?.email && user.email.toLowerCase() === ALLOWED_EMAIL;
 
@@ -59,6 +60,7 @@ export default function WalterBoardPage() {
       }
 
       setRows((await res.json()) as WalterCommand[]);
+      setSelectedIds([]);
     } catch (e: any) {
       setError(`조회 중 오류: ${e?.message ?? e}`);
     } finally {
@@ -145,7 +147,7 @@ export default function WalterBoardPage() {
       const { url, anon } = supabase();
       if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
 
-      const endpoint = `${url}/rest/v1/walter_commands?owner_id=eq.8497629423&source=eq.blog&status=in.(done,error)`;
+      const endpoint = `${url}/rest/v1/walter_commands?owner_id=eq.8497629423&status=in.(done,error)`;
       const res = await fetch(endpoint, {
         method: 'DELETE',
         headers: { apikey: anon, Authorization: `Bearer ${anon}` },
@@ -160,6 +162,34 @@ export default function WalterBoardPage() {
       await load();
     } catch (e: any) {
       setSubmitMsg(`일괄정리 오류: ${e?.message ?? e}`);
+    }
+  };
+
+  const deleteSelected = async () => {
+    if (!canWrite) return;
+    if (selectedIds.length === 0) return setSubmitMsg('선택된 항목이 없습니다.');
+    if (!confirm(`선택 ${selectedIds.length}건을 삭제할까?`)) return;
+
+    try {
+      const { url, anon } = supabase();
+      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
+
+      const idList = selectedIds.map((id) => `"${id}"`).join(',');
+      const endpoint = `${url}/rest/v1/walter_commands?id=in.(${idList})&owner_id=eq.8497629423`;
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        return setSubmitMsg(`선택삭제 실패 (${res.status}): ${text}`);
+      }
+
+      setSubmitMsg('선택 항목 삭제 완료');
+      await load();
+    } catch (e: any) {
+      setSubmitMsg(`선택삭제 오류: ${e?.message ?? e}`);
     }
   };
 
@@ -200,7 +230,7 @@ export default function WalterBoardPage() {
         {submitMsg ? <p className="mt-1 text-sm text-gray-700">{submitMsg}</p> : null}
       </div>
 
-      <div className="mb-4 flex items-center gap-2 text-sm">
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
         <span className="text-gray-600">필터:</span>
         {(['all', 'queued', 'running', 'done', 'error'] as const).map((s) => (
           <button
@@ -211,6 +241,15 @@ export default function WalterBoardPage() {
             {s}
           </button>
         ))}
+        <button
+          onClick={() => setSelectedIds(filteredRows.filter((r) => r.status === 'done' || r.status === 'error').map((r) => r.id))}
+          className="px-2 py-1 rounded border bg-white text-gray-700"
+        >
+          완료/에러 선택
+        </button>
+        <button onClick={deleteSelected} disabled={!canWrite} className="px-2 py-1 rounded border bg-red-600 text-white disabled:bg-gray-400">
+          선택 삭제 ({selectedIds.length})
+        </button>
         <span className="ml-3 text-gray-500">대기열: {queuedCount}건</span>
       </div>
 
@@ -220,6 +259,7 @@ export default function WalterBoardPage() {
         <table className="min-w-full text-sm text-gray-900 dark:text-gray-100">
           <thead className="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-200">
             <tr>
+              <th className="text-left px-4 py-3">선택</th>
               <th className="text-left px-4 py-3">시간</th>
               <th className="text-left px-4 py-3">명령</th>
               <th className="text-left px-4 py-3">상태</th>
@@ -229,12 +269,22 @@ export default function WalterBoardPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">불러오는 중...</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">불러오는 중...</td></tr>
             ) : filteredRows.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">표시할 데이터가 없습니다.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">표시할 데이터가 없습니다.</td></tr>
             ) : (
               filteredRows.map((row) => (
                 <tr key={row.id} className="border-t border-gray-100 dark:border-gray-800 align-top">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(row.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedIds((prev) => [...new Set([...prev, row.id])]);
+                        else setSelectedIds((prev) => prev.filter((id) => id !== row.id));
+                      }}
+                    />
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">{new Date(row.created_at).toLocaleString('ko-KR')}</td>
                   <td className="px-4 py-3 min-w-[260px] text-gray-900 dark:text-gray-100">{safeText(row.command_text)}</td>
                   <td className="px-4 py-3"><span className="inline-block rounded-full px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100">{row.status}</span></td>
