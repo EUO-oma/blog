@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { createPost, getPostBySlug } from '@/lib/firebase-posts'
 import { useAuth } from '@/contexts/AuthContext'
@@ -24,6 +24,26 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     tags: '',
     published: true
   })
+  const [validationMsg, setValidationMsg] = useState('')
+  const draftKey = 'walter_blog_write_draft_v1'
+
+  useEffect(() => {
+    if (!isOpen) return
+    try {
+      const raw = localStorage.getItem(draftKey)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        setFormData((prev) => ({ ...prev, ...parsed }))
+      }
+    } catch {}
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(formData))
+    } catch {}
+  }, [formData, isOpen])
 
   const generatedSlug = useMemo(() => {
     return (formData.slug || formData.title)
@@ -42,6 +62,21 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
 
     try {
       setSlugError('')
+      setValidationMsg('')
+
+      if (formData.content.trim().length < 20) {
+        setValidationMsg('본문은 최소 20자 이상 입력해줘.')
+        setLoading(false)
+        return
+      }
+
+      const tagCount = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag).length
+      if (tagCount > 8) {
+        setValidationMsg('태그는 최대 8개까지 권장해.')
+        setLoading(false)
+        return
+      }
+
       const slug = generatedSlug
       if (!slug) {
         setSlugError('slug를 만들 수 없어요. 제목을 확인해줘.')
@@ -79,6 +114,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
         tags: '',
         published: true
       })
+      try { localStorage.removeItem(draftKey) } catch {}
       
       onSuccess() // 부모 컴포넌트에서 글 목록 새로고침
       onClose()
@@ -140,6 +176,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               />
               <p className="text-xs text-gray-500 mt-1">생성 슬러그: {generatedSlug || '(없음)'}</p>
               {slugError ? <p className="text-xs text-red-500 mt-1">{slugError}</p> : null}
+              {validationMsg ? <p className="text-xs text-red-500 mt-1">{validationMsg}</p> : null}
             </div>
 
             <div>
@@ -222,7 +259,19 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               >
                 {loading ? '저장 중...' : '포스트 발행'}
               </button>
-              
+
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({ title: '', slug: '', excerpt: '', content: '', tags: '', published: true })
+                  try { localStorage.removeItem(draftKey) } catch {}
+                  setValidationMsg('임시저장을 비웠어.')
+                }}
+                className="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+              >
+                임시저장 비우기
+              </button>
+
               <button
                 type="button"
                 onClick={onClose}
