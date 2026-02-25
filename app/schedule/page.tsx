@@ -21,6 +21,21 @@ export default function SchedulePage() {
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
+  const toDate = (value: any): Date | null => {
+    try {
+      if (!value) return null;
+      if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+      if (typeof value.toDate === 'function') {
+        const d = value.toDate();
+        return isNaN(d.getTime()) ? null : d;
+      }
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     // Firebase 초기화 후 약간의 지연을 두고 데이터 로드
     const timer = setTimeout(() => {
@@ -134,32 +149,94 @@ export default function SchedulePage() {
     );
   }
 
-  // 오늘의 일정 필터링
-  const todaySchedules = schedules.filter(schedule => {
-    try {
-      if (!schedule.startDate || typeof schedule.startDate.toDate !== 'function') return false;
-      const today = new Date();
-      const scheduleDate = schedule.startDate.toDate();
-      return scheduleDate.toDateString() === today.toDateString();
-    } catch (error) {
-      console.error('Error filtering today schedules:', error);
-      return false;
+  const expandedSchedules: (Schedule & { occurrenceKey: string; occurrenceDate: Date })[] = schedules.flatMap((schedule) => {
+    const start = toDate(schedule.startDate);
+    if (!start) return [];
+
+    const repeatType = schedule.repeatType || 'none';
+    const interval = Math.max(1, schedule.repeatInterval || 1);
+    const repeatUntil = toDate(schedule.repeatUntil);
+
+    const makeItem = (date: Date, index: number) => ({
+      ...schedule,
+      startDate: ({ toDate: () => date } as any),
+      occurrenceKey: `${schedule.id || 'new'}-${date.toISOString()}-${index}`,
+      occurrenceDate: date,
+    });
+
+    if (repeatType === 'none') {
+      return [makeItem(start, 0)];
     }
+
+    // 화면 과부하 방지: 앞으로 180일까지만 전개
+    const rangeStart = new Date();
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(rangeStart);
+    rangeEnd.setDate(rangeEnd.getDate() + 180);
+
+    const results: (Schedule & { occurrenceKey: string; occurrenceDate: Date })[] = [];
+    let cursor = new Date(start);
+    let guard = 0;
+
+    while (guard < 600) {
+      guard += 1;
+      if (repeatUntil && cursor > repeatUntil) break;
+      if (cursor > rangeEnd) break;
+
+      const inRange = cursor >= rangeStart;
+      if (repeatType === 'daily') {
+        if (inRange) results.push(makeItem(new Date(cursor), guard));
+        cursor.setDate(cursor.getDate() + interval);
+        continue;
+      }
+
+      if (repeatType === 'weekly') {
+        const weekdays = schedule.repeatWeekdays && schedule.repeatWeekdays.length > 0
+          ? schedule.repeatWeekdays
+          : [start.getDay()];
+
+        weekdays.forEach((day) => {
+          const base = new Date(cursor);
+          const diff = day - base.getDay();
+          const target = new Date(base);
+          target.setDate(base.getDate() + diff);
+          if (target < start) return;
+          if (repeatUntil && target > repeatUntil) return;
+          if (target >= rangeStart && target <= rangeEnd) {
+            results.push(makeItem(target, guard + day));
+          }
+        });
+
+        cursor.setDate(cursor.getDate() + 7 * interval);
+        continue;
+      }
+
+      if (repeatType === 'monthly') {
+        if (inRange) results.push(makeItem(new Date(cursor), guard));
+        const next = new Date(cursor);
+        next.setMonth(next.getMonth() + interval);
+        cursor = next;
+        continue;
+      }
+
+      break;
+    }
+
+    return results;
+  }).sort((a, b) => a.occurrenceDate.getTime() - b.occurrenceDate.getTime());
+
+  // 오늘의 일정 필터링
+  const todaySchedules = expandedSchedules.filter(schedule => {
+    const today = new Date();
+    return schedule.occurrenceDate.toDateString() === today.toDateString();
   });
 
   // 다가올 일정 필터링 (오늘 이후 7일)
-  const upcomingSchedules = schedules.filter(schedule => {
-    try {
-      if (!schedule.startDate || typeof schedule.startDate.toDate !== 'function') return false;
-      const today = new Date();
-      const weekLater = new Date();
-      weekLater.setDate(today.getDate() + 7);
-      const scheduleDate = schedule.startDate.toDate();
-      return scheduleDate > today && scheduleDate <= weekLater;
-    } catch (error) {
-      console.error('Error filtering upcoming schedules:', error);
-      return false;
-    }
+  const upcomingSchedules = expandedSchedules.filter(schedule => {
+    const today = new Date();
+    const weekLater = new Date();
+    weekLater.setDate(today.getDate() + 7);
+    return schedule.occurrenceDate > today && schedule.occurrenceDate <= weekLater;
   });
 
   // 일정을 텍스트로 포맷팅
@@ -290,16 +367,16 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {schedules.length === 0 ? (
+      {expandedSchedules.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400 text-center py-8">
           등록된 일정이 없습니다.
         </p>
       ) : isMobile ? (
         /* 모바일용 카드 뷰 */
         <div className="space-y-4">
-          {schedules.map((schedule) => (
+          {expandedSchedules.map((schedule) => (
             <div
-              key={schedule.id}
+              key={schedule.occurrenceKey}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-start justify-between mb-2">
@@ -308,9 +385,16 @@ export default function SchedulePage() {
                     className="w-4 h-4 rounded-full"
                     style={{ backgroundColor: schedule.color || '#6366f1' }}
                   />
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                    {schedule.title}
-                  </h3>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                      {schedule.title}
+                    </h3>
+                    {schedule.repeatType && schedule.repeatType !== 'none' && (
+                      <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+                        반복: {schedule.repeatType === 'daily' ? '매일' : schedule.repeatType === 'weekly' ? '매주' : '매월'}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   {/* 복사 버튼 - 모든 사용자에게 표시 */}
@@ -426,9 +510,9 @@ export default function SchedulePage() {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {schedules.map((schedule) => (
+              {expandedSchedules.map((schedule) => (
                 <tr
-                  key={schedule.id}
+                  key={schedule.occurrenceKey}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <td className="px-4 py-4 whitespace-nowrap">
@@ -451,6 +535,11 @@ export default function SchedulePage() {
                         <span className="font-medium text-gray-900 dark:text-gray-100">
                           {schedule.title}
                         </span>
+                        {schedule.repeatType && schedule.repeatType !== 'none' && (
+                          <span className="ml-2 text-[11px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+                            {schedule.repeatType === 'daily' ? '매일' : schedule.repeatType === 'weekly' ? '매주' : '매월'}
+                          </span>
+                        )}
                         <span className="text-gray-500 dark:text-gray-400 ml-2">
                           - {schedule.description}
                         </span>

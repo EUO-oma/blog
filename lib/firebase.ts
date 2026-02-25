@@ -76,6 +76,8 @@ export interface BlogPost {
   published: boolean
 }
 
+export type ScheduleRepeatType = 'none' | 'daily' | 'weekly' | 'monthly'
+
 export interface Schedule {
   id?: string
   title: string
@@ -84,6 +86,11 @@ export interface Schedule {
   endDate?: Timestamp
   location?: string
   color?: string
+  // 반복 설정
+  repeatType?: ScheduleRepeatType
+  repeatInterval?: number // 기본 1
+  repeatUntil?: Timestamp
+  repeatWeekdays?: number[] // weekly일 때 사용 (0=일~6=토)
   authorEmail: string
   authorName: string
   createdAt: Timestamp

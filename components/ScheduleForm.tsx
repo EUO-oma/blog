@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Schedule, Timestamp } from '@/lib/firebase'
+import { Schedule, ScheduleRepeatType, Timestamp } from '@/lib/firebase'
 import { createSchedule, updateSchedule } from '@/lib/firebase-schedules'
 
 interface ScheduleFormProps {
@@ -23,6 +23,16 @@ const colorOptions = [
   { value: '#6b7280', label: '회색' }
 ]
 
+const weekdayOptions = [
+  { value: 0, label: '일' },
+  { value: 1, label: '월' },
+  { value: 2, label: '화' },
+  { value: 3, label: '수' },
+  { value: 4, label: '목' },
+  { value: 5, label: '금' },
+  { value: 6, label: '토' },
+]
+
 export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: ScheduleFormProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -40,7 +50,11 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
     endDate: '',
     endTime: '',
     location: '',
-    color: '#6366f1'
+    color: '#6366f1',
+    repeatType: 'none' as ScheduleRepeatType,
+    repeatInterval: 1,
+    repeatUntilDate: '',
+    repeatWeekdays: [] as number[],
   })
 
   useEffect(() => {
@@ -56,7 +70,11 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
         endDate: endDate ? endDate.toISOString().split('T')[0] : '',
         endTime: endDate ? endDate.toTimeString().slice(0, 5) : '',
         location: schedule.location || '',
-        color: schedule.color || '#6366f1'
+        color: schedule.color || '#6366f1',
+        repeatType: schedule.repeatType || 'none',
+        repeatInterval: schedule.repeatInterval || 1,
+        repeatUntilDate: schedule.repeatUntil ? schedule.repeatUntil.toDate().toISOString().split('T')[0] : '',
+        repeatWeekdays: schedule.repeatWeekdays || [],
       })
     } else {
       // 신규 일정일 때 현재 시간으로 초기화
@@ -71,7 +89,11 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
         endDate: currentDate,  // 시작날짜와 동일
         endTime: currentTime,  // 시작시간과 동일
         location: '',
-        color: '#6366f1'
+        color: '#6366f1',
+        repeatType: 'none',
+        repeatInterval: 1,
+        repeatUntilDate: '',
+        repeatWeekdays: [],
       })
     }
   }, [schedule])
@@ -123,6 +145,31 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
       
       if (formData.location && formData.location.trim()) {
         scheduleData.location = formData.location.trim()
+      }
+
+      if (formData.repeatType !== 'none') {
+        scheduleData.repeatType = formData.repeatType
+        scheduleData.repeatInterval = Math.max(1, Number(formData.repeatInterval || 1))
+
+        if (formData.repeatUntilDate) {
+          const repeatUntil = new Date(`${formData.repeatUntilDate}T23:59`)
+          scheduleData.repeatUntil = Timestamp.fromDate(repeatUntil)
+        } else {
+          scheduleData.repeatUntil = null
+        }
+
+        if (formData.repeatType === 'weekly') {
+          scheduleData.repeatWeekdays = formData.repeatWeekdays.length > 0
+            ? formData.repeatWeekdays
+            : [startDateTime.getDay()]
+        } else {
+          scheduleData.repeatWeekdays = []
+        }
+      } else {
+        scheduleData.repeatType = 'none'
+        scheduleData.repeatInterval = 1
+        scheduleData.repeatUntil = null
+        scheduleData.repeatWeekdays = []
       }
 
       if (schedule?.id) {
@@ -312,6 +359,89 @@ export default function ScheduleForm({ schedule, isOpen, onClose, onSuccess }: S
                   className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
+            </div>
+
+            <div className="rounded-md border p-3 dark:border-gray-700">
+              <label htmlFor="repeatType" className="block text-sm font-medium mb-2">
+                반복
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                {([
+                  { value: 'none', label: '반복 안함' },
+                  { value: 'daily', label: '매일' },
+                  { value: 'weekly', label: '매주' },
+                  { value: 'monthly', label: '매월' },
+                ] as { value: ScheduleRepeatType; label: string }[]).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, repeatType: opt.value }))}
+                    className={`px-2 py-2 rounded border text-sm ${
+                      formData.repeatType === opt.value
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-800'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {formData.repeatType !== 'none' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">반복 간격</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={formData.repeatInterval}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, repeatInterval: Number(e.target.value || 1) }))}
+                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">반복 종료일(선택)</label>
+                      <input
+                        type="date"
+                        value={formData.repeatUntilDate}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, repeatUntilDate: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  {formData.repeatType === 'weekly' && (
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">반복 요일</label>
+                      <div className="flex flex-wrap gap-2">
+                        {weekdayOptions.map((w) => {
+                          const selected = formData.repeatWeekdays.includes(w.value)
+                          return (
+                            <button
+                              key={w.value}
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  repeatWeekdays: selected
+                                    ? prev.repeatWeekdays.filter((d) => d !== w.value)
+                                    : [...prev.repeatWeekdays, w.value].sort((a, b) => a - b),
+                                }))
+                              }
+                              className={`w-8 h-8 rounded-full text-xs border ${
+                                selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-800'
+                              }`}
+                            >
+                              {w.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
