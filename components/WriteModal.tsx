@@ -222,7 +222,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               </svg>
             </button>
             </div>
-          </div
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="rounded-md border p-3 bg-gray-50 dark:bg-gray-800/40">

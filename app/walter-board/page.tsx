@@ -194,7 +194,7 @@ export default function WalterBoardPage() {
                       type="checkbox"
                       checked={selectedIds.includes(row.id)}
                       onChange={(e) => {
-                        if (e.target.checked) setSelectedIds((prev) => [...new Set([...prev, row.id])]);
+                        if (e.target.checked) setSelectedIds((prev) => Array.from(new Set([...prev, row.id])));
                         else setSelectedIds((prev) => prev.filter((id) => id !== row.id));
                       }}
                     />

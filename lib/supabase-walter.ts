@@ -6,6 +6,7 @@ export type WalterCommand = Pick<
 >
 
 export type WalterCommandStatus = 'queued' | 'running' | 'done' | 'error'
+type WalterCommandInsert = TablesInsert<'walter_commands'>
 
 const OWNER_ID = '8497629423'
 const WORKER_KEY = 'WALTER_WORKER_TOKEN_001'
