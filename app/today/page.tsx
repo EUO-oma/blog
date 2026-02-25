@@ -122,7 +122,7 @@ export default function TodayPage() {
         {message ? <span className="ml-3">• {message}</span> : null}
       </div>
 
-      {cacheRows.length > 0 && (
+      {user && cacheRows.length > 0 && (
         <section className="mb-5">
           <h2 className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-2">Google Calendar 동기화</h2>
           <div className="space-y-2">
@@ -130,8 +130,20 @@ export default function TodayPage() {
               const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
               return (
                 <article key={item.id} className="rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</div>
-                  <div className="text-xs text-indigo-700 dark:text-indigo-300 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</div>
+                      <div className="text-xs text-indigo-700 dark:text-indigo-300 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
+                    </div>
+                    <a
+                      href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 px-2 py-1 rounded border text-[11px] bg-white/80 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-700"
+                    >
+                      캘린더 열기
+                    </a>
+                  </div>
                 </article>
               )
             })}
