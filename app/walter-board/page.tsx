@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-
-type WalterCommand = {
-  id: string;
-  created_at: string;
-  command_text: string;
-  status: string;
-  result_text: string | null;
-};
+import {
+  createWalterCommand,
+  deleteWalterCommandById,
+  deleteWalterCommandsByIds,
+  deleteWalterCommandsByStatus,
+  listWalterCommands,
+  type WalterCommand,
+  type WalterCommandStatus,
+} from '@/lib/supabase-walter';
 
 const ALLOWED_EMAIL = 'icandoit13579@gmail.com';
 
@@ -28,38 +29,16 @@ export default function WalterBoardPage() {
   const [loading, setLoading] = useState(true);
   const [newCommand, setNewCommand] = useState('');
   const [submitMsg, setSubmitMsg] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'queued' | 'running' | 'done' | 'error'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | WalterCommandStatus>('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const canWrite = !!user?.email && user.email.toLowerCase() === ALLOWED_EMAIL;
 
-  const supabase = () => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    return { url, anon };
-  };
-
   const load = async () => {
     setError('');
     try {
-      const { url, anon } = supabase();
-      if (!url || !anon) {
-        setError('환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY');
-        return;
-      }
-
-      const endpoint = `${url}/rest/v1/walter_commands?select=id,created_at,command_text,status,result_text&order=created_at.desc&limit=100`;
-      const res = await fetch(endpoint, {
-        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        setError(`Supabase 조회 실패 (${res.status}): ${text}`);
-        return;
-      }
-
-      setRows((await res.json()) as WalterCommand[]);
+      const data = await listWalterCommands(100);
+      setRows(data);
       setSelectedIds([]);
     } catch (e: any) {
       setError(`조회 중 오류: ${e?.message ?? e}`);
@@ -79,33 +58,7 @@ export default function WalterBoardPage() {
     if (!command) return setSubmitMsg('명령을 입력해줘.');
 
     try {
-      const { url, anon } = supabase();
-      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
-
-      const res = await fetch(`${url}/rest/v1/walter_commands`, {
-        method: 'POST',
-        headers: {
-          apikey: anon,
-          Authorization: `Bearer ${anon}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify([
-          {
-            owner_id: '8497629423',
-            source: 'blog',
-            command_text: command,
-            worker_key: 'WALTER_WORKER_TOKEN_001',
-            status: 'queued',
-          },
-        ]),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        return setSubmitMsg(`등록 실패 (${res.status}): ${text}`);
-      }
-
+      await createWalterCommand(command);
       if (!presetText) setNewCommand('');
       setSubmitMsg('명령 등록 완료');
       await load();
@@ -119,19 +72,7 @@ export default function WalterBoardPage() {
     if (!confirm('이 항목을 삭제할까?')) return;
 
     try {
-      const { url, anon } = supabase();
-      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
-
-      const res = await fetch(`${url}/rest/v1/walter_commands?id=eq.${id}&owner_id=eq.8497629423`, {
-        method: 'DELETE',
-        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        return setSubmitMsg(`삭제 실패 (${res.status}): ${text}`);
-      }
-
+      await deleteWalterCommandById(id);
       setSubmitMsg('삭제 완료');
       await load();
     } catch (e: any) {
@@ -144,20 +85,7 @@ export default function WalterBoardPage() {
     if (!confirm('done/error 항목을 모두 삭제할까?')) return;
 
     try {
-      const { url, anon } = supabase();
-      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
-
-      const endpoint = `${url}/rest/v1/walter_commands?owner_id=eq.8497629423&status=in.(done,error)`;
-      const res = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        return setSubmitMsg(`일괄정리 실패 (${res.status}): ${text}`);
-      }
-
+      await deleteWalterCommandsByStatus(['done', 'error']);
       setSubmitMsg('done/error 일괄 정리 완료');
       await load();
     } catch (e: any) {
@@ -171,21 +99,7 @@ export default function WalterBoardPage() {
     if (!confirm(`선택 ${selectedIds.length}건을 삭제할까?`)) return;
 
     try {
-      const { url, anon } = supabase();
-      if (!url || !anon) return setSubmitMsg('환경변수가 없습니다.');
-
-      const idList = selectedIds.map((id) => `"${id}"`).join(',');
-      const endpoint = `${url}/rest/v1/walter_commands?id=in.(${idList})&owner_id=eq.8497629423`;
-      const res = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        return setSubmitMsg(`선택삭제 실패 (${res.status}): ${text}`);
-      }
-
+      await deleteWalterCommandsByIds(selectedIds);
       setSubmitMsg('선택 항목 삭제 완료');
       await load();
     } catch (e: any) {

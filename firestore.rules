@@ -29,5 +29,14 @@ service cloud.firestore {
     match /notices/{noticeId} {
       allow create, update, delete: if isOwner();
     }
+
+    // phonebook 컬렉션: 로그인 사용자 본인 데이터만 write 허용
+    match /phonebook/{itemId} {
+      allow create: if request.auth != null
+        && request.resource.data.authorEmail == request.auth.token.email;
+
+      allow update, delete: if request.auth != null
+        && resource.data.authorEmail == request.auth.token.email;
+    }
   }
 }

@@ -109,11 +109,11 @@ export default function NoticePage() {
           등록된 공지사항이 없습니다.
         </p>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {notices.map((notice) => (
             <div
               key={notice.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">

@@ -31,7 +31,7 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-      <nav className="container mx-auto px-4 py-4 max-w-5xl">
+      <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-6">
@@ -43,6 +43,9 @@ export default function Header() {
             </Link>
             <Link href="/notice" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               공지사항
+            </Link>
+            <Link href="/phonebook" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              폰북
             </Link>
             <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               YouTube

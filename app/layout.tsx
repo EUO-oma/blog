@@ -24,7 +24,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <Header />
-            <main className="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+            <main className="flex-grow container mx-auto px-4 py-4 md:py-8 max-w-5xl">
               {children}
             </main>
             <Footer />
