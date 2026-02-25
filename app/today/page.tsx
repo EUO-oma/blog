@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { Schedule, Timestamp } from '@/lib/firebase'
 import { deleteSchedule, getSchedules, updateSchedule } from '@/lib/firebase-schedules'
+import { CalendarTodayCacheItem, getTodayCalendarCacheItems } from '@/lib/firebase-calendar-cache'
 
 const OWNER_EMAIL = 'icandoit13579@gmail.com'
 
@@ -22,6 +23,7 @@ function toDate(value: any): Date | null {
 export default function TodayPage() {
   const { user } = useAuth()
   const [rows, setRows] = useState<Schedule[]>([])
+  const [cacheRows, setCacheRows] = useState<CalendarTodayCacheItem[]>([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
 
@@ -30,8 +32,9 @@ export default function TodayPage() {
   const load = async () => {
     setLoading(true)
     try {
-      const list = await getSchedules()
+      const [list, cache] = await Promise.all([getSchedules(), getTodayCalendarCacheItems()])
       setRows(list)
+      setCacheRows(cache)
     } finally {
       setLoading(false)
     }
@@ -118,6 +121,23 @@ export default function TodayPage() {
         오늘 일정 <b>{todayItems.length}</b>건
         {message ? <span className="ml-3">• {message}</span> : null}
       </div>
+
+      {cacheRows.length > 0 && (
+        <section className="mb-5">
+          <h2 className="text-sm font-semibold text-indigo-700 mb-2">Google Calendar 동기화</h2>
+          <div className="space-y-2">
+            {cacheRows.map((item) => {
+              const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
+              return (
+                <article key={item.id} className="rounded-lg border border-indigo-100 bg-indigo-50 p-3">
+                  <div className="text-sm font-medium">{item.title}</div>
+                  <div className="text-xs text-indigo-700 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {todayItems.length === 0 ? (
         <p className="text-gray-500">오늘 일정이 없어. 한가한 날이네 🙂</p>
