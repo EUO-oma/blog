@@ -5,6 +5,10 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == 'icandoit13579@gmail.com';
     }
 
+    function isCalendarSyncBot() {
+      return request.auth != null && request.auth.token.email == 'abundant255@naver.com';
+    }
+
     // 모든 문서 read 허용(공개 블로그)
     match /{document=**} {
       allow read: if true;
@@ -37,6 +41,11 @@ service cloud.firestore {
 
       allow update, delete: if request.auth != null
         && resource.data.authorEmail == request.auth.token.email;
+    }
+
+    // Google Calendar 동기화 캐시: owner + sync bot write 허용
+    match /calendar_today_cache/{docId} {
+      allow create, update, delete: if isOwner() || isCalendarSyncBot();
     }
   }
 }
