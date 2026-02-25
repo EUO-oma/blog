@@ -28,27 +28,27 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
           <div className="flex items-center justify-between">
-            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm sm:text-base">
-              <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                Home
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
+              <Link href="/" aria-label="홈" title="홈" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                🏠
               </Link>
-              <Link href="/schedule" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                일정
+              <Link href="/schedule" aria-label="일정" title="일정" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                📅
               </Link>
-              <Link href="/today" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                오늘
+              <Link href="/today" aria-label="오늘" title="오늘" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                ✅
               </Link>
-              <Link href="/notice" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                공지
+              <Link href="/notice" aria-label="공지" title="공지" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                📢
               </Link>
-              <Link href="/phonebook" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                폰북
+              <Link href="/phonebook" aria-label="폰북" title="폰북" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                📞
               </Link>
-              <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="유튜브">
+              <Link href="/youtube" aria-label="유튜브" title="유튜브" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                 ▶️
               </Link>
               {user?.email?.toLowerCase() === 'icandoit13579@gmail.com' && (
-                <Link href="/walter-board" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Walter Board">
+                <Link href="/walter-board" aria-label="Walter Board" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Walter Board">
                   🜂
                 </Link>
               )}
