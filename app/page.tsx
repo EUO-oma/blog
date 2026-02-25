@@ -106,26 +106,16 @@ export default function HomePage() {
             </select>
           </div>
 
-          <div className="flex gap-3">
-            {user ? (
+          {user ? (
+            <div className="flex gap-3">
               <button
                 onClick={() => setIsWriteModalOpen(true)}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
                 ✍️ 새 글 작성
               </button>
-            ) : (
-              <button
-                onClick={() => {
-                  const event = new CustomEvent('openLoginModal')
-                  window.dispatchEvent(event)
-                }}
-                className="bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium"
-              >
-                🔐 로그인
-              </button>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
       </section>
 
