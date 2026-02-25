@@ -112,11 +112,14 @@ export default function TodayPage() {
     }
     if (!confirm('구글 캘린더 원본에서 이 일정을 삭제할까요?')) return
 
+    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken })
+
     try {
+      // 1차: 일반 호출(응답 파싱 가능)
       const res = await fetch(gasWebAppUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken }),
+        body: payload,
       })
       const data = await res.json()
       if (!data?.ok) {
@@ -129,8 +132,21 @@ export default function TodayPage() {
         setMessage('캘린더 원본 삭제 완료')
       }
       await load()
-    } catch (e: any) {
-      setMessage(`캘린더 삭제 오류: ${e?.message || e}`)
+    } catch {
+      // 2차: CORS 환경(정적 호스팅) 우회용 fire-and-refresh
+      try {
+        await fetch(gasWebAppUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: payload,
+        })
+        setMessage('삭제 요청을 보냈어. 동기화 후 목록을 새로고침할게.')
+        setTimeout(() => {
+          load()
+        }, 1500)
+      } catch (e: any) {
+        setMessage(`캘린더 삭제 오류: ${e?.message || e}`)
+      }
     }
   }
 
