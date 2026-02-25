@@ -42,13 +42,13 @@ export default function Header() {
               일정
             </Link>
             <Link href="/notice" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              공지사항
+              공지
             </Link>
             <Link href="/phonebook" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               폰북
             </Link>
-            <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              YouTube
+            <Link href="/youtube" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="유튜브">
+              ▶️
             </Link>
             {user?.email?.toLowerCase() === 'icandoit13579@gmail.com' && (
               <Link href="/walter-board" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Walter Board">

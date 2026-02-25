@@ -89,8 +89,8 @@ export default function NoticePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold">공지사항</h1>
         {user && (
           <button
@@ -114,7 +114,7 @@ export default function NoticePage() {
           {notices.map((notice) => (
             <div
               key={notice.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-6 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
