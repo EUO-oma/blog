@@ -8,6 +8,7 @@ import {
   deletePhonebookItem,
   getPhonebookItems,
 } from '@/lib/firebase-phonebook'
+import WalterLineLoader from '@/components/WalterLineLoader'
 
 const CATEGORIES = ['통신', '전기/설비', '생활', '병원', '택배/물류', '기타']
 
@@ -199,7 +200,9 @@ export default function PhonebookPage() {
         </div>
 
         {loading ? (
-          <p className="text-gray-500">불러오는 중...</p>
+          <div className="flex justify-center py-8">
+            <WalterLineLoader label="폰북을 불러오는 중..." />
+          </div>
         ) : filtered.length === 0 ? (
           <p className="text-gray-500">저장된 연락처가 없습니다.</p>
         ) : (

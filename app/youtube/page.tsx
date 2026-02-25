@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { YouTubeVideo } from '@/lib/firebase'
 import { getYouTubeVideos, deleteYouTubeVideo } from '@/lib/firebase-youtube'
 import YouTubeForm from '@/components/YouTubeForm'
+import WalterLineLoader from '@/components/WalterLineLoader'
 
 export default function YouTubePage() {
   const { user } = useAuth()
@@ -61,7 +62,7 @@ export default function YouTubePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+        <WalterLineLoader label="유튜브 목록을 불러오는 중..." />
       </div>
     )
   }
