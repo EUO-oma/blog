@@ -111,7 +111,7 @@ export default function TodayPage() {
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
+    <main className="max-w-5xl mx-auto py-6 sm:py-8">
       <div className="mb-4 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold mb-1">Today</h1>
         <p className="text-sm text-gray-500">오늘 해야 할 일정만 빠르게 정리하는 보드</p>

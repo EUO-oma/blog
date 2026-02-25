@@ -123,7 +123,7 @@ export default function PhonebookPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+    <div className="max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">업체 전화번호 폰북</h1>
         <p className="text-sm text-gray-500">Firebase 동기화: {user.email}</p>

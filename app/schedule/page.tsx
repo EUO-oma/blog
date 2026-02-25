@@ -136,7 +136,7 @@ export default function SchedulePage() {
 
   if (error) {
     return (
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div className="max-w-5xl mx-auto">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-800 dark:text-red-200">{error}</p>
           <button
@@ -287,7 +287,7 @@ export default function SchedulePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+    <div className="max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold">일정 관리</h1>
         <div className="flex gap-2 sm:gap-3 flex-wrap">
