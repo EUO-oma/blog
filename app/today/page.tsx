@@ -117,21 +117,21 @@ export default function TodayPage() {
         <p className="text-sm text-gray-500">오늘 해야 할 일정만 빠르게 정리하는 보드</p>
       </div>
 
-      <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-sm text-indigo-900">
+      <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-sm text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-900/20 dark:text-indigo-100">
         오늘 일정 <b>{todayItems.length}</b>건
         {message ? <span className="ml-3">• {message}</span> : null}
       </div>
 
       {cacheRows.length > 0 && (
         <section className="mb-5">
-          <h2 className="text-sm font-semibold text-indigo-700 mb-2">Google Calendar 동기화</h2>
+          <h2 className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-2">Google Calendar 동기화</h2>
           <div className="space-y-2">
             {cacheRows.map((item) => {
               const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
               return (
-                <article key={item.id} className="rounded-lg border border-indigo-100 bg-indigo-50 p-3">
-                  <div className="text-sm font-medium">{item.title}</div>
-                  <div className="text-xs text-indigo-700 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
+                <article key={item.id} className="rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</div>
+                  <div className="text-xs text-indigo-700 dark:text-indigo-300 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
                 </article>
               )
             })}
