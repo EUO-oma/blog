@@ -34,7 +34,7 @@ export default function Header() {
       <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
         <div className="flex items-center justify-between">
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm sm:text-base">
             <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Home
             </Link>
