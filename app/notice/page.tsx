@@ -89,7 +89,7 @@ export default function NoticePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
       <div className="flex justify-between items-center mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold">공지사항</h1>
         {user && (

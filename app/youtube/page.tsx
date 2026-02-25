@@ -68,8 +68,8 @@ export default function YouTubePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-8">
         <h1 className="text-3xl font-bold">YouTube Videos</h1>
         {user && (
           <button

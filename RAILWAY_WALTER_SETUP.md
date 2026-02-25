@@ -24,7 +24,11 @@
 - `SUPABASE_SERVICE_ROLE_KEY` = `<service_role_key>` (권장)
 - `WALTER_OWNER_ID` = `8497629423`
 - `WALTER_POLL_MS` = `30000`
+- `WALTER_OFF_HOURS_POLL_MS` = `300000` (오프시간 5분 간격)
 - `WALTER_STALE_HOURS` = `12`
+- `WALTER_TZ` = `Asia/Seoul`
+- `WALTER_ACTIVE_START_HOUR` = `8`
+- `WALTER_ACTIVE_END_HOUR` = `19`
 
 > 참고: 읽기만 할 경우 anon key도 가능하지만, 안정성을 위해 service_role_key 권장.
 
