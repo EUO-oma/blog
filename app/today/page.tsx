@@ -28,6 +28,8 @@ export default function TodayPage() {
   const [message, setMessage] = useState('')
 
   const canEdit = user?.email?.toLowerCase() === OWNER_EMAIL
+  const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
+  const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
 
   const load = async () => {
     setLoading(true)
@@ -102,6 +104,32 @@ export default function TodayPage() {
     setTimeout(() => setMessage(''), 1200)
   }
 
+  const deleteFromGoogleCalendar = async (eventId: string) => {
+    if (!canEdit) return
+    if (!gasWebAppUrl || !gasApiToken) {
+      setMessage('GAS 연동 설정(NEXT_PUBLIC_GAS_WEBAPP_URL / TOKEN)이 필요해요.')
+      return
+    }
+    if (!confirm('구글 캘린더 원본에서 이 일정을 삭제할까요?')) return
+
+    try {
+      const res = await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken }),
+      })
+      const data = await res.json()
+      if (!data?.ok) {
+        setMessage(`캘린더 삭제 실패: ${data?.error || 'unknown'}`)
+        return
+      }
+      setMessage('캘린더 원본 삭제 완료')
+      await load()
+    } catch (e: any) {
+      setMessage(`캘린더 삭제 오류: ${e?.message || e}`)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -135,14 +163,24 @@ export default function TodayPage() {
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</div>
                       <div className="text-xs text-indigo-700 dark:text-indigo-300 mt-1">{time}{item.location ? ` · ${item.location}` : ''}</div>
                     </div>
-                    <a
-                      href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="shrink-0 px-2 py-1 rounded border text-[11px] bg-white/80 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-700"
-                    >
-                      캘린더 열기
-                    </a>
+                    <div className="flex gap-1">
+                      <a
+                        href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="shrink-0 px-2 py-1 rounded border text-[11px] bg-white/80 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-700"
+                      >
+                        열기
+                      </a>
+                      {canEdit && (
+                        <button
+                          onClick={() => deleteFromGoogleCalendar(item.eventId)}
+                          className="shrink-0 px-2 py-1 rounded border text-[11px] bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </article>
               )
