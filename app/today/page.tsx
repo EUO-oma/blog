@@ -123,7 +123,11 @@ export default function TodayPage() {
         setMessage(`캘린더 삭제 실패: ${data?.error || 'unknown'}`)
         return
       }
-      setMessage('캘린더 원본 삭제 완료')
+      if (data?.deleted === false) {
+        setMessage('이미 캘린더에서 삭제된 일정이야. 목록을 최신화했어.')
+      } else {
+        setMessage('캘린더 원본 삭제 완료')
+      }
       await load()
     } catch (e: any) {
       setMessage(`캘린더 삭제 오류: ${e?.message || e}`)
