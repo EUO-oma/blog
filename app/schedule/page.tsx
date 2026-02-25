@@ -8,7 +8,7 @@ import ScheduleModal from '@/components/ScheduleModal';
 import ScheduleForm from '@/components/ScheduleForm';
 import { exportSchedulesToExcel } from '@/lib/export-schedules';
 import { downloadICS } from '@/lib/calendar-utils';
-import WalterLineLoader from '@/components/WalterLineLoader';
+import LoaderSwitcher from '@/components/LoaderSwitcher';
 
 export default function SchedulePage() {
   const { user } = useAuth();
@@ -129,7 +129,7 @@ export default function SchedulePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <WalterLineLoader label="일정을 불러오는 중..." />
+        <LoaderSwitcher label="일정을 불러오는 중..." />
       </div>
     );
   }

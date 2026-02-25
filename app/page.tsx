@@ -5,7 +5,7 @@ import { BlogPost } from '@/lib/firebase'
 import { getPosts } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
-import WalterLineLoader from '@/components/WalterLineLoader'
+import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { useAuth } from '@/contexts/AuthContext'
 
 type DateFilter = 'all' | '7d' | '30d' | '365d'
@@ -132,7 +132,7 @@ export default function HomePage() {
       <section>
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
-            <WalterLineLoader label="포스트를 불러오는 중..." />
+            <LoaderSwitcher label="포스트를 불러오는 중..." />
           </div>
         ) : filteredPosts.length === 0 ? (
           <p className="text-gray-600 dark:text-gray-400">조건에 맞는 포스트가 없습니다.</p>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Notice, getNotices, deleteNotice } from '@/lib/firebase-notices'
 import NoticeForm from '@/components/NoticeForm'
-import WalterLineLoader from '@/components/WalterLineLoader'
+import LoaderSwitcher from '@/components/LoaderSwitcher'
 
 export default function NoticePage() {
   const { user } = useAuth()
@@ -83,7 +83,7 @@ export default function NoticePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <WalterLineLoader label="공지사항을 불러오는 중..." />
+        <LoaderSwitcher label="공지사항을 불러오는 중..." />
       </div>
     )
   }
