@@ -22,6 +22,22 @@ function safeText(v: string | null | undefined) {
   return v;
 }
 
+function commandCategory(text: string) {
+  const t = text.toLowerCase();
+  if (t.includes('배터리') || t.includes('전원') || t.includes('상태')) return '시스템';
+  if (t.includes('원드라이브') || t.includes('폴더') || t.includes('이동') || t.includes('파일')) return '파일';
+  if (t.includes('블로그') || t.includes('공지') || t.includes('여백') || t.includes('디자인')) return '블로그';
+  if (t.includes('캘린더') || t.includes('일정') || t.includes('동기화')) return '일정';
+  return '기타';
+}
+
+function commandPriority(text: string) {
+  const t = text.toLowerCase();
+  if (t.includes('긴급') || t.includes('즉시') || t.includes('오류') || t.includes('에러')) return '높음';
+  if (t.includes('개선') || t.includes('정리') || t.includes('요약')) return '보통';
+  return '일반';
+}
+
 export default function WalterBoardPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<WalterCommand[]>([]);
@@ -108,11 +124,19 @@ export default function WalterBoardPage() {
   };
 
   const filteredRows = useMemo(() => {
-    if (statusFilter === 'all') return rows;
-    return rows.filter((r) => r.status === statusFilter);
+    const base = statusFilter === 'all' ? rows : rows.filter((r) => r.status === statusFilter);
+    return [...base].sort((a, b) => {
+      const score = (s: string) => (s === 'queued' ? 0 : s === 'running' ? 1 : s === 'error' ? 2 : 3);
+      const byStatus = score(a.status) - score(b.status);
+      if (byStatus !== 0) return byStatus;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [rows, statusFilter]);
 
   const queuedCount = rows.filter((r) => r.status === 'queued').length;
+  const staleQueuedIds = rows
+    .filter((r) => r.status === 'queued' && Date.now() - new Date(r.created_at).getTime() > 1000 * 60 * 60 * 12)
+    .map((r) => r.id);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-10">
@@ -161,10 +185,20 @@ export default function WalterBoardPage() {
         >
           완료/에러 선택
         </button>
+        <button
+          onClick={() => setSelectedIds(staleQueuedIds)}
+          className="px-2 py-1 rounded border bg-white text-gray-700"
+        >
+          오래된 queued 선택 ({staleQueuedIds.length})
+        </button>
         <button onClick={deleteSelected} disabled={!canWrite} className="px-2 py-1 rounded border bg-red-600 text-white disabled:bg-gray-400">
           선택 삭제 ({selectedIds.length})
         </button>
         <span className="ml-3 text-gray-500">대기열: {queuedCount}건</span>
+      </div>
+
+      <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-xs text-indigo-900">
+        자동처리 도우미: queued/running 우선 정렬 + 12시간 이상 대기열 빠른 선택 기능 적용됨.
       </div>
 
       {error ? <div className="mb-6 rounded-lg border border-red-200 bg-red-50 text-red-700 p-4 text-sm whitespace-pre-wrap">{error}</div> : null}
@@ -200,7 +234,13 @@ export default function WalterBoardPage() {
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">{new Date(row.created_at).toLocaleString('ko-KR')}</td>
-                  <td className="px-4 py-3 min-w-[260px] text-gray-900 dark:text-gray-100">{safeText(row.command_text)}</td>
+                  <td className="px-4 py-3 min-w-[260px] text-gray-900 dark:text-gray-100">
+                    <div>{safeText(row.command_text)}</div>
+                    <div className="mt-1 flex gap-1">
+                      <span className="inline-block rounded px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700">{commandCategory(row.command_text || '')}</span>
+                      <span className="inline-block rounded px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-700">우선순위: {commandPriority(row.command_text || '')}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3"><span className="inline-block rounded-full px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100">{row.status}</span></td>
                   <td className="px-4 py-3 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{safeText(row.result_text)}</td>
                   <td className="px-4 py-3">
