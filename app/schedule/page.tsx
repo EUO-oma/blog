@@ -136,7 +136,7 @@ export default function SchedulePage() {
 
   if (error) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-800 dark:text-red-200">{error}</p>
           <button
@@ -287,8 +287,8 @@ export default function SchedulePage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold">일정 관리</h1>
         <div className="flex gap-2 sm:gap-3 flex-wrap">
           {schedules.length > 0 && (
@@ -331,7 +331,7 @@ export default function SchedulePage() {
 
       {/* 오늘의 일정 하이라이트 */}
       {todaySchedules.length > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
           <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">🗓️ 오늘의 일정</h2>
           <div className="space-y-2">
             {todaySchedules.map((schedule) => (
@@ -356,7 +356,7 @@ export default function SchedulePage() {
 
       {/* 다가올 일정 미리보기 (모바일) */}
       {isMobile && upcomingSchedules.length > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
           <h2 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-3">📅 다가올 일정</h2>
           <div className="space-y-2">
             {upcomingSchedules.slice(0, 3).map((schedule) => (
@@ -378,7 +378,7 @@ export default function SchedulePage() {
           {expandedSchedules.map((schedule) => (
             <div
               key={schedule.occurrenceKey}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
