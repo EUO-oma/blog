@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import {
@@ -12,7 +12,8 @@ import {
 } from '@/lib/firebase-calendar-cache'
 
 export default function CalendarSyncDetailPage() {
-  const params = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id') || ''
   const router = useRouter()
   const { user } = useAuth()
 
@@ -29,10 +30,10 @@ export default function CalendarSyncDetailPage() {
 
   useEffect(() => {
     const load = async () => {
-      if (!params?.id) return
+      if (!id) return
       setLoading(true)
       try {
-        const found = await getCalendarCacheItemById(params.id)
+        const found = await getCalendarCacheItemById(id)
         setItem(found)
         if (found) {
           setForm({
@@ -49,7 +50,7 @@ export default function CalendarSyncDetailPage() {
       }
     }
     load()
-  }, [params?.id])
+  }, [id])
 
   const syncNow = async () => {
     if (!gasWebAppUrl || !gasApiToken) return
@@ -67,7 +68,6 @@ export default function CalendarSyncDetailPage() {
     setSaving(true)
     setMsg('')
     try {
-      // 1) Firebase 캐시 즉시 반영
       await updateCalendarCacheItem(item.id, {
         title: form.title,
         description: form.description,
@@ -77,7 +77,6 @@ export default function CalendarSyncDetailPage() {
         allDay: form.allDay,
       })
 
-      // 2) Google Calendar 원본 반영
       const res = await fetch(gasWebAppUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,13 +95,9 @@ export default function CalendarSyncDetailPage() {
         }),
       })
       const data = await res.json()
-      if (!data?.ok) {
-        setMsg(`원본 반영 실패: ${data?.error || 'unknown'}`)
-      } else {
-        setMsg('저장 완료')
-      }
+      if (!data?.ok) setMsg(`원본 반영 실패: ${data?.error || 'unknown'}`)
+      else setMsg('저장 완료')
 
-      // 3) 즉시 동기화
       await syncNow()
     } catch (e: any) {
       setMsg(`저장 실패: ${e?.message || e}`)
@@ -117,33 +112,24 @@ export default function CalendarSyncDetailPage() {
     if (!confirm('이 일정을 삭제할까요?')) return
 
     try {
-      // 1) 캐시 먼저 삭제
       await deleteCalendarCacheItemById(item.id)
       setMsg('목록에서 제거됨. 원본 삭제 처리 중...')
 
-      // 2) 원본 삭제
       await fetch(gasWebAppUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deleteEvent', eventId: item.eventId, token: gasApiToken }),
       }).catch(() => {})
 
-      // 3) 즉시 동기화
       await syncNow()
-
       router.push('/schedule')
     } catch (e: any) {
       setMsg(`삭제 실패: ${e?.message || e}`)
     }
   }
 
-  if (loading) {
-    return <div className="py-10 flex justify-center"><LoaderSwitcher label="일정 상세 불러오는 중..." /></div>
-  }
-
-  if (!item) {
-    return <p className="text-gray-500">해당 일정을 찾을 수 없어.</p>
-  }
+  if (loading) return <div className="py-10 flex justify-center"><LoaderSwitcher label="일정 상세 불러오는 중..." /></div>
+  if (!item) return <p className="text-gray-500">해당 일정을 찾을 수 없어.</p>
 
   return (
     <main className="max-w-5xl mx-auto">
@@ -153,31 +139,14 @@ export default function CalendarSyncDetailPage() {
       </div>
 
       <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 space-y-3">
-        <div>
-          <label className="text-sm">제목</label>
-          <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-        </div>
-        <div>
-          <label className="text-sm">설명</label>
-          <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-        </div>
+        <div><label className="text-sm">제목</label><input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" /></div>
+        <div><label className="text-sm">설명</label><textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" /></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label className="text-sm">시작</label>
-            <input value={form.startAt} onChange={(e) => setForm((p) => ({ ...p, startAt: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
-          <div>
-            <label className="text-sm">종료</label>
-            <input value={form.endAt} onChange={(e) => setForm((p) => ({ ...p, endAt: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
+          <div><label className="text-sm">시작</label><input value={form.startAt} onChange={(e) => setForm((p) => ({ ...p, startAt: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" /></div>
+          <div><label className="text-sm">종료</label><input value={form.endAt} onChange={(e) => setForm((p) => ({ ...p, endAt: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" /></div>
         </div>
-        <div>
-          <label className="text-sm">장소</label>
-          <input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-        </div>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.allDay} onChange={(e) => setForm((p) => ({ ...p, allDay: e.target.checked }))} /> 종일 일정
-        </label>
+        <div><label className="text-sm">장소</label><input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" /></div>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={form.allDay} onChange={(e) => setForm((p) => ({ ...p, allDay: e.target.checked }))} /> 종일 일정</label>
 
         <div className="flex gap-2">
           <button onClick={save} disabled={!canEdit || saving} className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50">{saving ? '저장중...' : '저장'}</button>

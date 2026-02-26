@@ -475,7 +475,7 @@ export default function SchedulePage() {
                     return (
                       <div key={item.id} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
                         <a
-                          href={`/calendar-sync/${item.id}`}
+                          href={`/calendar-sync?id=${encodeURIComponent(item.id)}`}
                           className="truncate flex-1 rounded px-1.5 py-1 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/30"
                           title="일정 상세/수정"
                         >
