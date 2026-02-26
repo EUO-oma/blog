@@ -105,7 +105,7 @@ export default function HomePage() {
         body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
       }).catch(() => {})
 
-      setTodayMsg(data?.deleted === false ? '이미 삭제된 일정이야. 최신화했어.' : '캘린더 원본 삭제 완료')
+      setTodayMsg(data?.deleted === false ? '캘린더 원본에서 이벤트를 찾지 못했어. 목록은 최신화했어.' : '캘린더 원본 삭제 완료')
       const refreshed = await getTodayCalendarCacheItems().catch(() => [])
       setTodayItems(refreshed)
     } catch {

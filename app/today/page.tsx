@@ -133,7 +133,7 @@ export default function TodayPage() {
       }).catch(() => {})
 
       if (data?.deleted === false) {
-        setMessage('이미 캘린더에서 삭제된 일정이야. 목록을 최신화했어.')
+        setMessage('캘린더 원본에서 이벤트를 찾지 못했어. 목록은 최신화했어.')
       } else {
         setMessage('캘린더 원본 삭제 완료')
       }
