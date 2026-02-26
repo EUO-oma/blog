@@ -21,6 +21,7 @@ export default function Header() {
   const { user, logout } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [drawerLeft, setDrawerLeft] = useState(0)
 
   useEffect(() => {
     const handleOpenLoginModal = () => {
@@ -32,6 +33,24 @@ export default function Header() {
     return () => {
       window.removeEventListener('openLoginModal', handleOpenLoginModal)
     }
+  }, [])
+
+  useEffect(() => {
+    const updateDrawerLeft = () => {
+      if (typeof window === 'undefined') return
+      const vw = window.innerWidth
+      if (vw < 768) {
+        setDrawerLeft(0)
+        return
+      }
+
+      const contentStart = Math.max(0, (vw - 1024) / 2 + 16) // max-w-5xl + container px-4
+      setDrawerLeft(contentStart)
+    }
+
+    updateDrawerLeft()
+    window.addEventListener('resize', updateDrawerLeft)
+    return () => window.removeEventListener('resize', updateDrawerLeft)
   }, [])
 
   const authButton = (
@@ -103,7 +122,10 @@ export default function Header() {
       {menuOpen && (
         <div className="fixed inset-0 z-[60]">
           <button className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} aria-label="메뉴 닫기 배경" />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shadow-xl">
+          <aside
+            className="absolute top-0 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shadow-xl"
+            style={{ left: drawerLeft }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">메뉴</h2>
               <button onClick={() => setMenuOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="메뉴 닫기">
