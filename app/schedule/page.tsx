@@ -126,11 +126,14 @@ export default function SchedulePage() {
   const shareSynced = async (item: CalendarTodayCacheItem) => {
     const text = `🗓️ ${item.title}\n${item.startAt || ''}${item.location ? `\n📍 ${item.location}` : ''}`;
     try {
-      if (typeof navigator !== 'undefined' && 'share' in navigator) {
-        await (navigator as any).share({ title: item.title, text });
-      } else {
-        await navigator.clipboard.writeText(text);
+      const nav: any = typeof navigator !== 'undefined' ? navigator : null;
+      if (nav && typeof nav.share === 'function') {
+        await nav.share({ title: item.title, text });
+      } else if (nav?.clipboard?.writeText) {
+        await nav.clipboard.writeText(text);
         setSyncMsg('공유 미지원 환경이라 일정 내용을 복사했어.');
+      } else {
+        setSyncMsg('이 브라우저에서는 공유/복사가 제한돼 있어.');
       }
     } catch {
       setSyncMsg('공유가 취소되었거나 실패했어.');
