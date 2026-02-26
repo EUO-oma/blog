@@ -54,7 +54,17 @@ export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSit
   const q = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
   const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
-  return normalize(rows)
+  if (rows.length > 0) return normalize(rows)
+
+  // 3) 마지막 폴백: 과거 데이터(authorEmail 누락) 복구용
+  // owner 계정일 때만 전체를 읽어와 누락 데이터까지 표시
+  if (authorEmail.toLowerCase() === 'icandoit13579@gmail.com') {
+    const allSnap = await getDocs(collection(db, COL))
+    const allRows = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
+    return normalize(allRows)
+  }
+
+  return []
 }
 
 export async function createFavoriteSite(
