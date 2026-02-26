@@ -7,12 +7,14 @@ import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { useAuth } from '@/contexts/AuthContext'
+import { getTodayCalendarCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache'
 
 type DateFilter = 'all' | '7d' | '30d' | '365d'
 
 export default function HomePage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
+  const [todayItems, setTodayItems] = useState<CalendarTodayCacheItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -23,8 +25,12 @@ export default function HomePage() {
 
   const loadPosts = async () => {
     try {
-      const fetchedPosts = await getPosts()
+      const [fetchedPosts, fetchedToday] = await Promise.all([
+        getPosts(),
+        getTodayCalendarCacheItems().catch(() => []),
+      ])
       setPosts(fetchedPosts)
+      setTodayItems(fetchedToday)
     } catch (error) {
       console.error('Error loading posts:', error)
     } finally {
@@ -85,6 +91,38 @@ export default function HomePage() {
 
   return (
     <>
+      <section className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">오늘 일정</h2>
+          <span className="text-xs text-indigo-700 dark:text-indigo-300">{todayItems.length}건</span>
+        </div>
+        {todayItems.length === 0 ? (
+          <p className="text-sm text-gray-500">동기화된 오늘 일정이 없습니다.</p>
+        ) : (
+          <div className="space-y-2">
+            {todayItems.slice(0, 5).map((item) => {
+              const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
+              return (
+                <div key={item.id} className="flex items-center justify-between rounded border border-indigo-100 dark:border-indigo-900/40 bg-white/80 dark:bg-gray-900/30 px-2.5 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-gray-500">{time}{item.location ? ` · ${item.location}` : ''}</p>
+                  </div>
+                  <a
+                    href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-2 shrink-0 text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    열기
+                  </a>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
       <section className="mb-8">
         <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
