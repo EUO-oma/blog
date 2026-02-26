@@ -475,11 +475,9 @@ export default function SchedulePage() {
                     return (
                       <div key={item.id} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
                         <a
-                          href={item.openUrl || item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
-                          target="_blank"
-                          rel="noreferrer"
+                          href={`/calendar-sync/${item.id}`}
                           className="truncate flex-1 rounded px-1.5 py-1 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/30"
-                          title="일정 열기"
+                          title="일정 상세/수정"
                         >
                           <b>{item.title}</b> · <span className="text-green-700 dark:text-green-300">{when}</span>
                         </a>
