@@ -26,7 +26,16 @@ export interface PhonebookItem {
 const PHONEBOOK_COLLECTION = 'phonebook'
 
 export async function getPhonebookItems(authorEmail: string): Promise<PhonebookItem[]> {
+  const toMillis = (value: any) => {
+    if (!value) return 0
+    if (typeof value?.toMillis === 'function') return value.toMillis()
+    if (typeof value?.toDate === 'function') return value.toDate().getTime()
+    const parsed = new Date(value).getTime()
+    return Number.isNaN(parsed) ? 0 : parsed
+  }
+
   try {
+    // 인덱스가 있는 경우: 서버 정렬
     const q = query(
       collection(db, PHONEBOOK_COLLECTION),
       where('authorEmail', '==', authorEmail),
@@ -39,8 +48,25 @@ export async function getPhonebookItems(authorEmail: string): Promise<PhonebookI
       ...d.data(),
     } as PhonebookItem))
   } catch (error) {
-    console.error('Error fetching phonebook:', error)
-    return []
+    console.error('Error fetching phonebook (indexed query):', error)
+
+    try {
+      // 인덱스 미생성 시 폴백: where만 조회 후 클라이언트 정렬
+      const fallbackQ = query(
+        collection(db, PHONEBOOK_COLLECTION),
+        where('authorEmail', '==', authorEmail)
+      )
+      const fallbackSnapshot = await getDocs(fallbackQ)
+      const rows = fallbackSnapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      } as PhonebookItem))
+
+      return rows.sort((a, b) => toMillis((b as any).createdAt) - toMillis((a as any).createdAt))
+    } catch (fallbackError) {
+      console.error('Error fetching phonebook (fallback):', fallbackError)
+      return []
+    }
   }
 }
 
