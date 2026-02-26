@@ -87,6 +87,13 @@ export default function HomePage() {
         setTodayMsg(`삭제 실패: ${data?.error || 'unknown'}`)
         return
       }
+      // 삭제 직후 즉시 동기화 트리거
+      await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
+      }).catch(() => {})
+
       setTodayMsg(data?.deleted === false ? '이미 삭제된 일정이야. 최신화했어.' : '캘린더 원본 삭제 완료')
       const refreshed = await getTodayCalendarCacheItems().catch(() => [])
       setTodayItems(refreshed)

@@ -164,6 +164,12 @@ export default function SchedulePage() {
         setSyncMsg(`삭제 실패: ${data?.error || 'unknown'}`);
         return;
       }
+      await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
+      }).catch(() => {});
+
       setSyncMsg(data?.deleted === false ? '이미 삭제된 일정이야. 목록에서 정리했어.' : '캘린더 원본 삭제 완료');
       const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
       setCalendarSynced(refreshed);
