@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
@@ -11,7 +11,7 @@ import {
   type CalendarTodayCacheItem,
 } from '@/lib/firebase-calendar-cache'
 
-export default function CalendarSyncDetailPage() {
+function CalendarSyncDetailInner() {
   const searchParams = useSearchParams()
   const id = searchParams.get('id') || ''
   const router = useRouter()
@@ -156,5 +156,13 @@ export default function CalendarSyncDetailPage() {
         {msg ? <p className="text-sm text-gray-500">{msg}</p> : null}
       </section>
     </main>
+  )
+}
+
+export default function CalendarSyncDetailPage() {
+  return (
+    <Suspense fallback={<div className="py-10 flex justify-center"><LoaderSwitcher label="일정 상세 불러오는 중..." /></div>}>
+      <CalendarSyncDetailInner />
+    </Suspense>
   )
 }
