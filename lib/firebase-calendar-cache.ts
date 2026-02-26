@@ -23,7 +23,7 @@ export async function getTodayCalendarCacheItems(): Promise<CalendarTodayCacheIt
   return getCalendarRangeCacheItems(0)
 }
 
-export async function getCalendarRangeCacheItems(rangeDays = 30): Promise<CalendarTodayCacheItem[]> {
+export async function getCalendarRangeCacheItems(rangeDays = 60): Promise<CalendarTodayCacheItem[]> {
   const start = new Date()
   start.setHours(0, 0, 0, 0)
   const end = new Date(start)

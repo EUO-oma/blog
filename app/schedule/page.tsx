@@ -58,7 +58,7 @@ export default function SchedulePage() {
     try {
       const [fetchedSchedules, fetchedCalendar] = await Promise.all([
         getSchedules(),
-        getCalendarRangeCacheItems(30).catch(() => []),
+        getCalendarRangeCacheItems(60).catch(() => []),
       ]);
       // 데이터 유효성 검증
       const validSchedules = fetchedSchedules.filter(schedule => 
@@ -171,13 +171,13 @@ export default function SchedulePage() {
       }).catch(() => {});
 
       setSyncMsg(data?.deleted === false ? '이미 삭제된 일정이야. 목록에서 정리했어.' : '캘린더 원본 삭제 완료');
-      const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
+      const refreshed = await getCalendarRangeCacheItems(60).catch(() => []);
       setCalendarSynced(refreshed);
     } catch {
       await fetch(gasWebAppUrl, { method: 'POST', mode: 'no-cors', body: payload });
       setSyncMsg('삭제 요청 전송됨. 잠시 후 최신화할게.');
       setTimeout(async () => {
-        const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
+        const refreshed = await getCalendarRangeCacheItems(60).catch(() => []);
         setCalendarSynced(refreshed);
       }, 1500);
     }
@@ -455,7 +455,7 @@ export default function SchedulePage() {
       {/* Google Calendar 동기화 (1개월) */}
       {calendarSynced.length > 0 && (
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">🔄 Google 캘린더 동기화 (1개월)</h2>
+          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">🔄 Google 캘린더 동기화 (2개월)</h2>
           {syncMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{syncMsg}</p> : null}
 
           <div className="space-y-3">
