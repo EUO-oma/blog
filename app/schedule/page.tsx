@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Schedule } from '@/lib/firebase';
 import { getSchedules, deleteSchedule } from '@/lib/firebase-schedules';
@@ -474,13 +475,13 @@ export default function SchedulePage() {
                     const when = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
                     return (
                       <div key={item.id} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
-                        <a
+                        <Link
                           href={`/calendar-sync?id=${encodeURIComponent(item.id)}`}
                           className="truncate flex-1 rounded px-1.5 py-1 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/30"
                           title="일정 상세/수정"
                         >
                           <b>{item.title}</b> · <span className="text-green-700 dark:text-green-300">{when}</span>
-                        </a>
+                        </Link>
                         <div className="shrink-0 flex gap-2">
                           <a
                             href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}

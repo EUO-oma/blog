@@ -14,6 +14,10 @@ export type CalendarTodayCacheItem = {
   source: string
   openUrl?: string
   editUrl?: string
+  syncStatus?: 'ok' | 'pending' | 'failed' | string
+  lastAction?: string
+  lastError?: string
+  lastSyncedAt?: any
   syncedAt?: any
 }
 
