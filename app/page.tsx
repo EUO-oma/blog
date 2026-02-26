@@ -22,6 +22,10 @@ export default function HomePage() {
   const [search, setSearch] = useState('')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
+  const [todayMsg, setTodayMsg] = useState('')
+  const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
+  const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
+  const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
 
   const loadPosts = async () => {
     try {
@@ -62,6 +66,40 @@ export default function HomePage() {
     }
   }
 
+  const deleteFromGoogleCalendar = async (eventId: string) => {
+    if (!canDeleteCalendar) return
+    if (!gasWebAppUrl || !gasApiToken) {
+      setTodayMsg('GAS 연동 변수 누락')
+      return
+    }
+    if (!confirm('캘린더 원본에서 삭제할까요?')) return
+
+    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken })
+
+    try {
+      const res = await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      })
+      const data = await res.json()
+      if (!data?.ok) {
+        setTodayMsg(`삭제 실패: ${data?.error || 'unknown'}`)
+        return
+      }
+      setTodayMsg(data?.deleted === false ? '이미 삭제된 일정이야. 최신화했어.' : '캘린더 원본 삭제 완료')
+      const refreshed = await getTodayCalendarCacheItems().catch(() => [])
+      setTodayItems(refreshed)
+    } catch {
+      await fetch(gasWebAppUrl, { method: 'POST', mode: 'no-cors', body: payload })
+      setTodayMsg('삭제 요청 전송됨. 잠시 후 최신화할게.')
+      setTimeout(async () => {
+        const refreshed = await getTodayCalendarCacheItems().catch(() => [])
+        setTodayItems(refreshed)
+      }, 1500)
+    }
+  }
+
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase()
     const now = Date.now()
@@ -96,6 +134,7 @@ export default function HomePage() {
           <h2 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">오늘 일정</h2>
           <span className="text-xs text-indigo-700 dark:text-indigo-300">{todayItems.length}건</span>
         </div>
+        {todayMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{todayMsg}</p> : null}
         {todayItems.length === 0 ? (
           <p className="text-sm text-gray-500">동기화된 오늘 일정이 없습니다.</p>
         ) : (
@@ -108,14 +147,24 @@ export default function HomePage() {
                     <p className="text-sm font-medium truncate">{item.title}</p>
                     <p className="text-xs text-gray-500">{time}{item.location ? ` · ${item.location}` : ''}</p>
                   </div>
-                  <a
-                    href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-2 shrink-0 text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    열기
-                  </a>
+                  <div className="ml-2 shrink-0 flex gap-1">
+                    <a
+                      href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      열기
+                    </a>
+                    {canDeleteCalendar ? (
+                      <button
+                        onClick={() => deleteFromGoogleCalendar(item.eventId)}
+                        className="text-xs px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
+                      >
+                        삭제
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               )
             })}
