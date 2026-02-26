@@ -7,6 +7,7 @@ import {
   createPhonebookItem,
   deletePhonebookItem,
   getPhonebookItems,
+  updatePhonebookItem,
 } from '@/lib/firebase-phonebook'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 
@@ -19,6 +20,7 @@ export default function PhonebookPage() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('전체')
   const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [form, setForm] = useState({ company: '', category: '기타', phone: '', memo: '' })
 
@@ -63,24 +65,49 @@ export default function PhonebookPage() {
     }
   }
 
-  const addItem = async () => {
+  const shareContact = async (item: PhonebookItem) => {
+    const text = `${item.company}\n${item.phone}${item.memo ? `\n${item.memo}` : ''}`
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share({ title: item.company, text })
+      } else {
+        await navigator.clipboard.writeText(text)
+        setMessage('공유 미지원 환경이라 연락처를 복사했어.')
+      }
+    } catch {
+      setMessage('공유가 취소되었거나 실패했어.')
+    }
+  }
+
+  const saveItem = async () => {
     if (!user?.email) return setMessage('로그인 후 사용할 수 있어요.')
     if (!form.company.trim() || !form.phone.trim()) return setMessage('업체명/전화번호를 입력해줘.')
 
     setSaving(true)
     setMessage('')
     try {
-      await createPhonebookItem({
-        company: form.company.trim(),
-        category: form.category,
-        phone: form.phone.trim(),
-        memo: form.memo.trim(),
-        authorEmail: user.email,
-        authorName: user.displayName || user.email,
-      })
+      if (editingId) {
+        await updatePhonebookItem(editingId, {
+          company: form.company.trim(),
+          category: form.category,
+          phone: form.phone.trim(),
+          memo: form.memo.trim(),
+        })
+        setMessage('연락처를 수정했어.')
+      } else {
+        await createPhonebookItem({
+          company: form.company.trim(),
+          category: form.category,
+          phone: form.phone.trim(),
+          memo: form.memo.trim(),
+          authorEmail: user.email,
+          authorName: user.displayName || user.email,
+        })
+        setMessage('연락처를 저장했어.')
+      }
 
+      setEditingId(null)
       setForm({ company: '', category: '기타', phone: '', memo: '' })
-      setMessage('연락처를 저장했어.')
       await loadItems()
     } catch (e: any) {
       setMessage(`저장 실패: ${e?.message || e}`)
@@ -164,12 +191,23 @@ export default function PhonebookPage() {
         </div>
         <div className="mt-3 flex items-center gap-3">
           <button
-            onClick={addItem}
+            onClick={saveItem}
             disabled={saving}
             className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
           >
-            {saving ? '저장 중...' : '+ 추가'}
+            {saving ? '저장 중...' : editingId ? '수정 저장' : '+ 추가'}
           </button>
+          {editingId ? (
+            <button
+              onClick={() => {
+                setEditingId(null)
+                setForm({ company: '', category: '기타', phone: '', memo: '' })
+              }}
+              className="px-3 py-2 rounded border text-sm"
+            >
+              수정 취소
+            </button>
+          ) : null}
           {message ? <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p> : null}
         </div>
       </section>
@@ -219,12 +257,18 @@ export default function PhonebookPage() {
                     <p className="mt-1 text-sm">{it.phone}</p>
                     {it.memo ? <p className="mt-1 text-xs text-gray-500">{it.memo}</p> : null}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => copyPhone(it.phone)}
                       className="px-3 py-1.5 rounded border text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
                       복사
+                    </button>
+                    <button
+                      onClick={() => shareContact(it)}
+                      className="px-3 py-1.5 rounded border text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      공유
                     </button>
                     <a
                       href={`tel:${it.phone.replace(/[^0-9+]/g, '')}`}
@@ -232,6 +276,21 @@ export default function PhonebookPage() {
                     >
                       전화
                     </a>
+                    <button
+                      onClick={() => {
+                        setEditingId(it.id || null)
+                        setForm({
+                          company: it.company,
+                          category: it.category,
+                          phone: it.phone,
+                          memo: it.memo || '',
+                        })
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                      }}
+                      className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm hover:bg-amber-600"
+                    >
+                      수정
+                    </button>
                     <button
                       onClick={() => removeItem(it.id)}
                       className="px-3 py-1.5 rounded bg-red-600 text-white text-sm hover:bg-red-700"

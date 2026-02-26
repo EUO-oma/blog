@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
   Timestamp,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from './firebase'
@@ -35,7 +36,6 @@ export async function getPhonebookItems(authorEmail: string): Promise<PhonebookI
   }
 
   try {
-    // 인덱스가 있는 경우: 서버 정렬
     const q = query(
       collection(db, PHONEBOOK_COLLECTION),
       where('authorEmail', '==', authorEmail),
@@ -51,11 +51,7 @@ export async function getPhonebookItems(authorEmail: string): Promise<PhonebookI
     console.error('Error fetching phonebook (indexed query):', error)
 
     try {
-      // 인덱스 미생성 시 폴백: where만 조회 후 클라이언트 정렬
-      const fallbackQ = query(
-        collection(db, PHONEBOOK_COLLECTION),
-        where('authorEmail', '==', authorEmail)
-      )
+      const fallbackQ = query(collection(db, PHONEBOOK_COLLECTION), where('authorEmail', '==', authorEmail))
       const fallbackSnapshot = await getDocs(fallbackQ)
       const rows = fallbackSnapshot.docs.map((d) => ({
         id: d.id,
@@ -83,6 +79,21 @@ export async function createPhonebookItem(
     return ref.id
   } catch (error) {
     console.error('Error creating phonebook item:', error)
+    throw error
+  }
+}
+
+export async function updatePhonebookItem(
+  id: string,
+  data: Pick<PhonebookItem, 'company' | 'category' | 'phone' | 'memo'>
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, PHONEBOOK_COLLECTION, id), {
+      ...data,
+      updatedAt: Timestamp.now(),
+    })
+  } catch (error) {
+    console.error('Error updating phonebook item:', error)
     throw error
   }
 }
