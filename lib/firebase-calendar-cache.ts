@@ -18,10 +18,25 @@ export type CalendarTodayCacheItem = {
 const COL = 'calendar_today_cache'
 
 export async function getTodayCalendarCacheItems(): Promise<CalendarTodayCacheItem[]> {
-  const today = new Date().toISOString().slice(0, 10)
+  return getCalendarRangeCacheItems(0)
+}
+
+export async function getCalendarRangeCacheItems(rangeDays = 30): Promise<CalendarTodayCacheItem[]> {
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(end.getDate() + rangeDays)
+  end.setHours(23, 59, 59, 999)
+
   const q = query(collection(db, COL), orderBy('startAt', 'asc'))
   const snap = await getDocs(q)
-
   const all = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as CalendarTodayCacheItem[]
-  return all.filter((it) => String(it.startAt || '').startsWith(today))
+
+  return all.filter((it) => {
+    const raw = String(it.startAt || '')
+    if (!raw) return false
+    const date = new Date(raw)
+    if (Number.isNaN(date.getTime())) return false
+    return date >= start && date <= end
+  })
 }
