@@ -356,18 +356,22 @@ export default function SchedulePage() {
     }
   };
 
+  const getDateKey = (item: CalendarTodayCacheItem) => {
+    const raw = String(item.startAt || '')
+    if (!raw) return ''
+    // 타임존 변환 오차 방지: 원본 문자열의 날짜부분을 우선 사용
+    if (raw.includes('T')) return raw.slice(0, 10)
+    return raw.slice(0, 10)
+  }
+
   const groupedCalendarSynced = calendarSynced
-    .map((item) => {
-      const d = new Date(item.startAt || '');
-      return { item, date: d, valid: !Number.isNaN(d.getTime()) };
-    })
-    .filter((x) => x.valid)
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map((item) => ({ item, key: getDateKey(item) }))
+    .filter((x) => !!x.key)
+    .sort((a, b) => a.key.localeCompare(b.key) || String(a.item.startAt || '').localeCompare(String(b.item.startAt || '')))
     .reduce((acc: Record<string, CalendarTodayCacheItem[]>, cur) => {
-      const key = cur.date.toISOString().slice(0, 10);
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(cur.item);
-      return acc;
+      if (!acc[cur.key]) acc[cur.key] = []
+      acc[cur.key].push(cur.item)
+      return acc
     }, {} as Record<string, CalendarTodayCacheItem[]>);
 
   return (
