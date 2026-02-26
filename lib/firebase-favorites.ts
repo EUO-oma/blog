@@ -39,32 +39,39 @@ export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSit
       })
       .map((r, i) => ({ ...r, sortOrder: Number.isFinite((r as any).sortOrder) ? (r as any).sortOrder : i }))
 
-  // 1) sortOrder 기준 조회 시도
   try {
-    const q = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('sortOrder', 'asc'))
-    const snap = await getDocs(q)
-    const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
-    // 과거 데이터(sortOrder 없음) 때문에 빈 배열이 나올 수 있어 폴백
-    if (rows.length > 0) return normalize(rows)
-  } catch {
-    // ignore and fallback
+    // 1) sortOrder 기준 조회 시도
+    try {
+      const q1 = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('sortOrder', 'asc'))
+      const snap1 = await getDocs(q1)
+      const rows1 = snap1.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
+      if (rows1.length > 0) return normalize(rows1)
+    } catch (e) {
+      console.warn('favorites q1 fallback:', e)
+    }
+
+    // 2) createdAt 폴백 조회(구데이터 포함)
+    try {
+      const q2 = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('createdAt', 'desc'))
+      const snap2 = await getDocs(q2)
+      const rows2 = snap2.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
+      if (rows2.length > 0) return normalize(rows2)
+    } catch (e) {
+      console.warn('favorites q2 fallback:', e)
+    }
+
+    // 3) 마지막 폴백: owner는 전체 조회
+    if (authorEmail.toLowerCase() === 'icandoit13579@gmail.com') {
+      const allSnap = await getDocs(collection(db, COL))
+      const allRows = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
+      return normalize(allRows)
+    }
+
+    return []
+  } catch (error) {
+    console.error('favorites load failed:', error)
+    return []
   }
-
-  // 2) createdAt 폴백 조회(구데이터 포함)
-  const q = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('createdAt', 'desc'))
-  const snap = await getDocs(q)
-  const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
-  if (rows.length > 0) return normalize(rows)
-
-  // 3) 마지막 폴백: 과거 데이터(authorEmail 누락) 복구용
-  // owner 계정일 때만 전체를 읽어와 누락 데이터까지 표시
-  if (authorEmail.toLowerCase() === 'icandoit13579@gmail.com') {
-    const allSnap = await getDocs(collection(db, COL))
-    const allRows = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
-    return normalize(allRows)
-  }
-
-  return []
 }
 
 export async function createFavoriteSite(

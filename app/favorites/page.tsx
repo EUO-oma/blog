@@ -50,17 +50,21 @@ export default function FavoritesPage() {
       note: form.note.trim(),
     }
 
-    if (editingId) {
-      await updateFavoriteSite(editingId, payload)
-      setMsg('수정 완료')
-    } else {
-      await createFavoriteSite({ ...payload, authorEmail: user.email }, items.length)
-      setMsg('추가 완료')
-    }
+    try {
+      if (editingId) {
+        await updateFavoriteSite(editingId, payload)
+        setMsg('수정 완료')
+      } else {
+        await createFavoriteSite({ ...payload, authorEmail: user.email }, items.length)
+        setMsg('추가 완료')
+      }
 
-    setEditingId(null)
-    setForm({ title: '', url: '', note: '' })
-    await load()
+      setEditingId(null)
+      setForm({ title: '', url: '', note: '' })
+      await load()
+    } catch (e: any) {
+      setMsg(`저장 실패: ${e?.message || e}`)
+    }
   }
 
   const onDropReorder = async (targetId?: string) => {
