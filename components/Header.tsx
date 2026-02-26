@@ -63,8 +63,7 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
           <div className="flex items-center justify-between">
-            {/* Mobile */}
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setMenuOpen(true)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -75,32 +74,6 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-            </div>
-
-            {/* Desktop icon menu */}
-            <div className="hidden md:flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-label={item.label}
-                  title={item.label}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                >
-                  {item.icon}
-                </Link>
-              ))}
-
-              {user?.email?.toLowerCase() === 'icandoit13579@gmail.com' && (
-                <Link
-                  href="/walter-board"
-                  aria-label="Walter Board"
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                  title="Walter Board"
-                >
-                  🜂
-                </Link>
-              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -125,9 +98,9 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* Mobile drawer */}
+      {/* Drawer menu */}
       {menuOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="fixed inset-0 z-[60]">
           <button className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} aria-label="메뉴 닫기 배경" />
           <aside className="absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shadow-xl">
             <div className="flex items-center justify-between mb-4">
