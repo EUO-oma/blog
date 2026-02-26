@@ -20,6 +20,7 @@ export default function FavoritesPage() {
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
 
   const load = async () => {
     if (!user?.email) {
@@ -79,6 +80,7 @@ export default function FavoritesPage() {
     next.splice(to, 0, moved)
     setItems(next)
     setDraggingId(null)
+    setOverId(null)
 
     try {
       await reorderFavoriteSites(next)
@@ -122,15 +124,37 @@ export default function FavoritesPage() {
               key={it.id}
               draggable
               onDragStart={() => setDraggingId(it.id || null)}
-              onDragOver={(e) => e.preventDefault()}
+              onDragEnd={() => {
+                setDraggingId(null)
+                setOverId(null)
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setOverId(it.id || null)
+              }}
               onDrop={() => onDropReorder(it.id)}
-              className={`rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 ${draggingId === it.id ? 'opacity-60' : ''}`}
+              className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-150 ${
+                draggingId === it.id
+                  ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
+                  : overId === it.id
+                  ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/20'
+                  : 'border-gray-200 dark:border-gray-700'
+              }`}
             >
               <div className="flex flex-wrap justify-between items-start gap-3">
-                <div>
-                  <h2 className="font-semibold">{it.title}</h2>
-                  <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
-                  {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
+                <div className="flex items-start gap-2">
+                  <span
+                    className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400"
+                    title="드래그해서 순서 변경"
+                    aria-label="드래그 핸들"
+                  >
+                    ☰
+                  </span>
+                  <div>
+                    <h2 className="font-semibold">{it.title}</h2>
+                    <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
+                    {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => { setEditingId(it.id || null); setForm({ title: it.title, url: it.url, note: it.note || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm">수정</button>
