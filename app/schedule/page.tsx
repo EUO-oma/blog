@@ -25,6 +25,7 @@ export default function SchedulePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [calendarSynced, setCalendarSynced] = useState<CalendarTodayCacheItem[]>([]);
   const [syncMsg, setSyncMsg] = useState<string>('');
+  const [syncMeta, setSyncMeta] = useState<{ lastSyncedAt?: string; hasFailed?: boolean; lastError?: string }>({});
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || '';
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || '';
   const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com';
@@ -67,6 +68,14 @@ export default function SchedulePage() {
       );
       setSchedules(validSchedules);
       setCalendarSynced(fetchedCalendar);
+      const lastSynced = fetchedCalendar
+        .map((x) => (typeof x.lastSyncedAt === 'string' ? x.lastSyncedAt : ''))
+        .filter(Boolean)
+        .sort()
+        .at(-1);
+      const failed = fetchedCalendar.some((x) => String(x.syncStatus || '').toLowerCase() === 'failed');
+      const lastError = fetchedCalendar.find((x) => x.lastError)?.lastError || '';
+      setSyncMeta({ lastSyncedAt: lastSynced, hasFailed: failed, lastError });
     } catch (error) {
       console.error('Error loading schedules:', error);
       setError('일정을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
@@ -460,8 +469,21 @@ export default function SchedulePage() {
       {/* Google Calendar 동기화 (1개월) */}
       {calendarSynced.length > 0 && (
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">🔄 Google 캘린더 동기화 (2개월)</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">🔄 Google 캘린더 동기화 (2개월)</h2>
+            <div className="flex items-center gap-2">
+              <span className={`text-[11px] px-2 py-0.5 rounded ${syncMeta.hasFailed ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'}`}>
+                {syncMeta.hasFailed ? '동기화 주의' : '동기화 정상'}
+              </span>
+              {syncMeta.lastSyncedAt ? (
+                <span className="text-[11px] text-indigo-700 dark:text-indigo-300">마지막 동기화: {new Date(syncMeta.lastSyncedAt).toLocaleString('ko-KR')}</span>
+              ) : null}
+            </div>
+          </div>
           {syncMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{syncMsg}</p> : null}
+          {syncMeta.hasFailed && syncMeta.lastError ? (
+            <p className="text-xs text-red-600 dark:text-red-300 mb-2">최근 오류: {syncMeta.lastError}</p>
+          ) : null}
 
           <div className="space-y-3">
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
