@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import WalterLineLoader from './WalterLineLoader'
 import StarOutlineLoader from './StarOutlineLoader'
-import TwinkleStarsLoader from './TwinkleStarsLoader'
+import HeartOutlineLoader from './HeartOutlineLoader'
 
 export default function LoaderSwitcher({ label = '불러오는 중...' }: { label?: string }) {
   const [index, setIndex] = useState(0)
@@ -13,6 +13,6 @@ export default function LoaderSwitcher({ label = '불러오는 중...' }: { labe
   }, [])
 
   if (index === 1) return <StarOutlineLoader label={label} />
-  if (index === 2) return <TwinkleStarsLoader label={label} />
+  if (index === 2) return <HeartOutlineLoader label={label} />
   return <WalterLineLoader label={label} />
 }
