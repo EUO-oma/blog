@@ -51,13 +51,18 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
   }, [formData, isOpen])
 
   const generatedSlug = useMemo(() => {
-    return (formData.slug || formData.title)
+    const fallbackTitle = formData.content
+      .replace(/[#>*`\-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 20)
+    return (formData.slug || formData.title || fallbackTitle)
       .toLowerCase()
       .replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim()
-  }, [formData.slug, formData.title])
+  }, [formData.slug, formData.title, formData.content])
 
   if (!isOpen) return null
 
@@ -156,14 +161,18 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
         return
       }
 
-      const autoExcerpt = formData.content
+      const cleanedContent = formData.content
         .replace(/[#>*`\-]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
-        .slice(0, 120)
+
+      const autoTitle = cleanedContent.slice(0, 20)
+      const finalTitle = formData.title.trim() || autoTitle || '제목 없음'
+
+      const autoExcerpt = cleanedContent.slice(0, 120)
 
       const postData: any = {
-        title: formData.title,
+        title: finalTitle,
         slug,
         excerpt: formData.excerpt.trim() || autoExcerpt || '요약 없음',
         content: formData.content,
@@ -226,7 +235,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="rounded-md border p-3 bg-gray-50 dark:bg-gray-800/40">
               <p className="text-sm font-medium mb-2">Markdown 가져오기</p>
               <div className="flex flex-wrap gap-2 items-center mb-2">
@@ -250,18 +259,17 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               {importMsg ? <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">{importMsg}</p> : null}
             </div>
 
-            <div>
+            <div className="order-2">
               <label htmlFor="title" className="block text-sm font-medium mb-1">
-                제목 *
+                제목 (선택)
               </label>
               <input
                 type="text"
                 id="title"
-                required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-                placeholder="포스트 제목을 입력하세요"
+                placeholder="비워두면 본문 앞 20자로 자동 생성"
               />
             </div>
 
@@ -310,7 +318,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               />
             </div>
 
-            <div>
+            <div className="order-1">
               <div className="flex items-center justify-between mb-1 gap-2">
                 <label htmlFor="content" className="block text-sm font-medium">
                   내용 * (Markdown 지원)
