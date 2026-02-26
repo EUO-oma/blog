@@ -1,4 +1,4 @@
-import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { collection, deleteDoc, getDocs, orderBy, query, where } from 'firebase/firestore'
 import { db } from './firebase'
 
 export type CalendarTodayCacheItem = {
@@ -41,4 +41,10 @@ export async function getCalendarRangeCacheItems(rangeDays = 30): Promise<Calend
     if (Number.isNaN(date.getTime())) return false
     return date >= start && date <= end
   })
+}
+
+export async function deleteCalendarCacheByEventId(eventId: string): Promise<void> {
+  const q = query(collection(db, COL), where('eventId', '==', eventId))
+  const snap = await getDocs(q)
+  await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)))
 }

@@ -9,7 +9,7 @@ import ScheduleForm from '@/components/ScheduleForm';
 import { exportSchedulesToExcel } from '@/lib/export-schedules';
 import { downloadICS } from '@/lib/calendar-utils';
 import LoaderSwitcher from '@/components/LoaderSwitcher';
-import { getCalendarRangeCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache';
+import { deleteCalendarCacheByEventId, getCalendarRangeCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache';
 
 export default function SchedulePage() {
   const { user } = useAuth();
@@ -148,6 +148,10 @@ export default function SchedulePage() {
     }
     if (!window.confirm('캘린더 원본에서 삭제할까요?')) return;
 
+    // 1차: 화면/캐시에서 즉시 제거(사용자 체감 개선)
+    setCalendarSynced((prev) => prev.filter((x) => x.eventId !== eventId));
+    await deleteCalendarCacheByEventId(eventId).catch(() => {});
+
     const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken });
     try {
       const res = await fetch(gasWebAppUrl, {
@@ -160,7 +164,7 @@ export default function SchedulePage() {
         setSyncMsg(`삭제 실패: ${data?.error || 'unknown'}`);
         return;
       }
-      setSyncMsg(data?.deleted === false ? '이미 삭제된 일정이야. 최신화했어.' : '캘린더 원본 삭제 완료');
+      setSyncMsg(data?.deleted === false ? '이미 삭제된 일정이야. 목록에서 정리했어.' : '캘린더 원본 삭제 완료');
       const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
       setCalendarSynced(refreshed);
     } catch {
