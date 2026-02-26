@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { BlogPost } from '@/lib/firebase'
-import { getPosts } from '@/lib/firebase-posts'
+import { getPosts, updatePost } from '@/lib/firebase-posts'
 import PostModal from '@/components/PostModal'
 import WriteModal from '@/components/WriteModal'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
@@ -23,6 +23,8 @@ export default function HomePage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
   const [todayMsg, setTodayMsg] = useState('')
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
   const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
@@ -115,6 +117,29 @@ export default function HomePage() {
         const refreshed = await getTodayCalendarCacheItems().catch(() => [])
         setTodayItems(refreshed)
       }, 1500)
+    }
+  }
+
+  const startInlineEdit = (post: BlogPost) => {
+    if (user?.email?.toLowerCase() !== post.authorEmail?.toLowerCase()) return
+    setEditingPostId(post.id || null)
+    setEditingTitle(post.title || '')
+  }
+
+  const saveInlineTitle = async (post: BlogPost) => {
+    if (!post.id) return
+    const next = editingTitle.trim()
+    if (!next || next === post.title) {
+      setEditingPostId(null)
+      return
+    }
+    try {
+      await updatePost(post.id, { title: next })
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, title: next } : p)))
+    } catch (e) {
+      console.error('inline title update failed', e)
+    } finally {
+      setEditingPostId(null)
     }
   }
 
@@ -247,7 +272,36 @@ export default function HomePage() {
                       }}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+                        {editingPostId === post.id ? (
+                          <input
+                            autoFocus
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={() => saveInlineTitle(post)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                saveInlineTitle(post)
+                              }
+                              if (e.key === 'Escape') setEditingPostId(null)
+                            }}
+                            className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                          />
+                        ) : (
+                          <h3
+                            className="text-xl font-semibold mb-2"
+                            onClick={(e) => {
+                              if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
+                                e.stopPropagation()
+                                startInlineEdit(post)
+                              }
+                            }}
+                            title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정' : ''}
+                          >
+                            {post.title}
+                          </h3>
+                        )
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -277,7 +331,36 @@ export default function HomePage() {
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{post.title}</h3>
+                    {editingPostId === post.id ? (
+                      <input
+                        autoFocus
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onBlur={() => saveInlineTitle(post)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            saveInlineTitle(post)
+                          }
+                          if (e.key === 'Escape') setEditingPostId(null)
+                        }}
+                        className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                      />
+                    ) : (
+                      <h3
+                        className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        onClick={(e) => {
+                          if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
+                            e.stopPropagation()
+                            startInlineEdit(post)
+                          }
+                        }}
+                        title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정' : ''}
+                      >
+                        {post.title}
+                      </h3>
+                    )
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
