@@ -461,8 +461,9 @@ export default function SchedulePage() {
           <div className="space-y-3">
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
               <div key={dateKey} className="rounded border border-indigo-200/70 dark:border-indigo-800/60 bg-white/70 dark:bg-gray-900/20">
-                <div className="px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-300 border-b border-indigo-100 dark:border-indigo-900/50">
-                  {new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}
+                <div className="px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-300 border-b border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+                  <span>{new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{items.length}건</span>
                 </div>
                 <div className="divide-y divide-indigo-100 dark:divide-indigo-900/40">
                   {items.map((item) => {
