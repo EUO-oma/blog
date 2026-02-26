@@ -8,6 +8,7 @@ import {
   deleteFavoriteSite,
   FavoriteSite,
   getFavoriteSites,
+  reorderFavoriteSites,
   updateFavoriteSite,
 } from '@/lib/firebase-favorites'
 
@@ -18,6 +19,7 @@ export default function FavoritesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
+  const [draggingId, setDraggingId] = useState<string | null>(null)
 
   const load = async () => {
     if (!user?.email) {
@@ -52,13 +54,35 @@ export default function FavoritesPage() {
       await updateFavoriteSite(editingId, payload)
       setMsg('수정 완료')
     } else {
-      await createFavoriteSite({ ...payload, authorEmail: user.email })
+      await createFavoriteSite({ ...payload, authorEmail: user.email }, items.length)
       setMsg('추가 완료')
     }
 
     setEditingId(null)
     setForm({ title: '', url: '', note: '' })
     await load()
+  }
+
+  const onDropReorder = async (targetId?: string) => {
+    if (!draggingId || !targetId || draggingId === targetId) return
+
+    const from = items.findIndex((i) => i.id === draggingId)
+    const to = items.findIndex((i) => i.id === targetId)
+    if (from < 0 || to < 0) return
+
+    const next = [...items]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    setItems(next)
+    setDraggingId(null)
+
+    try {
+      await reorderFavoriteSites(next)
+      setMsg('순서 저장 완료')
+    } catch {
+      setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
+      await load()
+    }
   }
 
   if (!user) {
@@ -88,8 +112,16 @@ export default function FavoritesPage() {
         <p className="text-gray-500">등록된 즐겨찾기가 없습니다.</p>
       ) : (
         <div className="space-y-3">
+          <p className="text-xs text-gray-500">💡 카드를 길게 눌러(또는 마우스로 드래그) 순서를 바꿀 수 있어.</p>
           {items.map((it) => (
-            <article key={it.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+            <article
+              key={it.id}
+              draggable
+              onDragStart={() => setDraggingId(it.id || null)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => onDropReorder(it.id)}
+              className={`rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 ${draggingId === it.id ? 'opacity-60' : ''}`}
+            >
               <div className="flex flex-wrap justify-between items-start gap-3">
                 <div>
                   <h2 className="font-semibold">{it.title}</h2>

@@ -23,6 +23,10 @@ export default function SchedulePage() {
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [calendarSynced, setCalendarSynced] = useState<CalendarTodayCacheItem[]>([]);
+  const [syncMsg, setSyncMsg] = useState<string>('');
+  const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || '';
+  const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || '';
+  const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com';
 
   const toDate = (value: any): Date | null => {
     try {
@@ -116,6 +120,53 @@ export default function SchedulePage() {
     } catch (error) {
       console.error('Time formatting error:', error);
       return '-';
+    }
+  };
+
+  const shareSynced = async (item: CalendarTodayCacheItem) => {
+    const text = `🗓️ ${item.title}\n${item.startAt || ''}${item.location ? `\n📍 ${item.location}` : ''}`;
+    try {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        await (navigator as any).share({ title: item.title, text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setSyncMsg('공유 미지원 환경이라 일정 내용을 복사했어.');
+      }
+    } catch {
+      setSyncMsg('공유가 취소되었거나 실패했어.');
+    }
+  };
+
+  const deleteSyncedFromCalendar = async (eventId: string) => {
+    if (!canDeleteCalendar) return;
+    if (!gasWebAppUrl || !gasApiToken) {
+      setSyncMsg('GAS 연동 변수 누락');
+      return;
+    }
+    if (!window.confirm('캘린더 원본에서 삭제할까요?')) return;
+
+    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken });
+    try {
+      const res = await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      });
+      const data = await res.json();
+      if (!data?.ok) {
+        setSyncMsg(`삭제 실패: ${data?.error || 'unknown'}`);
+        return;
+      }
+      setSyncMsg(data?.deleted === false ? '이미 삭제된 일정이야. 최신화했어.' : '캘린더 원본 삭제 완료');
+      const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
+      setCalendarSynced(refreshed);
+    } catch {
+      await fetch(gasWebAppUrl, { method: 'POST', mode: 'no-cors', body: payload });
+      setSyncMsg('삭제 요청 전송됨. 잠시 후 최신화할게.');
+      setTimeout(async () => {
+        const refreshed = await getCalendarRangeCacheItems(30).catch(() => []);
+        setCalendarSynced(refreshed);
+      }, 1500);
     }
   };
 
@@ -367,7 +418,7 @@ export default function SchedulePage() {
           <div className="space-y-2">
             {upcomingSchedules.slice(0, 3).map((schedule) => (
               <div key={schedule.id} className="text-sm">
-                <span className="font-medium">{formatDate(schedule.startDate)}</span> - {schedule.title}
+                <span className="font-medium text-green-700 dark:text-green-300">{formatDate(schedule.startDate)}</span> - {schedule.title}
               </div>
             ))}
           </div>
@@ -377,21 +428,38 @@ export default function SchedulePage() {
       {/* Google Calendar 동기화 (1개월) */}
       {calendarSynced.length > 0 && (
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-3">🔄 Google 캘린더 동기화 (1개월)</h2>
+          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">🔄 Google 캘린더 동기화 (1개월)</h2>
+          {syncMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{syncMsg}</p> : null}
           <div className="space-y-2">
             {calendarSynced.slice(0, 8).map((item) => {
               const when = item.allDay ? '종일' : (item.startAt?.slice(0, 16).replace('T', ' ') || '-')
               return (
                 <div key={item.id} className="text-sm flex items-center justify-between gap-2">
-                  <span className="truncate"><b>{item.title}</b> · {when}</span>
-                  <a
-                    href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    열기
-                  </a>
+                  <span className="truncate"><b>{item.title}</b> · <span className="text-green-700 dark:text-green-300">{when}</span></span>
+                  <div className="shrink-0 flex gap-1">
+                    <a
+                      href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      열기
+                    </a>
+                    <button
+                      onClick={() => shareSynced(item)}
+                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      공유
+                    </button>
+                    {canDeleteCalendar ? (
+                      <button
+                        onClick={() => deleteSyncedFromCalendar(item.eventId)}
+                        className="text-xs px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
+                      >
+                        삭제
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               )
             })}
