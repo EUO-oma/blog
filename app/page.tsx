@@ -47,6 +47,17 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
+    if (loading || posts.length === 0 || typeof window === 'undefined') return
+    const postId = new URLSearchParams(window.location.search).get('post')
+    if (!postId) return
+    const target = posts.find((p) => p.id === postId)
+    if (target) {
+      setSelectedPost(target)
+      setIsModalOpen(true)
+    }
+  }, [loading, posts])
+
+  useEffect(() => {
     const handleOpenWriteModal = () => setIsWriteModalOpen(true)
     window.addEventListener('openWriteModal', handleOpenWriteModal)
     return () => window.removeEventListener('openWriteModal', handleOpenWriteModal)
@@ -56,7 +67,7 @@ export default function HomePage() {
     try {
       const base = typeof window !== 'undefined' ? window.location.origin : ''
       const path = process.env.NODE_ENV === 'production' ? '/blog' : ''
-      const link = `${base}${path}/${post.slug || ''}`
+      const link = `${base}${path}/?post=${encodeURIComponent(post.id || '')}`
       const text = `${post.title}\n\n${post.excerpt || ''}\n\n${link}`
       await navigator.clipboard.writeText(text)
       setCopiedPostId(post.id || null)
