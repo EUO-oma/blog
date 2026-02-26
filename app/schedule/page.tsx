@@ -481,7 +481,7 @@ export default function SchedulePage() {
                         </a>
                         <div className="shrink-0 flex gap-2">
                           <a
-                            href={item.openUrl || item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                            href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
                             target="_blank"
                             rel="noreferrer"
                             className="text-blue-600 hover:text-blue-900 p-1"
