@@ -9,6 +9,7 @@ import ScheduleForm from '@/components/ScheduleForm';
 import { exportSchedulesToExcel } from '@/lib/export-schedules';
 import { downloadICS } from '@/lib/calendar-utils';
 import LoaderSwitcher from '@/components/LoaderSwitcher';
+import { getCalendarRangeCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache';
 
 export default function SchedulePage() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function SchedulePage() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [calendarSynced, setCalendarSynced] = useState<CalendarTodayCacheItem[]>([]);
 
   const toDate = (value: any): Date | null => {
     try {
@@ -50,12 +52,16 @@ export default function SchedulePage() {
     setLoading(true);
     setError(null);
     try {
-      const fetchedSchedules = await getSchedules();
+      const [fetchedSchedules, fetchedCalendar] = await Promise.all([
+        getSchedules(),
+        getCalendarRangeCacheItems(30).catch(() => []),
+      ]);
       // 데이터 유효성 검증
       const validSchedules = fetchedSchedules.filter(schedule => 
         schedule && schedule.startDate && typeof schedule.startDate.toDate === 'function'
       );
       setSchedules(validSchedules);
+      setCalendarSynced(fetchedCalendar);
     } catch (error) {
       console.error('Error loading schedules:', error);
       setError('일정을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
@@ -364,6 +370,31 @@ export default function SchedulePage() {
                 <span className="font-medium">{formatDate(schedule.startDate)}</span> - {schedule.title}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Google Calendar 동기화 (1개월) */}
+      {calendarSynced.length > 0 && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-3">🔄 Google 캘린더 동기화 (1개월)</h2>
+          <div className="space-y-2">
+            {calendarSynced.slice(0, 8).map((item) => {
+              const when = item.allDay ? '종일' : (item.startAt?.slice(0, 16).replace('T', ' ') || '-')
+              return (
+                <div key={item.id} className="text-sm flex items-center justify-between gap-2">
+                  <span className="truncate"><b>{item.title}</b> · {when}</span>
+                  <a
+                    href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    열기
+                  </a>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

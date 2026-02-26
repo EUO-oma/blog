@@ -22,7 +22,7 @@ export default function PhonebookPage() {
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
+  const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
 
   const loadItems = async () => {
     if (!user?.email) {
@@ -51,7 +51,7 @@ export default function PhonebookPage() {
       const categoryMatch = activeCategory === '전체' || it.category === activeCategory
       if (!categoryMatch) return false
       if (!q) return true
-      return [it.company, it.category, it.phone, it.memo || ''].join(' ').toLowerCase().includes(q)
+      return [it.company, it.category, it.phone, it.fax || '', it.address || '', it.businessNumber || '', it.memo || ''].join(' ').toLowerCase().includes(q)
     })
   }, [items, search, activeCategory])
 
@@ -93,6 +93,7 @@ export default function PhonebookPage() {
           phone: form.phone.trim(),
           fax: form.fax.trim(),
           address: form.address.trim(),
+          businessNumber: form.businessNumber.trim(),
           memo: form.memo.trim(),
         })
         setMessage('연락처를 수정했어.')
@@ -103,6 +104,7 @@ export default function PhonebookPage() {
           phone: form.phone.trim(),
           fax: form.fax.trim(),
           address: form.address.trim(),
+          businessNumber: form.businessNumber.trim(),
           memo: form.memo.trim(),
           authorEmail: user.email,
           authorName: user.displayName || user.email,
@@ -111,7 +113,7 @@ export default function PhonebookPage() {
       }
 
       setEditingId(null)
-      setForm({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
+      setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
       await loadItems()
     } catch (e: any) {
       setMessage(`저장 실패: ${e?.message || e}`)
@@ -199,6 +201,12 @@ export default function PhonebookPage() {
             className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
           />
           <input
+            value={form.businessNumber}
+            onChange={(e) => setForm((p) => ({ ...p, businessNumber: e.target.value }))}
+            placeholder="사업자번호(선택)"
+            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
+          <input
             value={form.memo}
             onChange={(e) => setForm((p) => ({ ...p, memo: e.target.value }))}
             placeholder="메모(선택)"
@@ -217,7 +225,7 @@ export default function PhonebookPage() {
             <button
               onClick={() => {
                 setEditingId(null)
-                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
+                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
               }}
               className="px-3 py-2 rounded border text-sm"
             >
@@ -273,6 +281,7 @@ export default function PhonebookPage() {
                     <p className="mt-1 text-sm">{it.phone}</p>
                     {it.fax ? <p className="mt-1 text-xs text-gray-500">FAX: {it.fax}</p> : null}
                     {it.address ? <p className="mt-1 text-xs text-gray-500">주소: {it.address}</p> : null}
+                    {it.businessNumber ? <p className="mt-1 text-xs text-gray-500">사업자번호: {it.businessNumber}</p> : null}
                     {it.memo ? <p className="mt-1 text-xs text-gray-500">{it.memo}</p> : null}
                   </div>
                   <div className="flex gap-2 flex-wrap">
@@ -303,6 +312,7 @@ export default function PhonebookPage() {
                           phone: it.phone,
                           fax: it.fax || '',
                           address: it.address || '',
+                          businessNumber: it.businessNumber || '',
                           memo: it.memo || '',
                         })
                         window.scrollTo({ top: 0, behavior: 'smooth' })
