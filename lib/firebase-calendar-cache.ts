@@ -12,6 +12,7 @@ export type CalendarTodayCacheItem = {
   allDay: boolean
   status: string
   source: string
+  openUrl?: string
   editUrl?: string
   syncedAt?: any
 }
