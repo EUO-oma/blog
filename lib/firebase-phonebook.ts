@@ -17,6 +17,8 @@ export interface PhonebookItem {
   company: string
   category: string
   phone: string
+  fax?: string
+  address?: string
   memo?: string
   authorEmail: string
   authorName: string
@@ -85,7 +87,7 @@ export async function createPhonebookItem(
 
 export async function updatePhonebookItem(
   id: string,
-  data: Pick<PhonebookItem, 'company' | 'category' | 'phone' | 'memo'>
+  data: Pick<PhonebookItem, 'company' | 'category' | 'phone' | 'fax' | 'address' | 'memo'>
 ): Promise<void> {
   try {
     await updateDoc(doc(db, PHONEBOOK_COLLECTION, id), {

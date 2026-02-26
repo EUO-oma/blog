@@ -12,6 +12,7 @@ const menuItems = [
   { href: '/today', icon: '✅', label: '오늘' },
   { href: '/notice', icon: '📢', label: '공지' },
   { href: '/phonebook', icon: '📞', label: '폰북' },
+  { href: '/favorites', icon: '⭐', label: '즐겨찾기' },
   { href: '/youtube', icon: '▶️', label: '유튜브' },
 ]
 

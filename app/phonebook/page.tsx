@@ -22,7 +22,7 @@ export default function PhonebookPage() {
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ company: '', category: '기타', phone: '', memo: '' })
+  const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
 
   const loadItems = async () => {
     if (!user?.email) {
@@ -91,6 +91,8 @@ export default function PhonebookPage() {
           company: form.company.trim(),
           category: form.category,
           phone: form.phone.trim(),
+          fax: form.fax.trim(),
+          address: form.address.trim(),
           memo: form.memo.trim(),
         })
         setMessage('연락처를 수정했어.')
@@ -99,6 +101,8 @@ export default function PhonebookPage() {
           company: form.company.trim(),
           category: form.category,
           phone: form.phone.trim(),
+          fax: form.fax.trim(),
+          address: form.address.trim(),
           memo: form.memo.trim(),
           authorEmail: user.email,
           authorName: user.displayName || user.email,
@@ -107,7 +111,7 @@ export default function PhonebookPage() {
       }
 
       setEditingId(null)
-      setForm({ company: '', category: '기타', phone: '', memo: '' })
+      setForm({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
       await loadItems()
     } catch (e: any) {
       setMessage(`저장 실패: ${e?.message || e}`)
@@ -183,6 +187,18 @@ export default function PhonebookPage() {
             ))}
           </select>
           <input
+            value={form.fax}
+            onChange={(e) => setForm((p) => ({ ...p, fax: e.target.value }))}
+            placeholder="팩스(선택)"
+            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
+          <input
+            value={form.address}
+            onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+            placeholder="주소(선택)"
+            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
+          <input
             value={form.memo}
             onChange={(e) => setForm((p) => ({ ...p, memo: e.target.value }))}
             placeholder="메모(선택)"
@@ -201,7 +217,7 @@ export default function PhonebookPage() {
             <button
               onClick={() => {
                 setEditingId(null)
-                setForm({ company: '', category: '기타', phone: '', memo: '' })
+                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', memo: '' })
               }}
               className="px-3 py-2 rounded border text-sm"
             >
@@ -255,6 +271,8 @@ export default function PhonebookPage() {
                     <h3 className="font-semibold">{it.company}</h3>
                     <p className="text-xs text-indigo-600 dark:text-indigo-400">#{it.category}</p>
                     <p className="mt-1 text-sm">{it.phone}</p>
+                    {it.fax ? <p className="mt-1 text-xs text-gray-500">FAX: {it.fax}</p> : null}
+                    {it.address ? <p className="mt-1 text-xs text-gray-500">주소: {it.address}</p> : null}
                     {it.memo ? <p className="mt-1 text-xs text-gray-500">{it.memo}</p> : null}
                   </div>
                   <div className="flex gap-2 flex-wrap">
@@ -283,6 +301,8 @@ export default function PhonebookPage() {
                           company: it.company,
                           category: it.category,
                           phone: it.phone,
+                          fax: it.fax || '',
+                          address: it.address || '',
                           memo: it.memo || '',
                         })
                         window.scrollTo({ top: 0, behavior: 'smooth' })
