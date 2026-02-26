@@ -149,7 +149,7 @@ export default function HomePage() {
                   </div>
                   <div className="ml-2 shrink-0 flex gap-1">
                     <a
-                      href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                      href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"

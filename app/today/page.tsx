@@ -185,7 +185,7 @@ export default function TodayPage() {
                     </div>
                     <div className="flex gap-1">
                       <a
-                        href={`https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                        href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
                         target="_blank"
                         rel="noreferrer"
                         className="shrink-0 px-2 py-1 rounded border text-[11px] bg-white/80 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-700"
