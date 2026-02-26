@@ -28,6 +28,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
   const [validationMsg, setValidationMsg] = useState('')
   const [importUrl, setImportUrl] = useState('')
   const [importMsg, setImportMsg] = useState('')
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null)
   const draftKey = 'walter_blog_write_draft_v1'
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     if (!isOpen) return
     try {
       localStorage.setItem(draftKey, JSON.stringify(formData))
+      setDraftSavedAt(new Date())
     } catch {}
   }, [formData, isOpen])
 
@@ -309,17 +311,27 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1 gap-2">
                 <label htmlFor="content" className="block text-sm font-medium">
                   내용 * (Markdown 지원)
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setPreview((v) => !v)}
-                  className="text-xs px-2 py-1 rounded border"
-                >
-                  {preview ? '편집' : '미리보기'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreview((v) => !v)}
+                    className="text-xs px-2 py-1 rounded border"
+                  >
+                    {preview ? '편집' : '미리보기'}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    title="바로 포스트 발행"
+                  >
+                    {loading ? '저장 중...' : '포스트 발행'}
+                  </button>
+                </div>
               </div>
               {preview ? (
                 <div className="w-full min-h-[220px] px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 prose prose-sm max-w-none dark:prose-invert overflow-y-auto">
@@ -338,17 +350,22 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               )}
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="published"
-                checked={formData.published}
-                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                className="mr-2"
-              />
-              <label htmlFor="published" className="text-sm">
-                즉시 게시
-              </label>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="published"
+                  checked={formData.published}
+                  onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="published" className="text-sm">
+                  즉시 게시
+                </label>
+              </div>
+              {draftSavedAt ? (
+                <span className="text-xs text-gray-500">임시저장됨 · {draftSavedAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+              ) : null}
             </div>
 
             <div className="flex gap-3 pt-4">
