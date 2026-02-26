@@ -210,7 +210,11 @@ export default function TodayPage() {
       )}
 
       {todayItems.length === 0 ? (
-        <p className="text-gray-500">오늘 일정이 없어. 한가한 날이네 🙂</p>
+        cacheRows.length > 0 ? (
+          <p className="text-gray-500">오늘 일정은 Google 동기화 섹션에서 확인할 수 있어.</p>
+        ) : (
+          <p className="text-gray-500">오늘 일정이 없어. 한가한 날이네 🙂</p>
+        )
       ) : (
         <div className="space-y-3">
           {todayItems.map((item) => {
