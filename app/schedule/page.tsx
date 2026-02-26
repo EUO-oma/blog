@@ -346,6 +346,20 @@ export default function SchedulePage() {
     }
   };
 
+  const groupedCalendarSynced = calendarSynced
+    .map((item) => {
+      const d = new Date(item.startAt || '');
+      return { item, date: d, valid: !Number.isNaN(d.getTime()) };
+    })
+    .filter((x) => x.valid)
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .reduce((acc: Record<string, CalendarTodayCacheItem[]>, cur) => {
+      const key = cur.date.toISOString().slice(0, 10);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(cur.item);
+      return acc;
+    }, {} as Record<string, CalendarTodayCacheItem[]>);
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-4">
@@ -433,39 +447,50 @@ export default function SchedulePage() {
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
           <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">🔄 Google 캘린더 동기화 (1개월)</h2>
           {syncMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{syncMsg}</p> : null}
-          <div className="space-y-2">
-            {calendarSynced.slice(0, 8).map((item) => {
-              const when = item.allDay ? '종일' : (item.startAt?.slice(0, 16).replace('T', ' ') || '-')
-              return (
-                <div key={item.id} className="text-sm flex items-center justify-between gap-2">
-                  <span className="truncate"><b>{item.title}</b> · <span className="text-green-700 dark:text-green-300">{when}</span></span>
-                  <div className="shrink-0 flex gap-1">
-                    <a
-                      href={item.openUrl || item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      열기
-                    </a>
-                    <button
-                      onClick={() => shareSynced(item)}
-                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      공유
-                    </button>
-                    {canDeleteCalendar ? (
-                      <button
-                        onClick={() => deleteSyncedFromCalendar(item.eventId)}
-                        className="text-xs px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
-                      >
-                        삭제
-                      </button>
-                    ) : null}
-                  </div>
+
+          <div className="space-y-3">
+            {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
+              <div key={dateKey} className="rounded border border-indigo-200/70 dark:border-indigo-800/60 bg-white/70 dark:bg-gray-900/20">
+                <div className="px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-300 border-b border-indigo-100 dark:border-indigo-900/50">
+                  {new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}
                 </div>
-              )
-            })}
+                <div className="divide-y divide-indigo-100 dark:divide-indigo-900/40">
+                  {items.map((item) => {
+                    const when = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
+                    return (
+                      <div key={item.id} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
+                        <span className="truncate"><b>{item.title}</b> · <span className="text-green-700 dark:text-green-300">{when}</span></span>
+                        <div className="shrink-0 flex gap-2">
+                          <a
+                            href={item.openUrl || item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-600 hover:text-blue-900 p-1"
+                            title="열기"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 3h7m0 0v7m0-7L10 14m-4 0H3v7h7v-3" />
+                            </svg>
+                          </a>
+                          <button onClick={() => shareSynced(item)} className="text-green-600 hover:text-green-900 p-1" title="공유">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-5.464 0m5.464 0l-5.464 0" />
+                            </svg>
+                          </button>
+                          {canDeleteCalendar ? (
+                            <button onClick={() => deleteSyncedFromCalendar(item.eventId)} className="text-red-600 hover:text-red-900 p-1" title="삭제">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
