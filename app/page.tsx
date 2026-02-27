@@ -149,6 +149,11 @@ export default function HomePage() {
     }
   }
 
+  const autoResizeTextarea = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
   const deleteFromGoogleCalendar = async (item: CalendarTodayCacheItem) => {
     const eventId = item.eventId
     if (!canDeleteCalendar) return
@@ -372,19 +377,24 @@ export default function HomePage() {
               {editingPostId === post.id ? (
                 <textarea
                   autoFocus
-                  rows={2}
+                  ref={(el) => { if (el) autoResizeTextarea(el) }}
+                  rows={1}
                   value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onChange={(e) => {
+                    setEditingTitle(e.target.value)
+                    autoResizeTextarea(e.currentTarget)
+                  }}
+                  onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                   onClick={(e) => e.stopPropagation()}
                   onBlur={() => saveInlineTitle(post)}
                   onKeyDown={(e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
                       saveInlineTitle(post)
                     }
                     if (e.key === 'Escape') setEditingPostId(null)
                   }}
-                  className="text-xl font-semibold w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none leading-6"
+                  className="text-xl font-semibold w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none overflow-hidden leading-6"
                 />
               ) : (
                 <h2
@@ -443,8 +453,14 @@ export default function HomePage() {
           {editingContentPostId === post.id ? (
             <textarea
               autoFocus
+              ref={(el) => { if (el) autoResizeTextarea(el) }}
+              rows={8}
               value={editingContent}
-              onChange={(e) => setEditingContent(e.target.value)}
+              onChange={(e) => {
+                setEditingContent(e.target.value)
+                autoResizeTextarea(e.currentTarget)
+              }}
+              onFocus={(e) => autoResizeTextarea(e.currentTarget)}
               onClick={(e) => e.stopPropagation()}
               onBlur={() => saveInlineContent(post)}
               onKeyDown={(e) => {
@@ -454,7 +470,7 @@ export default function HomePage() {
                   saveInlineContent(post)
                 }
               }}
-              className="w-full min-h-[220px] rounded border border-fuchsia-300 p-3 text-sm focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+              className="w-full rounded border border-fuchsia-300 p-3 text-sm focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none overflow-hidden leading-6"
             />
           ) : (
             <div
@@ -595,19 +611,24 @@ export default function HomePage() {
                       {editingPostId === featuredPost.id ? (
                         <textarea
                           autoFocus
-                          rows={2}
+                          ref={(el) => { if (el) autoResizeTextarea(el) }}
+                          rows={1}
                           value={editingTitle}
-                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onChange={(e) => {
+                            setEditingTitle(e.target.value)
+                            autoResizeTextarea(e.currentTarget)
+                          }}
+                          onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                           onClick={(e) => e.stopPropagation()}
                           onBlur={() => saveInlineTitle(featuredPost)}
                           onKeyDown={(e) => {
-                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                            if (e.key === 'Enter' && !e.shiftKey) {
                               e.preventDefault()
                               saveInlineTitle(featuredPost)
                             }
                             if (e.key === 'Escape') setEditingPostId(null)
                           }}
-                          className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none leading-6"
+                          className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none overflow-hidden leading-6"
                         />
                       ) : (
                         <div className="flex items-start gap-2 mb-2">
@@ -708,20 +729,26 @@ export default function HomePage() {
                     >
                       <div className="flex items-start gap-3">
                         {editingPostId === post.id ? (
-                          <input
+                          <textarea
                             autoFocus
+                            ref={(el) => { if (el) autoResizeTextarea(el) }}
+                            rows={1}
                             value={editingTitle}
-                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onChange={(e) => {
+                              setEditingTitle(e.target.value)
+                              autoResizeTextarea(e.currentTarget)
+                            }}
+                            onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                             onClick={(e) => e.stopPropagation()}
                             onBlur={() => saveInlineTitle(post)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault()
                                 saveInlineTitle(post)
                               }
                               if (e.key === 'Escape') setEditingPostId(null)
                             }}
-                            className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+                            className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none overflow-hidden leading-6"
                           />
                         ) : (
                           <div className="flex items-center gap-2 mb-2">
@@ -808,20 +835,26 @@ export default function HomePage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     {editingPostId === post.id ? (
-                      <input
+                      <textarea
                         autoFocus
+                        ref={(el) => { if (el) autoResizeTextarea(el) }}
+                        rows={1}
                         value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onChange={(e) => {
+                          setEditingTitle(e.target.value)
+                          autoResizeTextarea(e.currentTarget)
+                        }}
+                        onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                         onClick={(e) => e.stopPropagation()}
                         onBlur={() => saveInlineTitle(post)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
                             saveInlineTitle(post)
                           }
                           if (e.key === 'Escape') setEditingPostId(null)
                         }}
-                        className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+                        className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none overflow-hidden leading-6"
                       />
                     ) : (
                       <div className="flex items-center gap-2 mb-2">
