@@ -319,25 +319,23 @@ export default function TodoPage() {
                     className="text-gray-400 cursor-grab active:cursor-grabbing text-xl leading-none px-1 self-center"
                     title="드래그해서 순서 변경"
                   >☰</span>
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    className="w-6 h-6 self-center"
-                    onChange={async (e) => {
-                      const checked = e.target.checked
-                      if (checked && item.id) {
-                        setCompletingIds((prev) => [...prev, item.id!])
-                        setTimeout(async () => {
-                          await setTodoCompleted(item.id!, true)
-                          setCompletingIds((prev) => prev.filter((id) => id !== item.id))
-                          await load()
-                        }, 220)
-                        return
-                      }
-                      await setTodoCompleted(item.id!, checked)
-                      await load()
+                  <button
+                    onClick={async () => {
+                      if (!item.id) return
+                      setCompletingIds((prev) => [...prev, item.id!])
+                      setTimeout(async () => {
+                        await setTodoCompleted(item.id!, true)
+                        setCompletingIds((prev) => prev.filter((id) => id !== item.id))
+                        await load()
+                      }, 220)
                     }}
-                  />
+                    className="self-center text-emerald-500 hover:text-emerald-700 p-1"
+                    title="완료 처리"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
                   <textarea
                     ref={(el) => { if (el) autoResizeTextarea(el) }}
                     defaultValue={item.content}
@@ -392,15 +390,19 @@ export default function TodoPage() {
               {completedItems.map((item) => (
                 <article key={item.id} className="p-1 bg-transparent opacity-80 border-b border-gray-200/70 dark:border-gray-700/60">
                   <div className="flex items-center gap-1 min-h-[40px]">
-                    <input
-                      type="checkbox"
-                      checked={item.completed}
-                      className="w-6 h-6 self-center"
-                      onChange={async (e) => {
-                        await setTodoCompleted(item.id!, e.target.checked)
+                    <button
+                      onClick={async () => {
+                        if (!item.id) return
+                        await setTodoCompleted(item.id!, false)
                         await load()
                       }}
-                    />
+                      className="self-center text-gray-400 hover:text-gray-600 p-1"
+                      title="완료 해제"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0 2-2m-2 2 2 2m-2-2-2-2m9 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
                     <textarea
                       ref={(el) => { if (el) autoResizeTextarea(el) }}
                       defaultValue={item.content}
