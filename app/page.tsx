@@ -149,7 +149,8 @@ export default function HomePage() {
     }
   }
 
-  const deleteFromGoogleCalendar = async (eventId: string) => {
+  const deleteFromGoogleCalendar = async (item: CalendarTodayCacheItem) => {
+    const eventId = item.eventId
     if (!canDeleteCalendar) return
     if (!gasWebAppUrl || !gasApiToken) {
       setTodayMsg('GAS 연동 변수 누락')
@@ -162,7 +163,13 @@ export default function HomePage() {
     await deleteCalendarCacheByEventId(eventId).catch(() => {})
 
     const traceId = `home-del-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken, traceId })
+    const payload = JSON.stringify({
+      action: 'deleteEvent',
+      eventId,
+      token: gasApiToken,
+      traceId,
+      hint: { title: item.title || '', startAt: item.startAt || '' },
+    })
 
     try {
       const res = await fetch(gasWebAppUrl, {
@@ -493,7 +500,7 @@ export default function HomePage() {
                     </a>
                     {canDeleteCalendar ? (
                       <button
-                        onClick={() => deleteFromGoogleCalendar(item.eventId)}
+                        onClick={() => deleteFromGoogleCalendar(item)}
                         className="text-xs px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
                       >
                         삭제

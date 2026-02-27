@@ -150,7 +150,8 @@ export default function SchedulePage() {
     }
   };
 
-  const deleteSyncedFromCalendar = async (eventId: string) => {
+  const deleteSyncedFromCalendar = async (item: CalendarTodayCacheItem) => {
+    const eventId = item.eventId
     if (!canDeleteCalendar) return;
     if (!gasWebAppUrl || !gasApiToken) {
       setSyncMsg('GAS 연동 변수 누락');
@@ -163,7 +164,13 @@ export default function SchedulePage() {
     await deleteCalendarCacheByEventId(eventId).catch(() => {});
 
     const traceId = `schedule-del-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken, traceId });
+    const payload = JSON.stringify({
+      action: 'deleteEvent',
+      eventId,
+      token: gasApiToken,
+      traceId,
+      hint: { title: item.title || '', startAt: item.startAt || '' },
+    });
     try {
       const res = await fetch(gasWebAppUrl, {
         method: 'POST',
@@ -529,7 +536,7 @@ export default function SchedulePage() {
                             </svg>
                           </button>
                           {canDeleteCalendar ? (
-                            <button onClick={() => deleteSyncedFromCalendar(item.eventId)} className="text-red-600 hover:text-red-900 p-1" title="삭제">
+                            <button onClick={() => deleteSyncedFromCalendar(item)} className="text-red-600 hover:text-red-900 p-1" title="삭제">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
