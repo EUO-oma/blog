@@ -457,15 +457,26 @@ export default function SchedulePage() {
             </>
           )}
           {user && (
-            <button
-              onClick={() => {
-                setEditingSchedule(null);
-                setShowFormModal(true);
-              }}
-              className="bg-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base"
-            >
-              + 새 일정
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setEditingSchedule(null);
+                  setShowFormModal(true);
+                }}
+                className="bg-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base"
+              >
+                + 새 일정
+              </button>
+              <a
+                href="https://calendar.google.com/calendar/u/0/r/eventedit"
+                target="_blank"
+                rel="noreferrer"
+                className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm sm:text-base"
+                title="Google Calendar에서 직접 일정 등록"
+              >
+                구글캘린더에 일정 직접등록
+              </a>
+            </>
           )}
         </div>
       </div>
