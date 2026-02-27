@@ -49,6 +49,8 @@ export default function FavoritesPage() {
   const [items, setItems] = useState<FavoriteSite[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
   const sensors = useSensors(
@@ -75,6 +77,12 @@ export default function FavoritesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email])
 
+  useEffect(() => {
+    if (!msg) return
+    const t = setTimeout(() => setMsg(''), 1600)
+    return () => clearTimeout(t)
+  }, [msg])
+
   const save = async () => {
     if (!user?.email) return setMsg('로그인 후 사용 가능해요.')
     if (!form.title.trim() || !form.url.trim()) return setMsg('제목/URL은 필수야.')
@@ -99,6 +107,38 @@ export default function FavoritesPage() {
       await load()
     } catch (e: any) {
       setMsg(`저장 실패: ${e?.message || e}`)
+    }
+  }
+
+  const copyFavorite = async (it: FavoriteSite) => {
+    try {
+      await navigator.clipboard.writeText(`${it.title}\n${it.url}`)
+      setMsg('클립보드에 복사되었습니다')
+    } catch {
+      setMsg('복사 실패')
+    }
+  }
+
+  const startInlineTitleEdit = (it: FavoriteSite) => {
+    setEditingTitleId(it.id || null)
+    setEditingTitle(it.title || '')
+  }
+
+  const saveInlineTitle = async (it: FavoriteSite) => {
+    if (!it.id) return
+    const next = editingTitle.trim()
+    if (!next || next === it.title) {
+      setEditingTitleId(null)
+      return
+    }
+    try {
+      await updateFavoriteSite(it.id, { title: next })
+      setItems((prev) => prev.map((x) => (x.id === it.id ? { ...x, title: next } : x)))
+      setMsg('제목 수정 완료')
+    } catch (e: any) {
+      setMsg(`수정 실패: ${e?.message || e}`)
+    } finally {
+      setEditingTitleId(null)
     }
   }
 
@@ -161,19 +201,52 @@ export default function FavoritesPage() {
                           ref={setActivatorNodeRef as any}
                           {...attributes}
                           {...listeners}
-                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400"
+                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-xl p-1.5 touch-none"
                           title="드래그해서 순서 변경"
                           aria-label="드래그 핸들"
                         >
                           ☰
                         </span>
                         <div>
-                          <h2 className="font-semibold">{it.title}</h2>
+                          {editingTitleId === it.id ? (
+                            <input
+                              autoFocus
+                              value={editingTitle}
+                              onChange={(e) => setEditingTitle(e.target.value)}
+                              onBlur={() => saveInlineTitle(it)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  saveInlineTitle(it)
+                                }
+                                if (e.key === 'Escape') setEditingTitleId(null)
+                              }}
+                              className="font-semibold bg-transparent border-b border-fuchsia-300 outline-none"
+                            />
+                          ) : (
+                            <h2
+                              className="font-semibold cursor-text"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                startInlineTitleEdit(it)
+                              }}
+                              title="클릭해서 제목 수정"
+                            >
+                              {it.title}
+                            </h2>
+                          )}
                           <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
                           {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
                         </div>
                       </div>
                       <div className="flex gap-1">
+                        <button
+                          onClick={() => copyFavorite(it)}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                          title="복사"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        </button>
                         <button
                           onClick={() => { setEditingId(it.id || null); setForm({ title: it.title, url: it.url, note: it.note || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                           className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
