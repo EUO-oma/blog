@@ -80,6 +80,12 @@ export default function TodoPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email])
 
+  useEffect(() => {
+    if (!msg) return
+    const t = setTimeout(() => setMsg(''), 1800)
+    return () => clearTimeout(t)
+  }, [msg])
+
   const addTodo = async () => {
     if (adding) return
     if (!user?.email) return setMsg('로그인 후 사용 가능해요.')
