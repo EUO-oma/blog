@@ -37,7 +37,7 @@ function SortableTodoRow({
     <article
       ref={setNodeRef}
       style={style}
-      className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
+      className={`p-1 transition-all duration-300 bg-transparent ${
         completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98]' : ''
       }`}
     >
