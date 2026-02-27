@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -890,4 +890,3 @@ export default function HomePage() {
     </>
   )
 }
-

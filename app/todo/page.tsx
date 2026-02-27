@@ -41,7 +41,7 @@ export default function TodoPage() {
   }, [user?.email])
 
   const addTodo = async () => {
-    if (!user?.email) return setMsg('로그인 후 사용 가능해요.')
+    if (!user?.email) return setMsg('濡쒓렇?????ъ슜 媛?ν빐??')
     const content = newText.trim()
     if (!content) return
 
@@ -51,7 +51,7 @@ export default function TodoPage() {
       authorName: user.displayName || user.email,
     })
     setNewText('')
-    setMsg('추가 완료')
+    setMsg('異붽? ?꾨즺')
     await load()
   }
 
@@ -69,7 +69,7 @@ export default function TodoPage() {
 
   const copyTodo = async (content: string) => {
     await navigator.clipboard.writeText(content)
-    setMsg('클립보드에 복사되었습니다')
+    setMsg('?대┰蹂대뱶??蹂듭궗?섏뿀?듬땲??)
     setTimeout(() => setMsg(''), 1200)
   }
 
@@ -85,7 +85,7 @@ export default function TodoPage() {
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
 
-  if (!user) return <p className="text-gray-500">로그인 후 Todo를 사용할 수 있어요.</p>
+  if (!user) return <p className="text-gray-500">濡쒓렇????Todo瑜??ъ슜?????덉뼱??</p>
 
   return (
     <main className="max-w-4xl mx-auto space-y-4">
@@ -106,14 +106,14 @@ export default function TodoPage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.nativeEvent as KeyboardEvent).isComposing) return
             }}
-            placeholder="할 일 입력 후 Enter 또는 다른 영역 클릭"
+            placeholder="?????낅젰 ??Enter ?먮뒗 ?ㅻⅨ ?곸뿭 ?대┃"
             className="flex-1 px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
           />
           <button
             type="submit"
             className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-            title="등록하기"
-            aria-label="등록하기"
+            title="?깅줉?섍린"
+            aria-label="?깅줉?섍린"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 2 11 13" />
@@ -121,11 +121,11 @@ export default function TodoPage() {
             </svg>
           </button>
         </form>
-        <p className="text-xs text-gray-500 mt-2">입력 후 포커스가 벗어나면 자동 저장돼요.</p>
+        <p className="text-xs text-gray-500 mt-2">?낅젰 ???ъ빱?ㅺ? 踰쀬뼱?섎㈃ ?먮룞 ??λ뤌??</p>
       </section>
 
       {loading ? (
-        <div className="py-8 flex justify-center"><LoaderSwitcher label="Todo 불러오는 중..." /></div>
+        <div className="py-8 flex justify-center"><LoaderSwitcher label="Todo 遺덈윭?ㅻ뒗 以?.." /></div>
       ) : (
         <>
           <section className="space-y-2">
@@ -145,16 +145,16 @@ export default function TodoPage() {
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                     className="flex-1 bg-transparent outline-none"
                   />
-                  <button onClick={() => copyTodo(item.content)} title="복사" className="p-1.5 rounded border">
+                  <button onClick={() => copyTodo(item.content)} title="蹂듭궗" className="p-1.5 rounded border">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                   </button>
-                  <button onClick={() => shareTodo(item.content)} title="공유" className="p-1.5 rounded border">↗</button>
+                  <button onClick={() => shareTodo(item.content)} title="怨듭쑀" className="p-1.5 rounded border">??/button>
                   <button
                     onClick={async () => {
                       await setTodoStarred(item.id!, !item.starred)
                       await load()
                     }}
-                    title="중요"
+                    title="以묒슂"
                     className="p-1.5 rounded border"
                   >
                     <svg className={`w-4 h-4 ${item.starred ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill={item.starred ? 'currentColor' : 'none'}>
@@ -167,10 +167,10 @@ export default function TodoPage() {
                       await deleteTodo(item.id)
                       await load()
                     }}
-                    title="삭제"
+                    title="??젣"
                     className="p-1.5 rounded border text-red-500"
                   >
-                    🗑
+                    ?뿊
                   </button>
                 </div>
               </article>
@@ -178,7 +178,7 @@ export default function TodoPage() {
           </section>
 
           <section className="pt-3 border-t border-gray-200 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록</h2>
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">?꾨즺 紐⑸줉</h2>
             <div className="space-y-2">
               {completedItems.map((item) => (
                 <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40 opacity-80">
@@ -196,12 +196,12 @@ export default function TodoPage() {
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                       className="flex-1 bg-transparent outline-none line-through text-gray-500"
                     />
-                    {item.starred ? <span className="text-yellow-500">★</span> : null}
+                    {item.starred ? <span className="text-yellow-500">??/span> : null}
                   </div>
                 </article>
               ))}
-              {completedItems.length === 0 ? <p className="text-xs text-gray-500">완료된 항목이 없어요.</p> : null}
-              <p className="text-xs text-gray-500">완료 항목은 일정 시간이 지나면 자동 삭제돼요. (중요 표시된 항목은 유지)</p>
+              {completedItems.length === 0 ? <p className="text-xs text-gray-500">?꾨즺????ぉ???놁뼱??</p> : null}
+              <p className="text-xs text-gray-500">?꾨즺 ??ぉ? ?쇱젙 ?쒓컙??吏?섎㈃ ?먮룞 ??젣?쇱슂. (以묒슂 ?쒖떆????ぉ? ?좎?)</p>
             </div>
           </section>
         </>
