@@ -1,6 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import {
@@ -13,6 +16,34 @@ import {
 } from '@/lib/firebase-favorites'
 import GuestPlaceholder from '@/components/GuestPlaceholder'
 
+function SortableFavoriteRow({
+  item,
+  children,
+}: {
+  item: FavoriteSite
+  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void }) => ReactNode
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id || '',
+  })
+
+  const style = { transform: CSS.Transform.toString(transform), transition }
+
+  return (
+    <article
+      ref={setNodeRef}
+      style={style}
+      className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-150 ${
+        isDragging
+          ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
+          : 'border-gray-200 dark:border-gray-700'
+      }`}
+    >
+      {children({ attributes, listeners, setActivatorNodeRef })}
+    </article>
+  )
+}
+
 export default function FavoritesPage() {
   const { user } = useAuth()
   const [items, setItems] = useState<FavoriteSite[]>([])
@@ -20,8 +51,10 @@ export default function FavoritesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [overId, setOverId] = useState<string | null>(null)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } })
+  )
 
   const load = async () => {
     if (!user?.email) {
@@ -69,19 +102,16 @@ export default function FavoritesPage() {
     }
   }
 
-  const onDropReorder = async (targetId?: string) => {
-    if (!draggingId || !targetId || draggingId === targetId) return
+  const onDragEnd = async (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-    const from = items.findIndex((i) => i.id === draggingId)
-    const to = items.findIndex((i) => i.id === targetId)
+    const from = items.findIndex((i) => i.id === active.id)
+    const to = items.findIndex((i) => i.id === over.id)
     if (from < 0 || to < 0) return
 
-    const next = [...items]
-    const [moved] = next.splice(from, 1)
-    next.splice(to, 0, moved)
+    const next = arrayMove(items, from, to)
     setItems(next)
-    setDraggingId(null)
-    setOverId(null)
 
     try {
       await reorderFavoriteSites(next)
@@ -120,50 +150,39 @@ export default function FavoritesPage() {
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-gray-500">💡 카드를 길게 눌러(또는 마우스로 드래그) 순서를 바꿀 수 있어.</p>
-          {items.map((it) => (
-            <article
-              key={it.id}
-              draggable
-              onDragStart={() => setDraggingId(it.id || null)}
-              onDragEnd={() => {
-                setDraggingId(null)
-                setOverId(null)
-              }}
-              onDragOver={(e) => {
-                e.preventDefault()
-                setOverId(it.id || null)
-              }}
-              onDrop={() => onDropReorder(it.id)}
-              className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-150 ${
-                draggingId === it.id
-                  ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
-                  : overId === it.id
-                  ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/20'
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              <div className="flex flex-wrap justify-between items-start gap-3">
-                <div className="flex items-start gap-2">
-                  <span
-                    className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400"
-                    title="드래그해서 순서 변경"
-                    aria-label="드래그 핸들"
-                  >
-                    ☰
-                  </span>
-                  <div>
-                    <h2 className="font-semibold">{it.title}</h2>
-                    <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
-                    {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => { setEditingId(it.id || null); setForm({ title: it.title, url: it.url, note: it.note || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm">수정</button>
-                  <button onClick={async () => { if (!it.id) return; if (!confirm('삭제할까요?')) return; await deleteFavoriteSite(it.id); await load() }} className="px-3 py-1.5 rounded bg-red-600 text-white text-sm">삭제</button>
-                </div>
-              </div>
-            </article>
-          ))}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={items.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
+              {items.map((it) => (
+                <SortableFavoriteRow key={it.id} item={it}>
+                  {({ attributes, listeners, setActivatorNodeRef }) => (
+                    <div className="flex flex-wrap justify-between items-start gap-3">
+                      <div className="flex items-start gap-2">
+                        <span
+                          ref={setActivatorNodeRef as any}
+                          {...attributes}
+                          {...listeners}
+                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400"
+                          title="드래그해서 순서 변경"
+                          aria-label="드래그 핸들"
+                        >
+                          ☰
+                        </span>
+                        <div>
+                          <h2 className="font-semibold">{it.title}</h2>
+                          <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
+                          {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => { setEditingId(it.id || null); setForm({ title: it.title, url: it.url, note: it.note || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm">수정</button>
+                        <button onClick={async () => { if (!it.id) return; if (!confirm('삭제할까요?')) return; await deleteFavoriteSite(it.id); await load() }} className="px-3 py-1.5 rounded bg-red-600 text-white text-sm">삭제</button>
+                      </div>
+                    </div>
+                  )}
+                </SortableFavoriteRow>
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       )}
     </main>
