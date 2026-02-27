@@ -6,6 +6,7 @@ import LoaderSwitcher from '@/components/LoaderSwitcher'
 import GuestPlaceholder from '@/components/GuestPlaceholder'
 import {
   createTodo,
+  deleteTodo,
   getTodos,
   setTodoCompleted,
   setTodoStarred,
@@ -197,7 +198,7 @@ export default function TodoPage() {
           </section>
 
           <section className="pt-3 border-t border-gray-200 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록</h2>
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록 (수동 삭제 가능)</h2>
             <div className="space-y-2">
               {completedItems.map((item) => (
                 <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40 opacity-80">
@@ -218,6 +219,17 @@ export default function TodoPage() {
                       className="flex-1 bg-transparent outline-none resize-none line-through text-gray-500 leading-5"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
+                    <button
+                      onClick={async () => {
+                        if (!item.id) return
+                        await deleteTodo(item.id)
+                        await load()
+                      }}
+                      title="삭제"
+                      className="px-2 py-1 rounded border text-xs text-red-500"
+                    >
+                      삭제
+                    </button>
                   </div>
                 </article>
               ))}
