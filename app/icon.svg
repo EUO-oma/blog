@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pink smile favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff5fa2"/>
+      <stop offset="100%" stop-color="#ff8cc6"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bg)"/>
+  <circle cx="24" cy="25" r="3.2" fill="#ffffff"/>
+  <circle cx="40" cy="25" r="3.2" fill="#ffffff"/>
+  <path d="M20 36c3.2 6.2 20.8 6.2 24 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M50 11l1.8 3.7 4.1.6-2.9 2.8.7 4-3.7-2-3.7 2 .7-4-2.9-2.8 4.1-.6z" fill="#ffe67a"/>
+</svg>
