@@ -26,7 +26,7 @@ export interface FavoriteSite {
 
 const COL = 'favorites'
 
-export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSite[]> {
+export async function getFavoriteSites(authorEmail?: string): Promise<FavoriteSite[]> {
   const normalize = (rows: FavoriteSite[]) =>
     rows
       .sort((a: any, b: any) => {
@@ -40,9 +40,9 @@ export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSit
       .map((r, i) => ({ ...r, sortOrder: Number.isFinite((r as any).sortOrder) ? (r as any).sortOrder : i }))
 
   try {
-    // 1) sortOrder 기준 조회 시도
+    // 공개 조회: 전체 즐겨찾기 반환 (읽기는 모두 허용)
     try {
-      const q1 = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('sortOrder', 'asc'))
+      const q1 = query(collection(db, COL), orderBy('sortOrder', 'asc'))
       const snap1 = await getDocs(q1)
       const rows1 = snap1.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
       if (rows1.length > 0) return normalize(rows1)
@@ -50,9 +50,8 @@ export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSit
       console.warn('favorites q1 fallback:', e)
     }
 
-    // 2) createdAt 폴백 조회(구데이터 포함)
     try {
-      const q2 = query(collection(db, COL), where('authorEmail', '==', authorEmail), orderBy('createdAt', 'desc'))
+      const q2 = query(collection(db, COL), orderBy('createdAt', 'desc'))
       const snap2 = await getDocs(q2)
       const rows2 = snap2.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
       if (rows2.length > 0) return normalize(rows2)
@@ -60,19 +59,16 @@ export async function getFavoriteSites(authorEmail: string): Promise<FavoriteSit
       console.warn('favorites q2 fallback:', e)
     }
 
-    // 3) 마지막 폴백: owner는 전체 조회
-    if (authorEmail.toLowerCase() === 'icandoit13579@gmail.com') {
-      const allSnap = await getDocs(collection(db, COL))
-      const allRows = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
-      return normalize(allRows)
-    }
-
-    return []
+    const allSnap = await getDocs(collection(db, COL))
+    const allRows = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FavoriteSite[]
+    return normalize(allRows)
   } catch (error) {
     console.error('favorites load failed:', error)
     return []
   }
 }
+
+export const FAVORITES_OWNER_EMAIL = 'icandoit13579@gmail.com'
 
 export async function createFavoriteSite(
   data: Omit<FavoriteSite, 'id' | 'createdAt' | 'updatedAt'>,

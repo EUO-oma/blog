@@ -10,11 +10,11 @@ import {
   createFavoriteSite,
   deleteFavoriteSite,
   FavoriteSite,
+  FAVORITES_OWNER_EMAIL,
   getFavoriteSites,
   reorderFavoriteSites,
   updateFavoriteSite,
 } from '@/lib/firebase-favorites'
-import GuestPlaceholder from '@/components/GuestPlaceholder'
 
 function SortableFavoriteRow({
   item,
@@ -60,20 +60,16 @@ export default function FavoritesPage() {
   const [pressingId, setPressingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
+  const isOwner = user?.email?.toLowerCase() === FAVORITES_OWNER_EMAIL
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })
   )
 
   const load = async () => {
-    if (!user?.email) {
-      setItems([])
-      setLoading(false)
-      return
-    }
     setLoading(true)
     try {
-      setItems(await getFavoriteSites(user.email))
+      setItems(await getFavoriteSites(user?.email || undefined))
     } finally {
       setLoading(false)
     }
@@ -184,40 +180,39 @@ export default function FavoritesPage() {
     }
   }
 
-  if (!user) {
-    return <GuestPlaceholder title="즐겨찾기는 로그인 후 사용 가능" desc="로그인하면 저장한 사이트 목록을 바로 불러와요." emoji="⭐" />
-  }
-
   return (
     <main className="max-w-5xl mx-auto">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4">즐겨찾기</h1>
+      {!user ? <p className="text-sm text-gray-500 mb-3">공개 즐겨찾기 목록입니다. 수정/추가는 관리자 로그인 시 가능해요.</p> : null}
 
-      <section className="mb-5">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-500">빠른 추가</p>
-          <button
-            onClick={() => setShowAddForm((v) => !v)}
-            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
-            title="즐겨찾기 추가"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
-        {showAddForm && (
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="사이트 이름" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-              <input value={form.url} onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))} placeholder="https://..." className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-              <input value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} placeholder="메모(선택)" className="px-3 py-2 rounded border md:col-span-2 dark:bg-gray-900 dark:border-gray-700" />
-            </div>
-            <div className="mt-3 flex gap-2 items-center">
-              <button onClick={save} className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">추가</button>
-            </div>
+      {isOwner && (
+        <section className="mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-gray-500">빠른 추가</p>
+            <button
+              onClick={() => setShowAddForm((v) => !v)}
+              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
+              title="즐겨찾기 추가"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
-        )}
-      </section>
+          {showAddForm && (
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="사이트 이름" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                <input value={form.url} onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))} placeholder="https://..." className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                <input value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} placeholder="메모(선택)" className="px-3 py-2 rounded border md:col-span-2 dark:bg-gray-900 dark:border-gray-700" />
+              </div>
+              <div className="mt-3 flex gap-2 items-center">
+                <button onClick={save} className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">추가</button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {loading ? (
         <div className="py-8 flex justify-center"><LoaderSwitcher label="즐겨찾기 불러오는 중..." /></div>
@@ -225,7 +220,7 @@ export default function FavoritesPage() {
         <p className="text-gray-500">등록된 즐겨찾기가 없습니다.</p>
       ) : (
         <div className="space-y-3">
-          <p className="text-xs text-gray-500">💡 카드를 길게 눌러(또는 마우스로 드래그) 순서를 바꿀 수 있어.</p>
+          <p className="text-xs text-gray-500">{isOwner ? '💡 카드를 길게 눌러(또는 마우스로 드래그) 순서를 바꿀 수 있어.' : '공개 즐겨찾기 목록입니다.'}</p>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -240,20 +235,22 @@ export default function FavoritesPage() {
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-wrap justify-between items-start gap-3">
                       <div className="flex items-start gap-2">
-                        <button
-                          type="button"
-                          ref={setActivatorNodeRef as any}
-                          {...attributes}
-                          {...listeners}
-                          onPointerDown={() => setPressingId(it.id || null)}
-                          onPointerUp={() => setPressingId(null)}
-                          onPointerCancel={() => setPressingId(null)}
-                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-2xl leading-none p-2 touch-none"
-                          title="드래그해서 순서 변경"
-                          aria-label="드래그 핸들"
-                        >
-                          ☰
-                        </button>
+                        {isOwner ? (
+                          <button
+                            type="button"
+                            ref={setActivatorNodeRef as any}
+                            {...attributes}
+                            {...listeners}
+                            onPointerDown={() => setPressingId(it.id || null)}
+                            onPointerUp={() => setPressingId(null)}
+                            onPointerCancel={() => setPressingId(null)}
+                            className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-2xl leading-none p-2 touch-none"
+                            title="드래그해서 순서 변경"
+                            aria-label="드래그 핸들"
+                          >
+                            ☰
+                          </button>
+                        ) : null}
                         <div>
                           {editingTitleId === it.id ? (
                             <input
@@ -272,12 +269,13 @@ export default function FavoritesPage() {
                             />
                           ) : (
                             <h2
-                              className="font-semibold cursor-text"
+                              className={`font-semibold ${isOwner ? 'cursor-text' : ''}`}
                               onClick={(e) => {
+                                if (!isOwner) return
                                 e.stopPropagation()
                                 startInlineTitleEdit(it)
                               }}
-                              title="클릭해서 제목 수정"
+                              title={isOwner ? '클릭해서 제목 수정' : ''}
                             >
                               {it.title}
                             </h2>
@@ -303,31 +301,35 @@ export default function FavoritesPage() {
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
-                        <button
-                          onClick={() => {
-                            setInlineEditId(it.id || null)
-                            setInlineForm({ title: it.title, url: it.url, note: it.note || '' })
-                          }}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
-                          title="수정"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={async () => { if (!it.id) return; if (!confirm('삭제할까요?')) return; await deleteFavoriteSite(it.id); await load() }}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
-                          title="삭제"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                        {isOwner ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setInlineEditId(it.id || null)
+                                setInlineForm({ title: it.title, url: it.url, note: it.note || '' })
+                              }}
+                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
+                              title="수정"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={async () => { if (!it.id) return; if (!confirm('삭제할까요?')) return; await deleteFavoriteSite(it.id); await load() }}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                              title="삭제"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                       </div>
 
-                      {inlineEditId === it.id && (
+                      {isOwner && inlineEditId === it.id && (
                         <div className="rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 p-3 bg-white/70 dark:bg-gray-900/40">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <input

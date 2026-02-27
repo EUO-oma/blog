@@ -48,13 +48,9 @@ service cloud.firestore {
       allow create, update, delete: if isOwner() || isCalendarSyncBot();
     }
 
-    // favorites 컬렉션: 로그인 사용자 본인 데이터만 write 허용
+    // favorites 컬렉션: 공개 read, owner만 write 허용
     match /favorites/{favoriteId} {
-      allow create: if request.auth != null
-        && request.resource.data.authorEmail == request.auth.token.email;
-
-      allow update, delete: if request.auth != null
-        && resource.data.authorEmail == request.auth.token.email;
+      allow create, update, delete: if isOwner();
     }
 
     // todos 컬렉션: 로그인 사용자 본인 데이터만 write 허용
