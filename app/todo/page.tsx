@@ -230,11 +230,11 @@ export default function TodoPage() {
                 }`}
               >
                 <div className="flex items-center gap-2 min-h-[56px]">
-                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-lg leading-none px-1 self-center" title="드래그해서 순서 변경">☰</span>
+                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-xl leading-none px-1 self-center" title="드래그해서 순서 변경">☰</span>
                   <input
                     type="checkbox"
                     checked={item.completed}
-                    className="w-5 h-5 self-center"
+                    className="w-6 h-6 self-center"
                     onChange={async (e) => {
                       const checked = e.target.checked
                       if (checked && item.id) {
@@ -291,7 +291,7 @@ export default function TodoPage() {
                     <input
                       type="checkbox"
                       checked={item.completed}
-                      className="w-5 h-5 self-center"
+                      className="w-6 h-6 self-center"
                       onChange={async (e) => {
                         await setTodoCompleted(item.id!, e.target.checked)
                         await load()
