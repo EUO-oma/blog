@@ -232,7 +232,7 @@ export default function TodoPage() {
   if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
 
   return (
-    <main className="max-w-4xl mx-auto space-y-1">
+    <main className="w-full max-w-none mx-0 px-0 space-y-1">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
         <button
@@ -341,7 +341,7 @@ export default function TodoPage() {
                       await load()
                     }}
                     title="중요"
-                    className="p-1.5 rounded border self-center"
+                    className="p-1.5 rounded self-center"
                   >
                     <svg className={`w-4 h-4 ${item.starred ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill={item.starred ? 'currentColor' : 'none'}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />
