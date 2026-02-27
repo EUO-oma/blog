@@ -141,14 +141,17 @@ export default function TodoPage() {
   }
 
   const deleteAllCompleted = async () => {
-    const targets = completedItems.filter((i) => i.id)
-    if (targets.length === 0) return
-    if (!confirm(`완료 항목 ${targets.length}개를 모두 삭제할까요?`)) return
+    const targets = completedItems.filter((i) => i.id && !i.starred)
+    if (targets.length === 0) {
+      setMsg('삭제할 완료 항목이 없어. (중요 별표 항목은 유지됨)')
+      return
+    }
+    if (!confirm(`완료 항목 ${targets.length}개(별표 제외)를 삭제할까요?`)) return
 
     try {
       await Promise.all(targets.map((i) => deleteTodo(i.id!)))
-      setItems((prev) => prev.filter((i) => !i.completed))
-      setMsg('완료된 목록을 모두 삭제했어.')
+      setItems((prev) => prev.filter((i) => !(i.completed && !i.starred)))
+      setMsg('완료 목록에서 별표 제외 항목을 모두 삭제했어.')
     } catch (e: any) {
       setMsg(`일괄 삭제 실패: ${e?.message || e}`)
     }
