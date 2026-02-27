@@ -1,6 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import GuestPlaceholder from '@/components/GuestPlaceholder'
@@ -15,6 +18,34 @@ import {
   reorderTodos,
 } from '@/lib/firebase-todos'
 
+function SortableTodoRow({
+  item,
+  children,
+  completing,
+}: {
+  item: TodoItem
+  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void }) => ReactNode
+  completing: boolean
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id || '',
+  })
+
+  const style = { transform: CSS.Transform.toString(transform), transition }
+
+  return (
+    <article
+      ref={setNodeRef}
+      style={style}
+      className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
+        completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow' : 'border-gray-200 dark:border-gray-700'
+      }`}
+    >
+      {children({ attributes, listeners, setActivatorNodeRef })}
+    </article>
+  )
+}
+
 export default function TodoPage() {
   const { user } = useAuth()
   const [items, setItems] = useState<TodoItem[]>([])
@@ -22,8 +53,6 @@ export default function TodoPage() {
   const [newText, setNewText] = useState('')
   const [msg, setMsg] = useState('')
   const [adding, setAdding] = useState(false)
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [overId, setOverId] = useState<string | null>(null)
   const [completingIds, setCompletingIds] = useState<string[]>([])
 
   const load = async () => {
@@ -134,21 +163,21 @@ export default function TodoPage() {
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
 
-  const onDropReorder = async (targetId?: string) => {
-    if (!draggingId || !targetId || draggingId === targetId) return
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } })
+  )
 
-    const from = activeItems.findIndex((i) => i.id === draggingId)
-    const to = activeItems.findIndex((i) => i.id === targetId)
+  const onDragEnd = async (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const from = activeItems.findIndex((i) => i.id === active.id)
+    const to = activeItems.findIndex((i) => i.id === over.id)
     if (from < 0 || to < 0) return
 
-    const nextActive = [...activeItems]
-    const [moved] = nextActive.splice(from, 1)
-    nextActive.splice(to, 0, moved)
-    const next = [...nextActive, ...completedItems]
-
-    setItems(next)
-    setDraggingId(null)
-    setOverId(null)
+    const nextActive = arrayMove(activeItems, from, to)
+    setItems([...nextActive, ...completedItems])
 
     try {
       await reorderTodos(nextActive)
@@ -157,29 +186,6 @@ export default function TodoPage() {
       setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
       await load()
     }
-  }
-
-  const onTouchStartItem = (id?: string) => {
-    if (!id) return
-    setDraggingId(id)
-    setOverId(id)
-  }
-
-  const onTouchMoveItem = (e: any) => {
-    const t = e.touches?.[0]
-    if (!t) return
-    const el = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null
-    const card = el?.closest?.('[data-todo-id]') as HTMLElement | null
-    const targetId = card?.dataset?.todoId || null
-    if (targetId) setOverId(targetId)
-  }
-
-  const onTouchEndItem = async () => {
-    if (draggingId && overId) {
-      await onDropReorder(overId)
-    }
-    setDraggingId(null)
-    setOverId(null)
   }
 
   if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
@@ -227,38 +233,20 @@ export default function TodoPage() {
       ) : (
         <>
           <section className="space-y-2">
-            <p className="text-xs text-gray-500">💡 항목을 드래그해서 순서를 바꿀 수 있어.</p>
-            {activeItems.map((item) => (
-              <article
-                key={item.id}
-                data-todo-id={item.id}
-                draggable
-                onDragStart={() => setDraggingId(item.id || null)}
-                onDragEnd={() => {
-                  setDraggingId(null)
-                  setOverId(null)
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  setOverId(item.id || null)
-                }}
-                onDrop={() => onDropReorder(item.id)}
-                onTouchStart={() => onTouchStartItem(item.id)}
-                onTouchMove={onTouchMoveItem}
-                onTouchEnd={onTouchEndItem}
-                onTouchCancel={onTouchEndItem}
-                className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
-                  completingIds.includes(item.id || '')
-                    ? 'opacity-0 -translate-y-1 scale-[0.98]'
-                    : draggingId === item.id
-                    ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
-                    : overId === item.id
-                    ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/20'
-                    : 'border-gray-200 dark:border-gray-700'
-                }`}
-              >
+            <p className="text-xs text-gray-500">💡 항목을 길게 누르거나 드래그 핸들(☰)로 순서를 바꿀 수 있어.</p>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={activeItems.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
+                {activeItems.map((item) => (
+                  <SortableTodoRow key={item.id} item={item} completing={completingIds.includes(item.id || '')}>
+                    {({ attributes, listeners, setActivatorNodeRef }) => (
                 <div className="flex items-center gap-2 min-h-[56px]">
-                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-xl leading-none px-1 self-center" title="드래그해서 순서 변경">☰</span>
+                  <span
+                    ref={setActivatorNodeRef as any}
+                    {...attributes}
+                    {...listeners}
+                    className="text-gray-400 cursor-grab active:cursor-grabbing text-xl leading-none px-1 self-center"
+                    title="드래그해서 순서 변경"
+                  >☰</span>
                   <input
                     type="checkbox"
                     checked={item.completed}
@@ -306,8 +294,11 @@ export default function TodoPage() {
                   </button>
                   {/* 삭제 버튼 제거: 비움/완료 자동정리 흐름 사용 */}
                 </div>
-              </article>
-            ))}
+                    )}
+                  </SortableTodoRow>
+                ))}
+              </SortableContext>
+            </DndContext>
           </section>
 
           <section className="pt-3 border-t border-gray-200 dark:border-gray-700">
