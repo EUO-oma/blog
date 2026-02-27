@@ -348,8 +348,8 @@ export default function HomePage() {
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="w-full">
             <div className="flex items-center gap-2">
-              <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+              <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
               </button>
               <h2
                 className={`text-2xl font-bold ${isAuthor(post) ? 'cursor-text' : ''}`}
@@ -376,8 +376,8 @@ export default function HomePage() {
           <div className="flex items-center gap-1">
             {user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() && (
               <>
-                <button onClick={() => setIsInlineEditModalOpen(true)} className="p-2 rounded border text-indigo-600" title="수정">✏️</button>
-                <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="p-2 rounded border text-red-600" title="삭제">🗑️</button>
+                <button onClick={() => setIsInlineEditModalOpen(true)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1" title="수정">✏️</button>
+                <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1" title="삭제">🗑️</button>
               </>
             )}
             {/* 닫기 버튼 제거: 다른 카드 선택/저장 흐름 사용 */}
@@ -394,8 +394,8 @@ export default function HomePage() {
 
         <div className="max-h-[52vh] overflow-y-auto pr-1">
           <div className="flex items-center gap-2 mb-2">
-            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border" title="본문 복사">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="본문 복사">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
             </button>
             <span className="text-xs text-gray-500">본문</span>
           </div>
@@ -566,8 +566,8 @@ export default function HomePage() {
                         />
                       ) : (
                         <div className="flex items-center gap-2 mb-2">
-                          <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="p-1 rounded border" title="제목 복사">
-                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+                          <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                           </button>
                           <h3
                             className={`text-2xl md:text-3xl font-bold ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
@@ -624,8 +624,8 @@ export default function HomePage() {
                     )}
 
                     <div className="flex items-start gap-2 mb-3">
-                      <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="p-1 rounded border mt-0.5" title="본문 복사">
-                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+                      <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                       </button>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{getContentPreview(featuredPost.content || '', 140)}</p>
                     </div>
@@ -680,8 +680,8 @@ export default function HomePage() {
                           />
                         ) : (
                           <div className="flex items-center gap-2 mb-2">
-                            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
-                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+                            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
+                              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                             </button>
                             <h3
                               className="text-xl font-semibold"
@@ -736,8 +736,8 @@ export default function HomePage() {
                         </p>
                       )}
                       <div className="flex items-start gap-2 mb-4">
-                        <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border mt-0.5" title="본문 복사">
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+                        <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                         </button>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{getContentPreview(post.content || '', 100)}</p>
                       </div>
@@ -780,8 +780,8 @@ export default function HomePage() {
                       />
                     ) : (
                       <div className="flex items-center gap-2 mb-2">
-                        <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                        <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
                         </button>
                         <h3
                           className="text-xl font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -836,8 +836,8 @@ export default function HomePage() {
                     </p>
                   )}
                   <div className="flex items-start gap-2 mb-4">
-                    <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border mt-0.5" title="본문 복사">
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                    <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
                     </button>
                     <p className="text-sm text-gray-500 dark:text-gray-500">{getContentPreview(post.content || '', 100)}</p>
                   </div>
