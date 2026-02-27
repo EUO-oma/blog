@@ -19,6 +19,7 @@ export default function TodoPage() {
   const [loading, setLoading] = useState(true)
   const [newText, setNewText] = useState('')
   const [msg, setMsg] = useState('')
+  const [adding, setAdding] = useState(false)
 
   const load = async () => {
     if (!user?.email) {
@@ -41,18 +42,30 @@ export default function TodoPage() {
   }, [user?.email])
 
   const addTodo = async () => {
+    if (adding) return
     if (!user?.email) return setMsg('로그인 후 사용 가능해요.')
     const content = newText.trim()
-    if (!content) return
+    if (!content) {
+      setMsg('내용을 입력해줘.')
+      return
+    }
 
-    await createTodo({
-      content,
-      authorEmail: user.email,
-      authorName: user.displayName || user.email,
-    })
-    setNewText('')
-    setMsg('추가 완료')
-    await load()
+    setAdding(true)
+    try {
+      await createTodo({
+        content,
+        authorEmail: user.email,
+        authorName: user.displayName || user.email,
+      })
+      setNewText('')
+      setMsg('추가 완료')
+      await load()
+    } catch (e: any) {
+      console.error('todo add failed:', e)
+      setMsg(`등록 실패: ${e?.message || e}`)
+    } finally {
+      setAdding(false)
+    }
   }
 
   const saveOnBlur = async (id: string | undefined, content: string) => {
@@ -111,7 +124,8 @@ export default function TodoPage() {
           />
           <button
             type="submit"
-            className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+            disabled={adding}
+            className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
             title="등록하기"
             aria-label="등록하기"
           >
