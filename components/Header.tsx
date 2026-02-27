@@ -85,7 +85,7 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setMenuOpen(true)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -96,6 +96,28 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
+
+              <Link
+                href="/todo"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-indigo-600 dark:text-indigo-400"
+                aria-label="Todo 바로가기"
+                title="Todo"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4" />
+                </svg>
+              </Link>
+
+              <Link
+                href="/schedule"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-purple-600 dark:text-purple-400"
+                aria-label="일정 바로가기"
+                title="일정"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">
