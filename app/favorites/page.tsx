@@ -35,11 +35,11 @@ function SortableFavoriteRow({
     <article
       ref={setNodeRef}
       style={style}
-      className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-150 ${
+      className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-200 ${
         isDragging
-          ? 'opacity-60 scale-[0.98] border-indigo-400 dark:border-indigo-600 shadow'
+          ? 'opacity-70 scale-[0.92] border-lime-400 dark:border-lime-500 shadow-lg'
           : isPressing
-          ? 'border-fuchsia-300 dark:border-fuchsia-700 bg-fuchsia-50/50 dark:bg-fuchsia-900/10'
+          ? 'scale-[0.9] border-lime-300 dark:border-lime-600 bg-lime-100/70 dark:bg-lime-900/20 animate-pulse'
           : 'border-gray-200 dark:border-gray-700'
       }`}
     >
