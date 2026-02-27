@@ -37,9 +37,9 @@ function SortableFavoriteRow({
       style={style}
       className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-200 ${
         isDragging
-          ? 'opacity-70 scale-[0.92] border-lime-400 dark:border-lime-500 shadow-lg'
+          ? 'opacity-75 scale-[0.94] border-amber-300 dark:border-amber-500 shadow-[0_10px_30px_rgba(251,191,36,0.25)]'
           : isPressing
-          ? 'scale-[0.9] border-lime-300 dark:border-lime-600 bg-lime-100/70 dark:bg-lime-900/20 animate-pulse'
+          ? 'scale-[0.95] border-amber-200 dark:border-amber-600 bg-gradient-to-r from-white via-amber-50 to-white dark:from-gray-800 dark:via-amber-900/20 dark:to-gray-800 ring-2 ring-amber-200/70 dark:ring-amber-500/30 shadow-[0_0_24px_rgba(251,191,36,0.22)] animate-pulse'
           : 'border-gray-200 dark:border-gray-700'
       }`}
     >
