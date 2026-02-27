@@ -52,9 +52,11 @@ export default function FavoritesPage() {
   const { user } = useAuth()
   const [items, setItems] = useState<FavoriteSite[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null)
+  const [inlineForm, setInlineForm] = useState({ title: '', url: '', note: '' })
   const [pressingId, setPressingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
@@ -99,19 +101,33 @@ export default function FavoritesPage() {
     }
 
     try {
-      if (editingId) {
-        await updateFavoriteSite(editingId, payload)
-        setMsg('수정 완료')
-      } else {
-        await createFavoriteSite({ ...payload, authorEmail: user.email }, items.length)
-        setMsg('추가 완료')
-      }
-
-      setEditingId(null)
+      await createFavoriteSite({ ...payload, authorEmail: user.email }, items.length)
+      setMsg('추가 완료')
       setForm({ title: '', url: '', note: '' })
+      setShowAddForm(false)
       await load()
     } catch (e: any) {
       setMsg(`저장 실패: ${e?.message || e}`)
+    }
+  }
+
+  const saveInlineEdit = async (id: string) => {
+    const payload = {
+      title: inlineForm.title.trim(),
+      url: inlineForm.url.trim(),
+      note: inlineForm.note.trim(),
+    }
+    if (!payload.title || !payload.url) {
+      setMsg('제목/URL은 필수야.')
+      return
+    }
+    try {
+      await updateFavoriteSite(id, payload)
+      setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...payload } : x)))
+      setInlineEditId(null)
+      setMsg('수정 완료')
+    } catch (e: any) {
+      setMsg(`수정 실패: ${e?.message || e}`)
     }
   }
 
@@ -176,17 +192,31 @@ export default function FavoritesPage() {
     <main className="max-w-5xl mx-auto">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4">즐겨찾기</h1>
 
-      <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-5 bg-white dark:bg-gray-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="사이트 이름" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          <input value={form.url} onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))} placeholder="https://..." className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          <input value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} placeholder="메모(선택)" className="px-3 py-2 rounded border md:col-span-2 dark:bg-gray-900 dark:border-gray-700" />
+      <section className="mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-500">빠른 추가</p>
+          <button
+            onClick={() => setShowAddForm((v) => !v)}
+            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
+            title="즐겨찾기 추가"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
         </div>
-        <div className="mt-3 flex gap-2 items-center">
-          <button onClick={save} className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">{editingId ? '수정 저장' : '+ 추가'}</button>
-          {editingId ? <button onClick={() => { setEditingId(null); setForm({ title: '', url: '', note: '' }) }} className="px-3 py-2 rounded border text-sm">취소</button> : null}
-          {msg ? <span className="text-sm text-gray-500">{msg}</span> : null}
-        </div>
+        {showAddForm && (
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="사이트 이름" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.url} onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))} placeholder="https://..." className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} placeholder="메모(선택)" className="px-3 py-2 rounded border md:col-span-2 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div className="mt-3 flex gap-2 items-center">
+              <button onClick={save} className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">추가</button>
+            </div>
+          </div>
+        )}
       </section>
 
       {loading ? (
@@ -207,7 +237,8 @@ export default function FavoritesPage() {
               {items.map((it) => (
                 <SortableFavoriteRow key={it.id} item={it} isPressing={pressingId === it.id}>
                   {({ attributes, listeners, setActivatorNodeRef, isDragging }) => (
-                    <div className="flex flex-wrap justify-between items-start gap-3">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap justify-between items-start gap-3">
                       <div className="flex items-start gap-2">
                         <button
                           type="button"
@@ -273,7 +304,10 @@ export default function FavoritesPage() {
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                         <button
-                          onClick={() => { setEditingId(it.id || null); setForm({ title: it.title, url: it.url, note: it.note || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                          onClick={() => {
+                            setInlineEditId(it.id || null)
+                            setInlineForm({ title: it.title, url: it.url, note: it.note || '' })
+                          }}
                           className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
                           title="수정"
                         >
@@ -291,6 +325,47 @@ export default function FavoritesPage() {
                           </svg>
                         </button>
                       </div>
+                      </div>
+
+                      {inlineEditId === it.id && (
+                        <div className="rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 p-3 bg-white/70 dark:bg-gray-900/40">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <input
+                              value={inlineForm.title}
+                              onChange={(e) => setInlineForm((p) => ({ ...p, title: e.target.value }))}
+                              onBlur={() => it.id && saveInlineEdit(it.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  it.id && saveInlineEdit(it.id)
+                                }
+                              }}
+                              placeholder="사이트 이름"
+                              className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                            />
+                            <input
+                              value={inlineForm.url}
+                              onChange={(e) => setInlineForm((p) => ({ ...p, url: e.target.value }))}
+                              onBlur={() => it.id && saveInlineEdit(it.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  it.id && saveInlineEdit(it.id)
+                                }
+                              }}
+                              placeholder="https://..."
+                              className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                            />
+                            <input
+                              value={inlineForm.note}
+                              onChange={(e) => setInlineForm((p) => ({ ...p, note: e.target.value }))}
+                              onBlur={() => it.id && saveInlineEdit(it.id)}
+                              placeholder="메모(선택)"
+                              className="px-2 py-1 rounded border md:col-span-2 dark:bg-gray-900 dark:border-gray-700"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </SortableFavoriteRow>
