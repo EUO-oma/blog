@@ -549,28 +549,29 @@ export default function HomePage() {
 
                     <div className="flex items-start gap-3">
                       {editingPostId === featuredPost.id ? (
-                        <input
+                        <textarea
                           autoFocus
+                          rows={2}
                           value={editingTitle}
                           onChange={(e) => setEditingTitle(e.target.value)}
                           onClick={(e) => e.stopPropagation()}
                           onBlur={() => saveInlineTitle(featuredPost)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                               e.preventDefault()
                               saveInlineTitle(featuredPost)
                             }
                             if (e.key === 'Escape') setEditingPostId(null)
                           }}
-                          className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+                          className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none leading-6"
                         />
                       ) : (
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-start gap-2 mb-2">
                           <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                           </button>
                           <h3
-                            className={`text-2xl md:text-3xl font-bold ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                            className={`text-xl font-semibold ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
                             onTouchStart={() => startLongPressCopy('title', featuredPost)}
                             onTouchEnd={endLongPressCopy}
                             onTouchCancel={endLongPressCopy}
