@@ -610,7 +610,7 @@ export default function HomePage() {
                   renderExpandedInline(featuredPost)
                 ) : (
                   <article
-                    className="relative py-6 px-1.5 md:py-8 md:px-2 cursor-pointer bg-transparent"
+                    className="relative pt-8 pb-6 px-1.5 md:pt-10 md:pb-8 md:px-2 cursor-pointer bg-transparent"
                     onClick={() => { void openPostEditor(featuredPost) }}
                   >
                     <span className="absolute top-0 left-0 w-9 h-9 border-t-[10px] border-l-[10px] border-gray-400/85" />
