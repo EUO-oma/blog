@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import {
   createTodo,
-  deleteTodo,
   getTodos,
   setTodoCompleted,
   setTodoStarred,
@@ -72,27 +71,33 @@ export default function TodoPage() {
     if (!id) return
     const next = content.trim()
     if (!next) {
-      await deleteTodo(id)
-      await load()
+      setItems((prev) => prev.filter((it) => it.id !== id))
+      setMsg('비워진 항목은 숨김 처리됨 (완료 항목 자동정리)')
       return
     }
     await updateTodo(id, { content: next })
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, content: next } : it)))
   }
 
-  const copyTodo = async (content: string) => {
-    await navigator.clipboard.writeText(content)
-    setMsg('클립보드에 복사되었습니다')
-    setTimeout(() => setMsg(''), 1200)
-  }
+  const longPressCopy = (text: string) => {
+    if (typeof window === 'undefined' || !('ontouchstart' in window)) return
+    let timer: ReturnType<typeof setTimeout> | null = setTimeout(async () => {
+      await navigator.clipboard.writeText(text)
+      setMsg('클립보드에 복사되었습니다')
+      setTimeout(() => setMsg(''), 1200)
+    }, 450)
 
-  const shareTodo = async (content: string) => {
-    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> }
-    if (nav.share) {
-      await nav.share({ text: content })
-      return
+    const clear = () => {
+      if (timer) {
+        clearTimeout(timer)
+        timer = null
+      }
+      window.removeEventListener('touchend', clear)
+      window.removeEventListener('touchcancel', clear)
     }
-    await copyTodo(content)
+
+    window.addEventListener('touchend', clear, { once: true })
+    window.addEventListener('touchcancel', clear, { once: true })
   }
 
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
@@ -157,12 +162,9 @@ export default function TodoPage() {
                   <input
                     defaultValue={item.content}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
+                    onTouchStart={() => longPressCopy(item.content)}
                     className="flex-1 bg-transparent outline-none"
                   />
-                  <button onClick={() => copyTodo(item.content)} title="복사" className="p-1.5 rounded border">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
-                  </button>
-                  <button onClick={() => shareTodo(item.content)} title="공유" className="p-1.5 rounded border">↗</button>
                   <button
                     onClick={async () => {
                       await setTodoStarred(item.id!, !item.starred)
@@ -208,6 +210,7 @@ export default function TodoPage() {
                     <input
                       defaultValue={item.content}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
+                      onTouchStart={() => longPressCopy(item.content)}
                       className="flex-1 bg-transparent outline-none line-through text-gray-500"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
