@@ -339,37 +339,29 @@ export default function TodoPage() {
                     onInput={(e) => autoResizeTextarea(e.currentTarget)}
                     onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
-                    onTouchStart={() => longPressCopy(item.content)}
-                    onContextMenu={(e) => e.preventDefault()}
                     className="flex-1 bg-transparent outline-none resize-none overflow-hidden leading-6 py-2 self-center align-middle"
-                    style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
                   />
-                  <button
-                    onClick={() => copyText(item.content)}
-                    title="복사"
-                    className="p-1 self-center text-blue-600 hover:text-blue-900"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                  </button>
-                  <button
-                    onClick={() => copyText(item.content)}
-                    title="복사"
-                    className="p-1 self-center text-blue-600 hover:text-blue-900"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                  </button>
-                  <button
-                    onClick={async () => {
-                      await setTodoStarred(item.id!, !item.starred)
-                      await load()
-                    }}
-                    title="중요"
-                    className="p-1.5 rounded self-center"
-                  >
-                    <svg className={`w-4 h-4 ${item.starred ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill={item.starred ? 'currentColor' : 'none'}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />
-                    </svg>
-                  </button>
+                  <div className="flex flex-col items-center justify-center gap-0.5 self-center">
+                    <button
+                      onClick={() => copyText(item.content)}
+                      title="복사"
+                      className="p-1 text-blue-600 hover:text-blue-900"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await setTodoStarred(item.id!, !item.starred)
+                        await load()
+                      }}
+                      title="중요"
+                      className="p-1"
+                    >
+                      <svg className={`w-4 h-4 ${item.starred ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill={item.starred ? 'currentColor' : 'none'}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />
+                      </svg>
+                    </button>
+                  </div>
                   {/* 삭제 버튼 제거: 비움/완료 자동정리 흐름 사용 */}
                 </div>
                     )}
@@ -410,10 +402,7 @@ export default function TodoPage() {
                       onInput={(e) => autoResizeTextarea(e.currentTarget)}
                       onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
-                      onTouchStart={() => longPressCopy(item.content)}
-                      onContextMenu={(e) => e.preventDefault()}
                       className="flex-1 bg-transparent outline-none resize-none overflow-hidden line-through text-gray-500 leading-6 py-2 self-center align-middle"
-                      style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
                     <button
