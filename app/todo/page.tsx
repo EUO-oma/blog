@@ -140,6 +140,20 @@ export default function TodoPage() {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, content: next } : it)))
   }
 
+  const deleteAllCompleted = async () => {
+    const targets = completedItems.filter((i) => i.id)
+    if (targets.length === 0) return
+    if (!confirm(`완료 항목 ${targets.length}개를 모두 삭제할까요?`)) return
+
+    try {
+      await Promise.all(targets.map((i) => deleteTodo(i.id!)))
+      setItems((prev) => prev.filter((i) => !i.completed))
+      setMsg('완료된 목록을 모두 삭제했어.')
+    } catch (e: any) {
+      setMsg(`일괄 삭제 실패: ${e?.message || e}`)
+    }
+  }
+
   const copyText = async (text: string) => {
     await navigator.clipboard.writeText(text)
     setMsg('클립보드에 복사되었습니다')
@@ -343,7 +357,16 @@ export default function TodoPage() {
           </section>
 
           <section className="pt-3 border-t border-gray-200 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록 (수동 삭제 가능)</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">완료 목록 (수동 삭제 가능)</h2>
+              <button
+                onClick={deleteAllCompleted}
+                disabled={completedItems.length === 0}
+                className="text-xs px-2 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                완료된 목록 모두 삭제
+              </button>
+            </div>
             <div className="space-y-2">
               {completedItems.map((item) => (
                 <article key={item.id} className="p-1 bg-transparent opacity-80 border-b border-gray-200/70 dark:border-gray-700/60">
@@ -377,9 +400,11 @@ export default function TodoPage() {
                         await load()
                       }}
                       title="삭제"
-                      className="px-1 py-0.5 rounded border text-xs text-red-500"
+                      className="text-red-600 hover:text-red-900 p-1"
                     >
-                      삭제
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                     </button>
                   </div>
                 </article>
