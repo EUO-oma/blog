@@ -18,9 +18,11 @@ import GuestPlaceholder from '@/components/GuestPlaceholder'
 
 function SortableFavoriteRow({
   item,
+  isPressing,
   children,
 }: {
   item: FavoriteSite
+  isPressing: boolean
   children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void; isDragging: boolean }) => ReactNode
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
@@ -35,7 +37,9 @@ function SortableFavoriteRow({
       style={style}
       className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-150 ${
         isDragging
-          ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
+          ? 'opacity-60 scale-[0.98] border-indigo-400 dark:border-indigo-600 shadow'
+          : isPressing
+          ? 'border-fuchsia-300 dark:border-fuchsia-700 bg-fuchsia-50/50 dark:bg-fuchsia-900/10'
           : 'border-gray-200 dark:border-gray-700'
       }`}
     >
@@ -51,6 +55,7 @@ export default function FavoritesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [pressingId, setPressingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
   const sensors = useSensors(
@@ -143,6 +148,7 @@ export default function FavoritesPage() {
   }
 
   const onDragEnd = async (event: any) => {
+    setPressingId(null)
     const { active, over } = event
     if (!over || active.id === over.id) return
 
@@ -190,10 +196,16 @@ export default function FavoritesPage() {
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-gray-500">💡 카드를 길게 눌러(또는 마우스로 드래그) 순서를 바꿀 수 있어.</p>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={(e) => setPressingId(String(e.active.id))}
+            onDragEnd={onDragEnd}
+            onDragCancel={() => setPressingId(null)}
+          >
             <SortableContext items={items.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
               {items.map((it) => (
-                <SortableFavoriteRow key={it.id} item={it}>
+                <SortableFavoriteRow key={it.id} item={it} isPressing={pressingId === it.id}>
                   {({ attributes, listeners, setActivatorNodeRef, isDragging }) => (
                     <div className="flex flex-wrap justify-between items-start gap-3">
                       <div className="flex items-start gap-2">
@@ -202,6 +214,9 @@ export default function FavoritesPage() {
                           ref={setActivatorNodeRef as any}
                           {...attributes}
                           {...listeners}
+                          onPointerDown={() => setPressingId(it.id || null)}
+                          onPointerUp={() => setPressingId(null)}
+                          onPointerCancel={() => setPressingId(null)}
                           className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-2xl leading-none p-2 touch-none"
                           title="드래그해서 순서 변경"
                           aria-label="드래그 핸들"
