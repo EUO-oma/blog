@@ -658,36 +658,7 @@ export default function HomePage() {
                       )}
                     </div>
 
-                    {editingExcerptPostId === featuredPost.id ? (
-                      <input
-                        autoFocus
-                        value={editingExcerpt}
-                        onChange={(e) => setEditingExcerpt(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onBlur={() => saveInlineExcerpt(featuredPost)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            saveInlineExcerpt(featuredPost)
-                          }
-                          if (e.key === 'Escape') setEditingExcerptPostId(null)
-                        }}
-                        className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
-                      />
-                    ) : (
-                      <p
-                        className={`text-gray-700 dark:text-gray-300 mb-2 text-base ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
-                        onClick={(e) => {
-                          if (isAuthor(featuredPost)) {
-                            e.stopPropagation()
-                            startInlineExcerptEdit(featuredPost)
-                          }
-                        }}
-                        title={isAuthor(featuredPost) ? '클릭해서 요약 수정' : ''}
-                      >
-                        {featuredPost.excerpt}
-                      </p>
-                    )}
+                    
 
                     <div className="flex items-start gap-2 mb-3">
                       <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
@@ -777,36 +748,7 @@ export default function HomePage() {
                           </div>
                         )}
                       </div>
-                      {editingExcerptPostId === post.id ? (
-                        <input
-                          autoFocus
-                          value={editingExcerpt}
-                          onChange={(e) => setEditingExcerpt(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          onBlur={() => saveInlineExcerpt(post)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              saveInlineExcerpt(post)
-                            }
-                            if (e.key === 'Escape') setEditingExcerptPostId(null)
-                          }}
-                          className="text-gray-600 dark:text-gray-300 mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
-                        />
-                      ) : (
-                        <p
-                          className={`text-gray-600 dark:text-gray-300 mb-2 ${isAuthor(post) ? 'cursor-text' : ''}`}
-                          onClick={(e) => {
-                            if (isAuthor(post)) {
-                              e.stopPropagation()
-                              startInlineExcerptEdit(post)
-                            }
-                          }}
-                          title={isAuthor(post) ? '클릭해서 요약 수정' : ''}
-                        >
-                          {post.excerpt}
-                        </p>
-                      )}
+                      
                       <div className="flex items-start gap-2 mb-4">
                         <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
@@ -883,36 +825,7 @@ export default function HomePage() {
                       </div>
                     )}
                   </div>
-                  {editingExcerptPostId === post.id ? (
-                    <input
-                      autoFocus
-                      value={editingExcerpt}
-                      onChange={(e) => setEditingExcerpt(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      onBlur={() => saveInlineExcerpt(post)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          saveInlineExcerpt(post)
-                        }
-                        if (e.key === 'Escape') setEditingExcerptPostId(null)
-                      }}
-                      className="text-gray-600 dark:text-gray-400 mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
-                    />
-                  ) : (
-                    <p
-                      className={`text-gray-600 dark:text-gray-400 mb-2 ${isAuthor(post) ? 'cursor-text' : ''}`}
-                      onClick={(e) => {
-                        if (isAuthor(post)) {
-                          e.stopPropagation()
-                          startInlineExcerptEdit(post)
-                        }
-                      }}
-                      title={isAuthor(post) ? '클릭해서 요약 수정' : ''}
-                    >
-                      {post.excerpt}
-                    </p>
-                  )}
+                  
                   <div className="flex items-start gap-2 mb-4">
                     <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
