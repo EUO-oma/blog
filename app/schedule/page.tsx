@@ -25,6 +25,7 @@ export default function SchedulePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [calendarSynced, setCalendarSynced] = useState<CalendarTodayCacheItem[]>([]);
   const [syncMsg, setSyncMsg] = useState<string>('');
+  const [syncingNow, setSyncingNow] = useState(false);
   const [syncMeta, setSyncMeta] = useState<{ lastSyncedAt?: string; hasFailed?: boolean; lastError?: string }>({});
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || '';
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || '';
@@ -147,6 +148,34 @@ export default function SchedulePage() {
       }
     } catch {
       setSyncMsg('공유가 취소되었거나 실패했어.');
+    }
+  };
+
+  const triggerSyncNow = async () => {
+    if (!gasWebAppUrl || !gasApiToken) {
+      setSyncMsg('GAS 연동 변수 누락');
+      return;
+    }
+    setSyncingNow(true);
+    setSyncMsg('동기화 진행 중...');
+    try {
+      const res = await fetch(gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
+      });
+      const data = await res.json();
+      if (!data?.ok) {
+        setSyncMsg(`동기화 실패: ${data?.error || 'unknown'}`);
+        return;
+      }
+      const refreshed = await getCalendarRangeCacheItems(60).catch(() => []);
+      setCalendarSynced(refreshed);
+      setSyncMsg(`동기화 완료 (${data?.synced ?? refreshed.length}건)`);
+    } catch {
+      setSyncMsg('동기화 실패: 네트워크 오류');
+    } finally {
+      setSyncingNow(false);
     }
   };
 
@@ -484,7 +513,19 @@ export default function SchedulePage() {
       {calendarSynced.length > 0 && (
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">🔄 Google 캘린더 동기화 (2개월)</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">🔄 Google 캘린더 동기화 (2개월)</h2>
+              <button
+                onClick={triggerSyncNow}
+                disabled={syncingNow}
+                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 disabled:opacity-50"
+                title="지금 동기화"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8A8 8 0 006.4 5.6L4 8m0 8a8 8 0 0013.6 2.4L20 16" />
+                </svg>
+              </button>
+            </div>
             <div className="flex items-center gap-2">
               <span className={`text-[11px] px-2 py-0.5 rounded ${syncMeta.hasFailed ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'}`}>
                 {syncMeta.hasFailed ? '동기화 주의' : '동기화 정상'}
