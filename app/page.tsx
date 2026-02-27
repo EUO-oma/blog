@@ -369,25 +369,44 @@ export default function HomePage() {
               <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
               </button>
-              <h2
-                className={`text-2xl font-bold ${isAuthor(post) ? 'cursor-text' : ''}`}
-                onTouchStart={() => startLongPressCopy('title', post)}
-                onTouchEnd={endLongPressCopy}
-                onTouchCancel={endLongPressCopy}
-                onClick={(e) => {
-                  if (longPressCopiedRef.current) {
-                    longPressCopiedRef.current = false
-                    return
-                  }
-                  if (isAuthor(post)) {
-                    e.stopPropagation()
-                    startInlineEdit(post)
-                  }
-                }}
-                title={isAuthor(post) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
-              >
-                {post.title}
-              </h2>
+              {editingPostId === post.id ? (
+                <textarea
+                  autoFocus
+                  rows={2}
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={() => saveInlineTitle(post)}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                      e.preventDefault()
+                      saveInlineTitle(post)
+                    }
+                    if (e.key === 'Escape') setEditingPostId(null)
+                  }}
+                  className="text-xl font-semibold w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700 resize-none leading-6"
+                />
+              ) : (
+                <h2
+                  className={`text-xl font-semibold ${isAuthor(post) ? 'cursor-text' : ''}`}
+                  onTouchStart={() => startLongPressCopy('title', post)}
+                  onTouchEnd={endLongPressCopy}
+                  onTouchCancel={endLongPressCopy}
+                  onClick={(e) => {
+                    if (longPressCopiedRef.current) {
+                      longPressCopiedRef.current = false
+                      return
+                    }
+                    if (isAuthor(post)) {
+                      e.stopPropagation()
+                      startInlineEdit(post)
+                    }
+                  }}
+                  title={isAuthor(post) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
+                >
+                  {post.title}
+                </h2>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</p>
           </div>
