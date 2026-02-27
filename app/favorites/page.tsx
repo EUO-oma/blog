@@ -132,7 +132,7 @@ export default function FavoritesPage() {
       return
     }
     try {
-      await updateFavoriteSite(it.id, { title: next })
+      await updateFavoriteSite(it.id, { title: next, url: it.url, note: it.note || '' })
       setItems((prev) => prev.map((x) => (x.id === it.id ? { ...x, title: next } : x)))
       setMsg('제목 수정 완료')
     } catch (e: any) {
