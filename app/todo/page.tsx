@@ -306,7 +306,7 @@ export default function TodoPage() {
                     rows={2}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                     onTouchStart={() => longPressCopy(item.content)}
-                    className="flex-1 bg-transparent outline-none resize-none leading-5 self-center"
+                    className="flex-1 bg-transparent outline-none resize-none leading-6 py-2 self-center align-middle"
                   />
                   <button
                     onClick={() => copyText(item.content)}
@@ -356,7 +356,7 @@ export default function TodoPage() {
                       rows={2}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                       onTouchStart={() => longPressCopy(item.content)}
-                      className="flex-1 bg-transparent outline-none resize-none line-through text-gray-500 leading-5"
+                      className="flex-1 bg-transparent outline-none resize-none line-through text-gray-500 leading-6 py-2 self-center align-middle"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
                     <button
