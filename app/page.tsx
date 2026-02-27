@@ -434,13 +434,11 @@ export default function HomePage() {
                   renderExpandedInline(featuredPost)
                 ) : (
                   <article
-                    className="relative p-6 md:p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-900/70 cursor-pointer"
+                    className="relative p-6 md:p-8 bg-transparent cursor-pointer"
                     onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
                   >
-                    <span className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-gray-400/70" />
-                    <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-gray-400/70" />
-                    <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-gray-400/70" />
-                    <span className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-gray-400/70" />
+                    <span className="absolute top-0 left-0 w-10 h-10 border-t-[5px] border-l-[5px] border-gray-400/85" />
+                    <span className="absolute bottom-0 right-0 w-10 h-10 border-b-[5px] border-r-[5px] border-gray-400/85" />
 
                     <div className="flex items-start justify-between gap-3">
                       {editingPostId === featuredPost.id ? (
