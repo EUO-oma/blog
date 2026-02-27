@@ -308,7 +308,7 @@ export default function HomePage() {
                           >
                             {post.title}
                           </h3>
-                        )
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -368,7 +368,7 @@ export default function HomePage() {
                       >
                         {post.title}
                       </h3>
-                    )
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
