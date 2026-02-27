@@ -12,6 +12,7 @@ import {
   setTodoStarred,
   TodoItem,
   updateTodo,
+  reorderTodos,
 } from '@/lib/firebase-todos'
 
 export default function TodoPage() {
@@ -21,6 +22,8 @@ export default function TodoPage() {
   const [newText, setNewText] = useState('')
   const [msg, setMsg] = useState('')
   const [adding, setAdding] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
 
   const load = async () => {
     if (!user?.email) {
@@ -109,6 +112,31 @@ export default function TodoPage() {
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
 
+  const onDropReorder = async (targetId?: string) => {
+    if (!draggingId || !targetId || draggingId === targetId) return
+
+    const from = activeItems.findIndex((i) => i.id === draggingId)
+    const to = activeItems.findIndex((i) => i.id === targetId)
+    if (from < 0 || to < 0) return
+
+    const nextActive = [...activeItems]
+    const [moved] = nextActive.splice(from, 1)
+    nextActive.splice(to, 0, moved)
+    const next = [...nextActive, ...completedItems]
+
+    setItems(next)
+    setDraggingId(null)
+    setOverId(null)
+
+    try {
+      await reorderTodos(nextActive)
+      setMsg('순서 저장 완료')
+    } catch {
+      setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
+      await load()
+    }
+  }
+
   if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
 
   return (
@@ -154,9 +182,31 @@ export default function TodoPage() {
       ) : (
         <>
           <section className="space-y-2">
+            <p className="text-xs text-gray-500">💡 항목을 드래그해서 순서를 바꿀 수 있어.</p>
             {activeItems.map((item) => (
-              <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+              <article
+                key={item.id}
+                draggable
+                onDragStart={() => setDraggingId(item.id || null)}
+                onDragEnd={() => {
+                  setDraggingId(null)
+                  setOverId(null)
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setOverId(item.id || null)
+                }}
+                onDrop={() => onDropReorder(item.id)}
+                className={`rounded-lg border p-3 transition-all duration-150 bg-white dark:bg-gray-800 ${
+                  draggingId === item.id
+                    ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
+                    : overId === item.id
+                    ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/20'
+                    : 'border-gray-200 dark:border-gray-700'
+                }`}
+              >
                 <div className="flex items-center gap-2">
+                  <span className="text-gray-400 cursor-grab active:cursor-grabbing" title="드래그해서 순서 변경">☰</span>
                   <input
                     type="checkbox"
                     checked={item.completed}

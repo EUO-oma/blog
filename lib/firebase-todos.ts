@@ -8,6 +8,7 @@ import {
   Timestamp,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from './firebase'
 
@@ -21,6 +22,7 @@ export interface TodoItem {
   createdAt: Timestamp
   updatedAt: Timestamp
   completedAt?: Timestamp | null
+  sortOrder?: number
 }
 
 const COL = 'todos'
@@ -50,6 +52,9 @@ export async function getTodos(authorEmail: string): Promise<TodoItem[]> {
     })
     .sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1
+      const ao = typeof a.sortOrder === 'number' ? a.sortOrder : null
+      const bo = typeof b.sortOrder === 'number' ? b.sortOrder : null
+      if (ao !== null && bo !== null && ao !== bo) return ao - bo
       if (a.starred !== b.starred) return a.starred ? -1 : 1
       return (b.updatedAt?.toMillis?.() || 0) - (a.updatedAt?.toMillis?.() || 0)
     })
@@ -70,6 +75,7 @@ export async function createTodo(input: {
     createdAt: now,
     updatedAt: now,
     completedAt: null,
+    sortOrder: Date.now(),
   })
   return ref.id
 }
@@ -98,4 +104,19 @@ export async function setTodoStarred(id: string, starred: boolean) {
 
 export async function deleteTodo(id: string) {
   await deleteDoc(doc(db, COL, id))
+}
+
+export async function reorderTodos(items: TodoItem[]) {
+  const batch = writeBatch(db)
+  const now = Timestamp.now()
+
+  items.forEach((item, index) => {
+    if (!item.id || item.completed) return
+    batch.update(doc(db, COL, item.id), {
+      sortOrder: index,
+      updatedAt: now,
+    })
+  })
+
+  await batch.commit()
 }
