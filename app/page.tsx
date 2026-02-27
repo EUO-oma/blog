@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -99,7 +99,7 @@ export default function HomePage() {
       const text = `${post.title}\n\n${post.content || ''}\n\n${link}`
       await navigator.clipboard.writeText(text)
       setCopiedPostId(post.id || null)
-      setCopyToast('?대┰蹂대뱶??蹂듭궗?섏뿀?듬땲??)
+      setCopyToast('클립보드에 복사되었습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
       setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
@@ -111,7 +111,7 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(post.title || '')
       setCopiedPostId(post.id || null)
-      setCopyToast('?쒕ぉ??蹂듭궗?섏뿀?듬땲??)
+      setCopyToast('제목이 복사되었습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
       setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
@@ -123,7 +123,7 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(post.content || '')
       setCopiedPostId(post.id || null)
-      setCopyToast('蹂몃Ц???대┰蹂대뱶??蹂듭궗?덉뒿?덈떎')
+      setCopyToast('본문을 클립보드에 복사했습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
       setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
@@ -158,12 +158,12 @@ export default function HomePage() {
     const eventId = item.eventId
     if (!canDeleteCalendar) return
     if (!gasWebAppUrl || !gasApiToken) {
-      setTodayMsg('GAS ?곕룞 蹂???꾨씫')
+      setTodayMsg('GAS 연동 변수 누락')
       return
     }
-    if (!confirm('罹섎┛???먮낯?먯꽌 ??젣?좉퉴??')) return
+    if (!confirm('캘린더 원본에서 삭제할까요?')) return
 
-    // 1李? ?붾㈃/罹먯떆?먯꽌 利됱떆 ?쒓굅(泥닿컧 媛쒖꽑)
+    // 1차: 화면/캐시에서 즉시 제거(체감 개선)
     setTodayItems((prev) => prev.filter((x) => x.eventId !== eventId))
     await deleteCalendarCacheByEventId(eventId).catch(() => {})
 
@@ -184,7 +184,7 @@ export default function HomePage() {
       })
       const data = await res.json()
       if (!data?.ok) {
-        setTodayMsg(`??젣 ?ㅽ뙣(${data?.errorCode || 'unknown'}): ${data?.errorMessage || data?.error || 'unknown'}`)
+        setTodayMsg(`삭제 실패(${data?.errorCode || 'unknown'}): ${data?.errorMessage || data?.error || 'unknown'}`)
         return
       }
 
@@ -195,17 +195,17 @@ export default function HomePage() {
       }).catch(() => {})
 
       if (data?.alreadyDeleted) {
-        setTodayMsg('?대? ??젣???쇱젙?댁빞. 紐⑸줉留?理쒖떊?뷀뻽??')
+        setTodayMsg('이미 삭제된 일정이야. 목록만 최신화했어.')
       } else if (data?.verified === false) {
-        setTodayMsg('??젣 ?붿껌? 泥섎━?덉?留?理쒖쥌 ?뺤씤???꾩슂?? ?좎떆 ???ㅼ떆 ?뺤씤?댁쨾.')
+        setTodayMsg('삭제 요청은 처리했지만 최종 확인이 필요해. 잠시 후 다시 확인해줘.')
       } else {
-        setTodayMsg('罹섎┛???먮낯 ??젣 ?꾨즺')
+        setTodayMsg('캘린더 원본 삭제 완료')
       }
       const refreshed = await getTodayCalendarCacheItems().catch(() => [])
       setTodayItems(refreshed)
     } catch {
       await fetch(gasWebAppUrl, { method: 'POST', mode: 'no-cors', body: payload })
-      setTodayMsg('??젣 ?붿껌 ?꾩넚?? ?좎떆 ??理쒖떊?뷀븷寃?')
+      setTodayMsg('삭제 요청 전송됨. 잠시 후 최신화할게.')
       setTimeout(async () => {
         const refreshed = await getTodayCalendarCacheItems().catch(() => [])
         setTodayItems(refreshed)
@@ -298,7 +298,7 @@ export default function HomePage() {
 
   const deleteExpandedPost = async () => {
     if (!expandedPost?.id) return
-    if (!window.confirm('???ъ뒪?몃? ??젣?좉퉴??')) return
+    if (!window.confirm('이 포스트를 삭제할까요?')) return
     setIsDeletingExpanded(true)
     try {
       await deletePost(expandedPost.id)
@@ -361,8 +361,8 @@ export default function HomePage() {
   const featuredPosts = (explicitFeatured.length > 0 ? explicitFeatured : filteredPosts.slice(0, 1)).slice(0, 3)
   const featuredIdSet = new Set(featuredPosts.map((p) => p.id))
   const restPosts = filteredPosts.filter((p) => !featuredIdSet.has(p.id))
-  const pinnedPosts = restPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '怨좎젙'].includes(t.toLowerCase())))
-  const normalPosts = restPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '怨좎젙'].includes(t.toLowerCase())))
+  const pinnedPosts = restPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
+  const normalPosts = restPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
 
   const renderExpandedInline = (post: BlogPost) => {
     if (expandedPost?.id !== post.id) return null
@@ -371,7 +371,7 @@ export default function HomePage() {
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="w-full">
             <div className="flex items-center gap-2">
-              <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="?쒕ぉ 蹂듭궗">
+              <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
               </button>
               {editingPostId === post.id ? (
@@ -412,30 +412,30 @@ export default function HomePage() {
                       startInlineEdit(post)
                     }
                   }}
-                  title={isAuthor(post) ? '?대┃?댁꽌 ?쒕ぉ ?섏젙 (紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗)' : '紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗'}
+                  title={isAuthor(post) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
                 >
                   {post.title}
                 </h2>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} 쨌 {post.authorName}</p>
+
           </div>
           <div className="flex items-center gap-1">
             {user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() && (
               <>
-                <button onClick={() => setIsInlineEditModalOpen(true)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1" title="?섏젙">
+                <button onClick={() => setIsInlineEditModalOpen(true)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1" title="수정">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1" title="??젣">
+                <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1" title="삭제">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
               </>
             )}
-            {/* ?リ린 踰꾪듉 ?쒓굅: ?ㅻⅨ 移대뱶 ?좏깮/????먮쫫 ?ъ슜 */}
+            {/* 닫기 버튼 제거: 다른 카드 선택/저장 흐름 사용 */}
           </div>
         </div>
 
@@ -449,10 +449,10 @@ export default function HomePage() {
 
         <div className="max-h-[52vh] overflow-y-auto pr-1">
           <div className="flex items-center gap-2 mb-2">
-            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="蹂몃Ц 蹂듭궗">
+            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="본문 복사">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
             </button>
-            <span className="text-xs text-gray-500">蹂몃Ц</span>
+            <span className="text-xs text-gray-500">본문</span>
           </div>
           {editingContentPostId === post.id ? (
             <textarea
@@ -492,7 +492,7 @@ export default function HomePage() {
                   startInlineContentEdit(post)
                 }
               }}
-              title={isAuthor(post) ? '?대┃?댁꽌 蹂몃Ц ?섏젙 (Ctrl+Enter ??? 紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗)' : '紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗'}
+              title={isAuthor(post) ? '클릭해서 본문 수정 (Ctrl+Enter 저장, 모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
             >
               <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
@@ -500,11 +500,11 @@ export default function HomePage() {
         </div>
 
         <div className="mt-3 flex items-center justify-end gap-2">
-          <span className="text-xs text-gray-500">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} 쨌 {post.authorName}</span>
+          <span className="text-xs text-gray-500">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</span>
           <button
             onClick={(e) => { e.stopPropagation(); copyPostToClipboard(post) }}
             className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
-            title="?쒕ぉ+蹂몃Ц+留곹겕 蹂듭궗"
+            title="제목+본문+링크 복사"
           >
             copy
           </button>
@@ -517,21 +517,21 @@ export default function HomePage() {
     <>
       <section className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">?ㅻ뒛 ?쇱젙</h2>
-          <span className="text-xs text-indigo-700 dark:text-indigo-300">{todayItems.length}嫄?/span>
+          <h2 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">오늘 일정</h2>
+          <span className="text-xs text-indigo-700 dark:text-indigo-300">{todayItems.length}건</span>
         </div>
         {todayMsg ? <p className="text-xs text-indigo-700 dark:text-indigo-300 mb-2">{todayMsg}</p> : null}
         {todayItems.length === 0 ? (
-          <p className="text-sm text-gray-500">?숆린?붾맂 ?ㅻ뒛 ?쇱젙???놁뒿?덈떎.</p>
+          <p className="text-sm text-gray-500">동기화된 오늘 일정이 없습니다.</p>
         ) : (
           <div className="space-y-2">
             {todayItems.slice(0, 5).map((item) => {
-              const time = item.allDay ? '醫낆씪' : (item.startAt?.slice(11, 16) || '-')
+              const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
               return (
                 <div key={item.id} className="flex items-center justify-between rounded border border-indigo-100 dark:border-indigo-900/40 bg-white/80 dark:bg-gray-900/30 px-2.5 py-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-gray-500">{time}{item.location ? ` 쨌 ${item.location}` : ''}</p>
+                    <p className="text-xs text-gray-500">{time}{item.location ? ` · ${item.location}` : ''}</p>
                   </div>
                   <div className="ml-2 shrink-0 flex gap-1">
                     <a
@@ -539,7 +539,7 @@ export default function HomePage() {
                       target="_blank"
                       rel="noreferrer"
                       className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 p-1"
-                      title="罹섎┛?붿뿉???닿린"
+                      title="캘린더에서 열기"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -550,7 +550,7 @@ export default function HomePage() {
                         onClick={() => deleteFromGoogleCalendar(item)}
                         className="text-xs px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900"
                       >
-                        ??젣
+                        삭제
                       </button>
                     ) : null}
                   </div>
@@ -567,7 +567,7 @@ export default function HomePage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="?쒕ぉ/?붿빟/?쒓렇 寃??
+              placeholder="제목/요약/태그 검색"
               className="w-64 px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-700"
             />
             <select
@@ -575,10 +575,10 @@ export default function HomePage() {
               onChange={(e) => setDateFilter(e.target.value as DateFilter)}
               className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-700"
             >
-              <option value="all">?꾩껜 湲곌컙</option>
-              <option value="7d">理쒓렐 7??/option>
-              <option value="30d">理쒓렐 30??/option>
-              <option value="365d">理쒓렐 1??/option>
+              <option value="all">전체 기간</option>
+              <option value="7d">최근 7일</option>
+              <option value="30d">최근 30일</option>
+              <option value="365d">최근 1년</option>
             </select>
           </div>
 
@@ -587,8 +587,8 @@ export default function HomePage() {
               <button
                 onClick={() => setIsWriteModalOpen(true)}
                 className="bg-indigo-600 text-white px-3 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
-                title="??湲 ?묒꽦"
-                aria-label="??湲 ?묒꽦"
+                title="새 글 작성"
+                aria-label="새 글 작성"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -641,7 +641,7 @@ export default function HomePage() {
                         />
                       ) : (
                         <div className="flex items-start gap-2 mb-2">
-                          <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="?쒕ぉ 蹂듭궗">
+                          <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                           </button>
                           <h3
@@ -659,7 +659,7 @@ export default function HomePage() {
                                 startInlineEdit(featuredPost)
                               }
                             }}
-                            title={isAuthor(featuredPost) ? '?대┃?댁꽌 ?쒕ぉ ?섏젙 (紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗)' : '紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗'}
+                            title={isAuthor(featuredPost) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
                           >
                             {featuredPost.title}
                           </h3>
@@ -670,7 +670,7 @@ export default function HomePage() {
                     
 
                     <div className="flex items-start gap-2 mb-3">
-                      <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="蹂몃Ц 蹂듭궗">
+                      <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       </button>
                       <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(featuredPost.content || '', 140)}</p>
@@ -686,15 +686,15 @@ export default function HomePage() {
       <section>
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
-            <LoaderSwitcher label="?ъ뒪?몃? 遺덈윭?ㅻ뒗 以?.." />
+            <LoaderSwitcher label="포스트를 불러오는 중..." />
           </div>
         ) : filteredPosts.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-400">議곌굔??留욌뒗 ?ъ뒪?멸? ?놁뒿?덈떎.</p>
+          <p className="text-gray-600 dark:text-gray-400">조건에 맞는 포스트가 없습니다.</p>
         ) : (
           <div className="space-y-8">
             {pinnedPosts.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3">?뱦 怨좎젙湲</h2>
+                <h2 className="text-lg font-semibold mb-3">📌 고정글</h2>
                 <div className="grid gap-6 md:grid-cols-2">
                   {pinnedPosts.map((post) => (
                     <div key={post.id} className="space-y-2 md:col-span-2">
@@ -732,7 +732,7 @@ export default function HomePage() {
                           />
                         ) : (
                           <div className="flex items-center gap-2 mb-2">
-                            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="?쒕ぉ 蹂듭궗">
+                            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                             </button>
                             <h3
@@ -750,7 +750,7 @@ export default function HomePage() {
                                   startInlineEdit(post)
                                 }
                               }}
-                              title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '?대┃?댁꽌 ?쒕ぉ ?섏젙 (紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗)' : '紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗'}
+                              title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
                             >
                               {post.title}
                             </h3>
@@ -759,7 +759,7 @@ export default function HomePage() {
                       </div>
                       
                       <div className="flex items-start gap-2 mb-4">
-                        <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="蹂몃Ц 蹂듭궗">
+                        <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                         <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(post.content || '', 100)}</p>
@@ -809,7 +809,7 @@ export default function HomePage() {
                       />
                     ) : (
                       <div className="flex items-center gap-2 mb-2">
-                        <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="?쒕ぉ 蹂듭궗">
+                        <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="제목 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                         <h3
@@ -827,7 +827,7 @@ export default function HomePage() {
                               startInlineEdit(post)
                             }
                           }}
-                          title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '?대┃?댁꽌 ?쒕ぉ ?섏젙 (紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗)' : '紐⑤컮??湲멸쾶 ?꾨Ⅴ硫?蹂듭궗'}
+                          title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
                         >
                           {post.title}
                         </h3>
@@ -836,7 +836,7 @@ export default function HomePage() {
                   </div>
                   
                   <div className="flex items-start gap-2 mb-4">
-                    <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="蹂몃Ц 蹂듭궗">
+                    <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                     </button>
                     <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(post.content || '', 100)}</p>
@@ -858,9 +858,9 @@ export default function HomePage() {
       </section>
 
       <section className="mt-10 border-t border-gray-200 dark:border-gray-800 pt-4">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">狩?利먭꺼李얘린</h3>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">⭐ 즐겨찾기</h3>
         {favoriteSites.length === 0 ? (
-          <p className="text-xs text-gray-500">?깅줉??利먭꺼李얘린媛 ?놁뒿?덈떎.</p>
+          <p className="text-xs text-gray-500">등록된 즐겨찾기가 없습니다.</p>
         ) : (
           <div className="flex flex-wrap gap-2 text-sm">
             {favoriteSites.slice(0, 12).map((site) => (
@@ -905,4 +905,3 @@ export default function HomePage() {
     </>
   )
 }
-
