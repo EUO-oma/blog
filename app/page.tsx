@@ -499,7 +499,8 @@ export default function HomePage() {
           )}
         </div>
 
-        <div className="mt-3 flex items-center justify-end gap-2">`n          <span className="text-xs text-gray-500">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</span>
+        <div className="mt-3 flex items-center justify-end gap-2">
+          <span className="text-xs text-gray-500">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} 쨌 {post.authorName}</span>
           <button
             onClick={(e) => { e.stopPropagation(); copyPostToClipboard(post) }}
             className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
