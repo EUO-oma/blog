@@ -37,9 +37,9 @@ function SortableFavoriteRow({
       style={style}
       className={`rounded-lg border p-4 bg-white dark:bg-gray-800 transition-all duration-200 ${
         isDragging
-          ? 'opacity-75 scale-[0.94] border-amber-300 dark:border-amber-500 shadow-[0_10px_30px_rgba(251,191,36,0.25)]'
+          ? 'opacity-80 scale-[0.94] border-amber-300 dark:border-amber-500 shadow-[0_10px_30px_rgba(251,191,36,0.25)] motion-safe:animate-pulse motion-safe:[animation-duration:900ms]'
           : isPressing
-          ? 'scale-[0.95] border-amber-200 dark:border-amber-600 bg-gradient-to-r from-white via-amber-50 to-white dark:from-gray-800 dark:via-amber-900/20 dark:to-gray-800 ring-2 ring-amber-200/70 dark:ring-amber-500/30 shadow-[0_0_24px_rgba(251,191,36,0.22)] animate-pulse'
+          ? 'scale-[0.95] border-amber-200 dark:border-amber-600 bg-gradient-to-r from-white via-amber-50 to-white dark:from-gray-800 dark:via-amber-900/20 dark:to-gray-800 ring-2 ring-amber-200/70 dark:ring-amber-500/30 shadow-[0_0_24px_rgba(251,191,36,0.22)] motion-safe:animate-pulse motion-safe:[animation-duration:700ms]'
           : 'border-gray-200 dark:border-gray-700'
       }`}
     >
