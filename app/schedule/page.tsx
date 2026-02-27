@@ -475,8 +475,8 @@ export default function SchedulePage() {
 
       {/* Google Calendar 동기화 (1개월) */}
       {calendarSynced.length > 0 && (
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">🔄 Google 캘린더 동기화 (2개월)</h2>
             <div className="flex items-center gap-2">
               <span className={`text-[11px] px-2 py-0.5 rounded ${syncMeta.hasFailed ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'}`}>
@@ -494,8 +494,8 @@ export default function SchedulePage() {
 
           <div className="space-y-3">
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
-              <div key={dateKey} className="rounded border border-indigo-200/70 dark:border-indigo-800/60 bg-white/70 dark:bg-gray-900/20">
-                <div className="px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-300 border-b border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+              <div key={dateKey} className="rounded-xl bg-white dark:bg-gray-900/40 shadow-sm ring-1 ring-indigo-200/60 dark:ring-indigo-800/60 overflow-hidden">
+                <div className="px-3 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-200 border-b border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between bg-indigo-50/70 dark:bg-indigo-900/20">
                   <span>{new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}</span>
                   <span className="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{items.length}건</span>
                 </div>
@@ -503,7 +503,7 @@ export default function SchedulePage() {
                   {items.map((item) => {
                     const when = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
                     return (
-                      <div key={item.id} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
+                      <div key={item.id} className="px-3 py-2.5 text-sm flex items-center justify-between gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors">
                         <Link
                           href={`/calendar-sync?id=${encodeURIComponent(item.id)}`}
                           className="truncate flex-1 rounded px-1.5 py-1 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/30"
