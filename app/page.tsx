@@ -304,20 +304,16 @@ export default function HomePage() {
     return (
       <div className="md:col-span-2 rounded-xl border border-fuchsia-200 dark:border-fuchsia-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 animate-in fade-in duration-200">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <div>
-            <h2 className="text-2xl font-bold">{post.title}</h2>
+          <div className="w-full">
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+              </button>
+              <h2 className="text-2xl font-bold">{post.title}</h2>
+            </div>
             <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</p>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-2 rounded border" title="제목 복사">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-2 rounded border" title="본문 복사">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); copyPostToClipboard(post) }} className="p-2 rounded border" title="제목+본문+링크 복사">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
-            </button>
             {user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() && (
               <>
                 <button onClick={() => setIsInlineEditModalOpen(true)} className="p-2 rounded border text-indigo-600" title="수정">✏️</button>
@@ -337,6 +333,12 @@ export default function HomePage() {
         )}
 
         <div className="max-h-[52vh] overflow-y-auto pr-1">
+          <div className="flex items-center gap-2 mb-2">
+            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border" title="본문 복사">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+            </button>
+            <span className="text-xs text-gray-500">본문</span>
+          </div>
           {editingContentPostId === post.id ? (
             <textarea
               autoFocus
@@ -367,6 +369,16 @@ export default function HomePage() {
               <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
           )}
+        </div>
+
+        <div className="mt-3 flex justify-end">
+          <button
+            onClick={(e) => { e.stopPropagation(); copyPostToClipboard(post) }}
+            className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
+            title="제목+본문+링크 복사"
+          >
+            copy
+          </button>
         </div>
       </div>
     )
