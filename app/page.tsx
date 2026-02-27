@@ -272,8 +272,10 @@ export default function HomePage() {
     })
   }, [posts, search, dateFilter])
 
-  const featuredPost = filteredPosts[0] || null
-  const restPosts = filteredPosts.slice(1)
+  const explicitFeatured = filteredPosts.filter((p) => p.tags?.some((t) => t.toLowerCase() === 'featured'))
+  const featuredPosts = (explicitFeatured.length > 0 ? explicitFeatured : filteredPosts.slice(0, 1)).slice(0, 3)
+  const featuredIdSet = new Set(featuredPosts.map((p) => p.id))
+  const restPosts = filteredPosts.filter((p) => !featuredIdSet.has(p.id))
   const pinnedPosts = restPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
   const normalPosts = restPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
 
@@ -422,91 +424,104 @@ export default function HomePage() {
 
       
 
-      {featuredPost && !loading && (
+      {featuredPosts.length > 0 && !loading && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">메인 포스팅</h2>
-          {expandedPost?.id === featuredPost.id ? (
-            renderExpandedInline(featuredPost)
-          ) : (
-          <article
-            className="p-6 md:p-8 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-indigo-950/30 rounded-xl shadow-lg border border-indigo-200 dark:border-indigo-800 cursor-pointer"
-            onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
-          >
-            <div className="flex items-start justify-between gap-3">
-              {editingPostId === featuredPost.id ? (
-                <input
-                  autoFocus
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  onBlur={() => saveInlineTitle(featuredPost)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      saveInlineTitle(featuredPost)
-                    }
-                    if (e.key === 'Escape') setEditingPostId(null)
-                  }}
-                  className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
-                />
-              ) : (
-                <h3
-                  className={`text-2xl md:text-3xl font-bold mb-2 ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
-                  onClick={(e) => {
-                    if (isAuthor(featuredPost)) {
-                      e.stopPropagation()
-                      startInlineEdit(featuredPost)
-                    }
-                  }}
-                  title={isAuthor(featuredPost) ? '클릭해서 제목 수정' : ''}
-                >
-                  {featuredPost.title}
-                </h3>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copyPostToClipboard(featuredPost)
-                }}
-                className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
-              >
-                {copiedPostId === featuredPost.id ? '복사됨' : '복사'}
-              </button>
-            </div>
-            {editingExcerptPostId === featuredPost.id ? (
-              <input
-                autoFocus
-                value={editingExcerpt}
-                onChange={(e) => setEditingExcerpt(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                onBlur={() => saveInlineExcerpt(featuredPost)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    saveInlineExcerpt(featuredPost)
-                  }
-                  if (e.key === 'Escape') setEditingExcerptPostId(null)
-                }}
-                className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
-              />
-            ) : (
-              <p
-                className={`text-gray-700 dark:text-gray-300 mb-2 text-base ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
-                onClick={(e) => {
-                  if (isAuthor(featuredPost)) {
-                    e.stopPropagation()
-                    startInlineExcerptEdit(featuredPost)
-                  }
-                }}
-                title={isAuthor(featuredPost) ? '클릭해서 요약 수정' : ''}
-              >
-                {featuredPost.excerpt}
-              </p>
-            )}
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
-            <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
-          </article>
-          )}
+          <div className="grid gap-4 md:grid-cols-2">
+            {featuredPosts.map((featuredPost) => (
+              <div key={featuredPost.id} className={featuredPosts.length === 1 ? 'md:col-span-2' : ''}>
+                {expandedPost?.id === featuredPost.id ? (
+                  renderExpandedInline(featuredPost)
+                ) : (
+                  <article
+                    className="relative p-6 md:p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-900/70 cursor-pointer"
+                    onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
+                  >
+                    <span className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-gray-400/70" />
+                    <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-gray-400/70" />
+                    <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-gray-400/70" />
+                    <span className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-gray-400/70" />
+
+                    <div className="flex items-start justify-between gap-3">
+                      {editingPostId === featuredPost.id ? (
+                        <input
+                          autoFocus
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onBlur={() => saveInlineTitle(featuredPost)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              saveInlineTitle(featuredPost)
+                            }
+                            if (e.key === 'Escape') setEditingPostId(null)
+                          }}
+                          className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+                        />
+                      ) : (
+                        <h3
+                          className={`text-2xl md:text-3xl font-bold mb-2 ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                          onClick={(e) => {
+                            if (isAuthor(featuredPost)) {
+                              e.stopPropagation()
+                              startInlineEdit(featuredPost)
+                            }
+                          }}
+                          title={isAuthor(featuredPost) ? '클릭해서 제목 수정' : ''}
+                        >
+                          {featuredPost.title}
+                        </h3>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          copyPostToClipboard(featuredPost)
+                        }}
+                        className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
+                      >
+                        {copiedPostId === featuredPost.id ? '복사됨' : '복사'}
+                      </button>
+                    </div>
+
+                    {editingExcerptPostId === featuredPost.id ? (
+                      <input
+                        autoFocus
+                        value={editingExcerpt}
+                        onChange={(e) => setEditingExcerpt(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onBlur={() => saveInlineExcerpt(featuredPost)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            saveInlineExcerpt(featuredPost)
+                          }
+                          if (e.key === 'Escape') setEditingExcerptPostId(null)
+                        }}
+                        className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
+                      />
+                    ) : (
+                      <p
+                        className={`text-gray-700 dark:text-gray-300 mb-2 text-base ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                        onClick={(e) => {
+                          if (isAuthor(featuredPost)) {
+                            e.stopPropagation()
+                            startInlineExcerptEdit(featuredPost)
+                          }
+                        }}
+                        title={isAuthor(featuredPost) ? '클릭해서 요약 수정' : ''}
+                      >
+                        {featuredPost.excerpt}
+                      </p>
+                    )}
+
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
+                    <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
+                  </article>
+                )}
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

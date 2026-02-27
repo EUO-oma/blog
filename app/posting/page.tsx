@@ -21,6 +21,7 @@ export default function PostingPage() {
   const [content, setContent] = useState('')
   const [tagsText, setTagsText] = useState('')
   const [published, setPublished] = useState(true)
+  const [isFeatured, setIsFeatured] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -56,6 +57,7 @@ export default function PostingPage() {
     setContent(selected.content || '')
     setTagsText((selected.tags || []).join(', '))
     setPublished(!!selected.published)
+    setIsFeatured((selected.tags || []).map((t) => t.toLowerCase()).includes('featured'))
     setMsg('')
   }, [selected?.id])
 
@@ -64,10 +66,13 @@ export default function PostingPage() {
     setSaving(true)
     setMsg('')
     try {
-      const tags = tagsText
+      const baseTags = tagsText
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean)
+
+      const tagsNoFeatured = baseTags.filter((t) => t.toLowerCase() !== 'featured')
+      const tags = isFeatured ? ['featured', ...tagsNoFeatured] : tagsNoFeatured
 
       await updatePost(selected.id, {
         title: title.trim() || '제목 없음',
@@ -142,7 +147,7 @@ export default function PostingPage() {
                 onClick={() => setSelectedId(p.id || null)}
                 className={`w-full text-left rounded-lg border p-2 transition ${selectedId === p.id ? 'border-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-900/20' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
               >
-                <p className="font-medium line-clamp-1">{p.title}</p>
+                <p className="font-medium line-clamp-1">{(p.tags || []).some(t => t.toLowerCase() === 'featured') ? '⭐ ' : ''}{p.title}</p>
                 <p className="text-xs text-gray-500 line-clamp-1">{p.excerpt}</p>
                 <p className="text-xs text-gray-400 mt-1">{new Date(p.createdAt.toDate()).toLocaleDateString('ko-KR')}</p>
               </button>
@@ -157,10 +162,16 @@ export default function PostingPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs text-gray-500">작성자: {selected.authorName} ({selected.authorEmail})</p>
-                <label className="text-sm flex items-center gap-2">
-                  <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} disabled={!canEdit} />
-                  공개
-                </label>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm flex items-center gap-2">
+                    <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} disabled={!canEdit} />
+                    공개
+                  </label>
+                  <label className="text-sm flex items-center gap-2">
+                    <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} disabled={!canEdit} />
+                    대표글(메인 포스팅)
+                  </label>
+                </div>
               </div>
 
               <input
@@ -192,7 +203,7 @@ export default function PostingPage() {
                 onChange={(e) => setTagsText(e.target.value)}
                 disabled={!canEdit}
                 className="w-full px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-700"
-                placeholder="태그 (쉼표로 구분)"
+                placeholder="태그 (쉼표로 구분, featured는 위 체크박스로 관리)"
               />
 
               <div className="flex items-center justify-between">

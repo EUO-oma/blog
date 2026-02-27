@@ -22,7 +22,8 @@ export default function EditModal({ post, isOpen, onClose, onSuccess }: EditModa
     excerpt: post.excerpt,
     content: post.content,
     tags: post.tags.join(', '),
-    published: post.published
+    published: post.published,
+    featured: post.tags.some((t) => t.toLowerCase() === 'featured')
   })
 
   useEffect(() => {
@@ -31,7 +32,8 @@ export default function EditModal({ post, isOpen, onClose, onSuccess }: EditModa
       excerpt: post.excerpt,
       content: post.content,
       tags: post.tags.join(', '),
-      published: post.published
+      published: post.published,
+      featured: post.tags.some((t) => t.toLowerCase() === 'featured')
     })
   }, [post])
 
@@ -66,11 +68,15 @@ export default function EditModal({ post, isOpen, onClose, onSuccess }: EditModa
         return
       }
 
+      const rawTags = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      const tagsNoFeatured = rawTags.filter((t) => t.toLowerCase() !== 'featured')
+      const mergedTags = formData.featured ? ['featured', ...tagsNoFeatured] : tagsNoFeatured
+
       const updateData: Partial<BlogPost> = {
         title: formData.title,
         excerpt: formData.excerpt.trim() || autoExcerpt || '요약 없음',
         content: formData.content,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        tags: mergedTags,
         published: formData.published
       }
 
@@ -180,15 +186,27 @@ export default function EditModal({ post, isOpen, onClose, onSuccess }: EditModa
               )}
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="published"
-                checked={formData.published}
-                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                className="mr-2"
-              />
-              <label htmlFor="published" className="text-sm">게시 상태</label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="published"
+                  checked={formData.published}
+                  onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="published" className="text-sm">게시 상태</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={formData.featured}
+                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="featured" className="text-sm">대표글(메인 포스팅)</label>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-4">

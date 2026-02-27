@@ -23,7 +23,8 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
     excerpt: '',
     content: '',
     tags: '',
-    published: true
+    published: true,
+    featured: false
   })
   const [validationMsg, setValidationMsg] = useState('')
   const [importUrl, setImportUrl] = useState('')
@@ -171,12 +172,16 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
 
       const autoExcerpt = cleanedContent.slice(0, 120)
 
+      const rawTags = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      const tagsNoFeatured = rawTags.filter((t) => t.toLowerCase() !== 'featured')
+      const mergedTags = formData.featured ? ['featured', ...tagsNoFeatured] : tagsNoFeatured
+
       const postData: any = {
         title: finalTitle,
         slug,
         excerpt: formData.excerpt.trim() || autoExcerpt || '요약 없음',
         content: formData.content,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        tags: mergedTags,
         authorEmail: user?.email || 'guest@example.com',
         authorName: user?.displayName || user?.email || 'Guest Writer',
         published: formData.published
@@ -192,7 +197,8 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
         excerpt: '',
         content: '',
         tags: '',
-        published: true
+        published: true,
+        featured: false
       })
       try { localStorage.removeItem(draftKey) } catch {}
       
@@ -359,17 +365,31 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="published"
-                  checked={formData.published}
-                  onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                  className="mr-2"
-                />
-                <label htmlFor="published" className="text-sm">
-                  즉시 게시
-                </label>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="published"
+                    checked={formData.published}
+                    onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <label htmlFor="published" className="text-sm">
+                    즉시 게시
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <label htmlFor="featured" className="text-sm">
+                    대표글(메인 포스팅)
+                  </label>
+                </div>
               </div>
               {draftSavedAt ? (
                 <span className="text-xs text-gray-500">임시저장됨 · {draftSavedAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
@@ -388,7 +408,7 @@ export default function WriteModal({ isOpen, onClose, onSuccess }: WriteModalPro
               <button
                 type="button"
                 onClick={() => {
-                  setFormData({ title: '', slug: '', excerpt: '', content: '', tags: '', published: true })
+                  setFormData({ title: '', slug: '', excerpt: '', content: '', tags: '', published: true, featured: false })
                   try { localStorage.removeItem(draftKey) } catch {}
                   setValidationMsg('임시저장을 비웠어.')
                 }}
