@@ -24,6 +24,10 @@ export default function PostingPage() {
   const [isFeatured, setIsFeatured] = useState(false)
 
   useEffect(() => {
+    document.title = 'euo-post'
+  }, [])
+
+  useEffect(() => {
     const load = async () => {
       try {
         const rows = await getPosts()

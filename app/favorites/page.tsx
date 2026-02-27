@@ -61,6 +61,10 @@ export default function FavoritesPage() {
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
   const isOwner = user?.email?.toLowerCase() === FAVORITES_OWNER_EMAIL
+  useEffect(() => {
+    document.title = 'euo-favorite'
+  }, [])
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })

@@ -9,7 +9,7 @@ import Footer from '@/components/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: '',
+  title: 'euo',
   description: 'A modern blog with dark mode support',
 };
 

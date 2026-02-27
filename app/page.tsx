@@ -56,6 +56,10 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    document.title = 'euo-home'
+  }, [])
+
+  useEffect(() => {
     loadPosts()
   }, [])
 
