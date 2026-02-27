@@ -54,6 +54,8 @@ export default function TodoPage() {
   const [msg, setMsg] = useState('')
   const [adding, setAdding] = useState(false)
   const [completingIds, setCompletingIds] = useState<string[]>([])
+  const [isSlideshowOpen, setIsSlideshowOpen] = useState(false)
+  const [slideIndex, setSlideIndex] = useState(0)
 
   const load = async () => {
     if (!user?.email) {
@@ -162,6 +164,19 @@ export default function TodoPage() {
 
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
+  const slideshowItems = useMemo(() => (activeItems.length > 0 ? activeItems : completedItems), [activeItems, completedItems])
+
+  useEffect(() => {
+    if (slideIndex >= slideshowItems.length) setSlideIndex(0)
+  }, [slideIndex, slideshowItems.length])
+
+  useEffect(() => {
+    if (!isSlideshowOpen || slideshowItems.length <= 1) return
+    const t = setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % slideshowItems.length)
+    }, 2600)
+    return () => clearInterval(t)
+  }, [isSlideshowOpen, slideshowItems.length])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -192,7 +207,22 @@ export default function TodoPage() {
 
   return (
     <main className="max-w-4xl mx-auto space-y-4">
-      <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
+        <button
+          onClick={() => {
+            if (slideshowItems.length === 0) {
+              setMsg('표시할 Todo가 없어요.')
+              return
+            }
+            setSlideIndex(0)
+            setIsSlideshowOpen(true)
+          }}
+          className="px-3 py-1.5 rounded border bg-black text-white dark:bg-white dark:text-black text-sm"
+        >
+          슬라이드쇼
+        </button>
+      </div>
 
       <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
         <form
@@ -344,6 +374,35 @@ export default function TodoPage() {
           </section>
         </>
       )}
+
+      {isSlideshowOpen && slideshowItems.length > 0 ? (
+        <div className="fixed inset-0 z-[90] bg-black text-white flex flex-col items-center justify-center px-6">
+          <button
+            onClick={() => setIsSlideshowOpen(false)}
+            className="absolute top-4 right-4 text-white/80 hover:text-white text-sm border border-white/40 rounded px-2 py-1"
+          >
+            닫기
+          </button>
+          <div className="text-xs text-white/60 mb-3">{slideIndex + 1} / {slideshowItems.length}</div>
+          <div className="max-w-3xl text-center text-3xl sm:text-5xl font-semibold leading-tight whitespace-pre-wrap break-words">
+            {slideshowItems[slideIndex]?.content}
+          </div>
+          <div className="mt-8 flex gap-3">
+            <button
+              onClick={() => setSlideIndex((prev) => (prev - 1 + slideshowItems.length) % slideshowItems.length)}
+              className="px-3 py-1.5 border border-white/40 rounded"
+            >
+              이전
+            </button>
+            <button
+              onClick={() => setSlideIndex((prev) => (prev + 1) % slideshowItems.length)}
+              className="px-3 py-1.5 border border-white/40 rounded"
+            >
+              다음
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {msg ? <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded">{msg}</div> : null}
     </main>
