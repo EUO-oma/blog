@@ -9,6 +9,7 @@ import WriteModal from '@/components/WriteModal'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { useAuth } from '@/contexts/AuthContext'
 import { getTodayCalendarCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache'
+import { getFavoriteSites, type FavoriteSite } from '@/lib/firebase-favorites'
 
 type DateFilter = 'all' | '7d' | '30d' | '365d'
 
@@ -16,6 +17,7 @@ export default function HomePage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [todayItems, setTodayItems] = useState<CalendarTodayCacheItem[]>([])
+  const [favoriteSites, setFavoriteSites] = useState<FavoriteSite[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedPost, setExpandedPost] = useState<BlogPost | null>(null)
   const [isInlineEditModalOpen, setIsInlineEditModalOpen] = useState(false)
@@ -49,6 +51,22 @@ export default function HomePage() {
   useEffect(() => {
     loadPosts()
   }, [])
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (!user?.email) {
+        setFavoriteSites([])
+        return
+      }
+      try {
+        const rows = await getFavoriteSites(user.email)
+        setFavoriteSites(rows)
+      } catch (e) {
+        console.error('Error loading favorites:', e)
+      }
+    }
+    loadFavorites()
+  }, [user?.email])
 
   useEffect(() => {
     if (loading || posts.length === 0 || typeof window === 'undefined') return
@@ -206,6 +224,41 @@ export default function HomePage() {
   const pinnedPosts = filteredPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
   const normalPosts = filteredPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
 
+  const renderExpandedInline = (post: BlogPost) => {
+    if (expandedPost?.id !== post.id) return null
+    return (
+      <div className="md:col-span-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 animate-in fade-in duration-200">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-2xl font-bold">{post.title}</h2>
+            <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            {user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() && (
+              <>
+                <button onClick={() => setIsInlineEditModalOpen(true)} className="p-2 rounded border text-indigo-600" title="수정">✏️</button>
+                <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="p-2 rounded border text-red-600" title="삭제">🗑️</button>
+              </>
+            )}
+            <button onClick={() => setExpandedPost(null)} className="p-2 rounded border" title="닫기">✕</button>
+          </div>
+        </div>
+
+        {post.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {post.tags.map((tag) => (
+              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">#{tag}</span>
+            ))}
+          </div>
+        )}
+
+        <div className="prose dark:prose-invert max-w-none max-h-[52vh] overflow-y-auto pr-1">
+          <ReactMarkdown>{post.content}</ReactMarkdown>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <section className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
@@ -337,14 +390,11 @@ export default function HomePage() {
                 <h2 className="text-lg font-semibold mb-3">📌 고정글</h2>
                 <div className="grid gap-6 md:grid-cols-2">
                   {pinnedPosts.map((post) => (
+                    <div key={post.id} className="space-y-2 md:col-span-2">
                     <article
-                      key={post.id}
                       className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-yellow-200 dark:border-yellow-700"
                       onClick={() => {
-                        setExpandedPost(post)
-                        setTimeout(() => {
-                          document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }, 50)
+                        setExpandedPost((prev) => (prev?.id === post.id ? null : post))
                       }}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -392,6 +442,8 @@ export default function HomePage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
                       <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
+                    {renderExpandedInline(post)}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -399,15 +451,12 @@ export default function HomePage() {
 
             <div className="grid gap-8 md:grid-cols-2">
               {normalPosts.map((post) => (
+                <div key={post.id} className={`space-y-2 ${expandedPost?.id === post.id ? 'md:col-span-2' : ''}`}>
                 <article
-                  key={post.id}
                   className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => {
-                    setExpandedPost(post)
-                    setTimeout(() => {
-                      document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }, 50)
-                  }}
+                        setExpandedPost((prev) => (prev?.id === post.id ? null : post))
+                      }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     {editingPostId === post.id ? (
@@ -463,8 +512,32 @@ export default function HomePage() {
                     )}
                   </div>
                 </article>
+                {renderExpandedInline(post)}
+                </div>
               ))}
             </div>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10 border-t border-gray-200 dark:border-gray-800 pt-4">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">⭐ 즐겨찾기</h3>
+        {favoriteSites.length === 0 ? (
+          <p className="text-xs text-gray-500">등록된 즐겨찾기가 없습니다.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2 text-sm">
+            {favoriteSites.slice(0, 12).map((site) => (
+              <a
+                key={site.id}
+                href={site.url}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2.5 py-1 rounded-full border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                title={site.url}
+              >
+                {site.title}
+              </a>
+            ))}
           </div>
         )}
       </section>
