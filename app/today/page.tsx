@@ -194,9 +194,12 @@ export default function TodayPage() {
                         href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="shrink-0 px-2 py-1 rounded border text-[11px] bg-white/80 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-700"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                        title="캘린더에서 열기"
                       >
-                        열기
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 3h7m0 0v7m0-7L10 14m-4 0H3v7h7v-3" />
+                        </svg>
                       </a>
                       {canEdit && (
                         <button
