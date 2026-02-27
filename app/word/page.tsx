@@ -172,10 +172,22 @@ export default function WordPage() {
           <section className="space-y-1">
             {activeWords.map((w) => (
               <article key={w.id} className="py-2 border-b border-gray-200/70 dark:border-gray-700/60 flex items-start gap-2">
-                <div className="flex-1 grid md:grid-cols-3 gap-2">
-                  <input defaultValue={w.term} onBlur={(e) => w.id && updateWord(w.id, { term: e.target.value })} className="bg-transparent outline-none" />
-                  <input defaultValue={w.meaning} onBlur={(e) => w.id && updateWord(w.id, { meaning: e.target.value })} className="bg-transparent outline-none" />
-                  <input defaultValue={w.example || ''} onBlur={(e) => w.id && updateWord(w.id, { example: e.target.value })} className="bg-transparent outline-none" />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <input
+                    defaultValue={w.term}
+                    onBlur={(e) => w.id && updateWord(w.id, { term: e.target.value })}
+                    className="w-full bg-transparent outline-none font-semibold text-left"
+                  />
+                  <input
+                    defaultValue={w.meaning}
+                    onBlur={(e) => w.id && updateWord(w.id, { meaning: e.target.value })}
+                    className="w-full bg-transparent outline-none text-right text-sm text-gray-500 dark:text-gray-400"
+                  />
+                  <input
+                    defaultValue={w.example || ''}
+                    onBlur={(e) => w.id && updateWord(w.id, { example: e.target.value })}
+                    className="w-full bg-transparent outline-none text-xs text-gray-400 dark:text-gray-500 text-right"
+                  />
                 </div>
                 <button onClick={async () => { if (!w.id) return; await updateWord(w.id, { learned: true }); await load() }} className="text-emerald-600 p-1" title="학습 완료">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -193,10 +205,22 @@ export default function WordPage() {
             <div className="space-y-1">
               {learnedWords.map((w) => (
                 <article key={w.id} className="py-2 border-b border-gray-200/70 dark:border-gray-700/60 flex items-start gap-2 opacity-80">
-                  <div className="flex-1 grid md:grid-cols-3 gap-2">
-                    <input defaultValue={w.term} onBlur={(e) => w.id && updateWord(w.id, { term: e.target.value })} className="bg-transparent outline-none line-through text-gray-500" />
-                    <input defaultValue={w.meaning} onBlur={(e) => w.id && updateWord(w.id, { meaning: e.target.value })} className="bg-transparent outline-none line-through text-gray-500" />
-                    <input defaultValue={w.example || ''} onBlur={(e) => w.id && updateWord(w.id, { example: e.target.value })} className="bg-transparent outline-none line-through text-gray-500" />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <input
+                      defaultValue={w.term}
+                      onBlur={(e) => w.id && updateWord(w.id, { term: e.target.value })}
+                      className="w-full bg-transparent outline-none line-through font-semibold text-left text-gray-500"
+                    />
+                    <input
+                      defaultValue={w.meaning}
+                      onBlur={(e) => w.id && updateWord(w.id, { meaning: e.target.value })}
+                      className="w-full bg-transparent outline-none line-through text-right text-sm text-gray-500"
+                    />
+                    <input
+                      defaultValue={w.example || ''}
+                      onBlur={(e) => w.id && updateWord(w.id, { example: e.target.value })}
+                      className="w-full bg-transparent outline-none line-through text-xs text-gray-500 text-right"
+                    />
                   </div>
                   <button onClick={async () => { if (!w.id) return; await updateWord(w.id, { learned: false }); await load() }} className="text-gray-500 p-1" title="다시 학습">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8A8 8 0 006.4 5.6L4 8m0 8a8 8 0 0013.6 2.4L20 16" /></svg>
