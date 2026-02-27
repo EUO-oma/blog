@@ -146,7 +146,7 @@ export default function TodoPage() {
                     className="flex-1 bg-transparent outline-none"
                   />
                   <button onClick={() => copyTodo(item.content)} title="복사" className="p-1.5 rounded border">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
                   </button>
                   <button onClick={() => shareTodo(item.content)} title="공유" className="p-1.5 rounded border">↗</button>
                   <button
