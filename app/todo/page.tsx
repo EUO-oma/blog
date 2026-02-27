@@ -57,14 +57,35 @@ export default function TodoPage() {
 
     setAdding(true)
     try {
-      await createTodo({
+      const id = await createTodo({
         content,
         authorEmail: user.email,
         authorName: user.displayName || user.email,
       })
+
+      const now = new Date()
+      const tsLike = {
+        toMillis: () => now.getTime(),
+        toDate: () => now,
+      } as any
+
+      const newItem: TodoItem = {
+        id,
+        content,
+        completed: false,
+        starred: false,
+        authorEmail: user.email,
+        authorName: user.displayName || user.email,
+        createdAt: tsLike,
+        updatedAt: tsLike,
+        completedAt: null,
+        sortOrder: -1,
+      }
+
+      // 새 항목은 즉시 입력폼 아래(활성 목록 맨 위)에 끼워 넣기
+      setItems((prev) => [newItem, ...prev])
       setNewText('')
       setMsg('추가 완료')
-      await load()
     } catch (e: any) {
       console.error('todo add failed:', e)
       setMsg(`등록 실패: ${e?.message || e}`)
