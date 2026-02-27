@@ -20,9 +20,11 @@ export default function PhonebookPage() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('전체')
   const [saving, setSaving] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
+  const [inlineForm, setInlineForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
 
   const loadItems = async () => {
     if (!user?.email) {
@@ -86,38 +88,22 @@ export default function PhonebookPage() {
     setSaving(true)
     setMessage('')
     try {
-      if (editingId) {
-        await updatePhonebookItem(editingId, {
-          company: form.company.trim(),
-          category: form.category,
-          phone: form.phone.trim(),
-          fax: form.fax.trim(),
-          address: form.address.trim(),
-          businessNumber: form.businessNumber.trim(),
-          memo: form.memo.trim(),
-          url1: form.url1.trim(),
-          url2: form.url2.trim(),
-        })
-        setMessage('연락처를 수정했어.')
-      } else {
-        await createPhonebookItem({
-          company: form.company.trim(),
-          category: form.category,
-          phone: form.phone.trim(),
-          fax: form.fax.trim(),
-          address: form.address.trim(),
-          businessNumber: form.businessNumber.trim(),
-          memo: form.memo.trim(),
-          url1: form.url1.trim(),
-          url2: form.url2.trim(),
-          authorEmail: user.email,
-          authorName: user.displayName || user.email,
-        })
-        setMessage('연락처를 저장했어.')
-      }
-
-      setEditingId(null)
+      await createPhonebookItem({
+        company: form.company.trim(),
+        category: form.category,
+        phone: form.phone.trim(),
+        fax: form.fax.trim(),
+        address: form.address.trim(),
+        businessNumber: form.businessNumber.trim(),
+        memo: form.memo.trim(),
+        url1: form.url1.trim(),
+        url2: form.url2.trim(),
+        authorEmail: user.email,
+        authorName: user.displayName || user.email,
+      })
+      setMessage('연락처를 저장했어.')
       setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
+      setShowAddForm(false)
       await loadItems()
     } catch (e: any) {
       setMessage(`저장 실패: ${e?.message || e}`)
@@ -136,6 +122,32 @@ export default function PhonebookPage() {
       await loadItems()
     } catch (e: any) {
       setMessage(`삭제 실패: ${e?.message || e}`)
+    }
+  }
+
+  const saveInlineItem = async (id?: string) => {
+    if (!id) return
+    if (!inlineForm.company.trim() || !inlineForm.phone.trim()) {
+      setMessage('업체명/전화번호를 입력해줘.')
+      return
+    }
+    try {
+      await updatePhonebookItem(id, {
+        company: inlineForm.company.trim(),
+        category: inlineForm.category,
+        phone: inlineForm.phone.trim(),
+        fax: inlineForm.fax.trim(),
+        address: inlineForm.address.trim(),
+        businessNumber: inlineForm.businessNumber.trim(),
+        memo: inlineForm.memo.trim(),
+        url1: inlineForm.url1.trim(),
+        url2: inlineForm.url2.trim(),
+      })
+      setInlineEditId(null)
+      setMessage('연락처를 수정했어.')
+      await loadItems()
+    } catch (e: any) {
+      setMessage(`수정 실패: ${e?.message || e}`)
     }
   }
 
@@ -166,90 +178,46 @@ export default function PhonebookPage() {
         <p className="text-sm text-gray-500">Firebase 동기화: {user.email}</p>
       </div>
 
-      <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6 bg-white dark:bg-gray-800">
-        <h2 className="font-semibold mb-3">연락처 추가</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input
-            value={form.company}
-            onChange={(e) => setForm((p) => ({ ...p, company: e.target.value }))}
-            placeholder="업체명"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.phone}
-            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-            placeholder="전화번호"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <select
-            value={form.category}
-            onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <input
-            value={form.fax}
-            onChange={(e) => setForm((p) => ({ ...p, fax: e.target.value }))}
-            placeholder="팩스(선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.address}
-            onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-            placeholder="주소(선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.businessNumber}
-            onChange={(e) => setForm((p) => ({ ...p, businessNumber: e.target.value }))}
-            placeholder="사업자번호(선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.memo}
-            onChange={(e) => setForm((p) => ({ ...p, memo: e.target.value }))}
-            placeholder="메모(선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.url1}
-            onChange={(e) => setForm((p) => ({ ...p, url1: e.target.value }))}
-            placeholder="URL 1 (선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-          <input
-            value={form.url2}
-            onChange={(e) => setForm((p) => ({ ...p, url2: e.target.value }))}
-            placeholder="URL 2 (선택)"
-            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-          />
-        </div>
-        <div className="mt-3 flex items-center gap-3">
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-500">업체 추가</p>
           <button
-            onClick={saveItem}
-            disabled={saving}
-            className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+            onClick={() => setShowAddForm((v) => !v)}
+            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
+            title="폰북 추가"
           >
-            {saving ? '저장 중...' : editingId ? '수정 저장' : '+ 추가'}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
           </button>
-          {editingId ? (
-            <button
-              onClick={() => {
-                setEditingId(null)
-                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
-              }}
-              className="px-3 py-2 rounded border text-sm"
-            >
-              수정 취소
-            </button>
-          ) : null}
-          {message ? <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p> : null}
         </div>
+
+        {showAddForm && (
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input value={form.company} onChange={(e) => setForm((p) => ({ ...p, company: e.target.value }))} placeholder="업체명" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="전화번호" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700">
+                {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
+              </select>
+              <input value={form.fax} onChange={(e) => setForm((p) => ({ ...p, fax: e.target.value }))} placeholder="팩스(선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} placeholder="주소(선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.businessNumber} onChange={(e) => setForm((p) => ({ ...p, businessNumber: e.target.value }))} placeholder="사업자번호(선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.memo} onChange={(e) => setForm((p) => ({ ...p, memo: e.target.value }))} placeholder="메모(선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.url1} onChange={(e) => setForm((p) => ({ ...p, url1: e.target.value }))} placeholder="URL 1 (선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={form.url2} onChange={(e) => setForm((p) => ({ ...p, url2: e.target.value }))} placeholder="URL 2 (선택)" className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <button onClick={saveItem} disabled={saving} className="text-emerald-600 hover:text-emerald-800 p-1 disabled:opacity-60" title="저장">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {message ? <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{message}</p> : null}
       </section>
 
       <section>
@@ -323,8 +291,8 @@ export default function PhonebookPage() {
                     </a>
                     <button
                       onClick={() => {
-                        setEditingId(it.id || null)
-                        setForm({
+                        setInlineEditId(it.id || null)
+                        setInlineForm({
                           company: it.company,
                           category: it.category,
                           phone: it.phone,
@@ -335,7 +303,6 @@ export default function PhonebookPage() {
                           url1: it.url1 || '',
                           url2: it.url2 || '',
                         })
-                        window.scrollTo({ top: 0, behavior: 'smooth' })
                       }}
                       className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm hover:bg-amber-600"
                     >
@@ -349,6 +316,24 @@ export default function PhonebookPage() {
                     </button>
                   </div>
                 </div>
+
+                {inlineEditId === it.id && (
+                  <div className="mt-3 rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 p-3 bg-white/70 dark:bg-gray-900/40">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <input value={inlineForm.company} onChange={(e) => setInlineForm((p) => ({ ...p, company: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="업체명" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.phone} onChange={(e) => setInlineForm((p) => ({ ...p, phone: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="전화번호" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <select value={inlineForm.category} onChange={(e) => setInlineForm((p) => ({ ...p, category: e.target.value }))} onBlur={() => saveInlineItem(it.id)} className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700">
+                        {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
+                      </select>
+                      <input value={inlineForm.fax} onChange={(e) => setInlineForm((p) => ({ ...p, fax: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="팩스(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.address} onChange={(e) => setInlineForm((p) => ({ ...p, address: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="주소(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.businessNumber} onChange={(e) => setInlineForm((p) => ({ ...p, businessNumber: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="사업자번호(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.memo} onChange={(e) => setInlineForm((p) => ({ ...p, memo: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="메모(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.url1} onChange={(e) => setInlineForm((p) => ({ ...p, url1: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="URL 1 (선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                      <input value={inlineForm.url2} onChange={(e) => setInlineForm((p) => ({ ...p, url2: e.target.value }))} onBlur={() => saveInlineItem(it.id)} placeholder="URL 2 (선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+                    </div>
+                  </div>
+                )}
               </article>
             ))}
           </div>
