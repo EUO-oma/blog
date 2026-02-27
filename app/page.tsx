@@ -143,6 +143,13 @@ export default function HomePage() {
     }
   }
 
+  const getContentPreview = (content: string, limit = 100) =>
+    content
+      .replace(/[#>*`\-\[\]()!]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, limit)
+
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase()
     const now = Date.now()
@@ -312,7 +319,8 @@ export default function HomePage() {
                           {copiedPostId === post.id ? '복사됨' : '복사'}
                         </button>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">{post.excerpt}</p>
+                      <p className="text-gray-600 dark:text-gray-300 mb-2">{post.excerpt}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
                       <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
                   ))}
@@ -371,7 +379,8 @@ export default function HomePage() {
                       {copiedPostId === post.id ? '복사됨' : '복사'}
                     </button>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">{post.excerpt}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-2">{post.excerpt}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">{getContentPreview(post.content || '', 100)}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
                     <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     {post.tags.length > 0 && (
