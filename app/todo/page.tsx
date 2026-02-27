@@ -159,6 +159,29 @@ export default function TodoPage() {
     }
   }
 
+  const onTouchStartItem = (id?: string) => {
+    if (!id) return
+    setDraggingId(id)
+    setOverId(id)
+  }
+
+  const onTouchMoveItem = (e: any) => {
+    const t = e.touches?.[0]
+    if (!t) return
+    const el = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null
+    const card = el?.closest?.('[data-todo-id]') as HTMLElement | null
+    const targetId = card?.dataset?.todoId || null
+    if (targetId) setOverId(targetId)
+  }
+
+  const onTouchEndItem = async () => {
+    if (draggingId && overId) {
+      await onDropReorder(overId)
+    }
+    setDraggingId(null)
+    setOverId(null)
+  }
+
   if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
 
   return (
@@ -208,6 +231,7 @@ export default function TodoPage() {
             {activeItems.map((item) => (
               <article
                 key={item.id}
+                data-todo-id={item.id}
                 draggable
                 onDragStart={() => setDraggingId(item.id || null)}
                 onDragEnd={() => {
@@ -219,6 +243,10 @@ export default function TodoPage() {
                   setOverId(item.id || null)
                 }}
                 onDrop={() => onDropReorder(item.id)}
+                onTouchStart={() => onTouchStartItem(item.id)}
+                onTouchMove={onTouchMoveItem}
+                onTouchEnd={onTouchEndItem}
+                onTouchCancel={onTouchEndItem}
                 className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
                   completingIds.includes(item.id || '')
                     ? 'opacity-0 -translate-y-1 scale-[0.98]'
