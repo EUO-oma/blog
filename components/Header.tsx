@@ -9,6 +9,7 @@ import LoginModal from './LoginModal'
 const menuItems = [
   { href: '/', icon: '🏠', label: '홈' },
   { href: '/posting', icon: '📝', label: '포스팅' },
+  { href: '/todo', icon: '☑️', label: 'Todo' },
   { href: '/schedule', icon: '📅', label: '일정' },
   { href: '/today', icon: '✅', label: '오늘' },
   { href: '/notice', icon: '📢', label: '공지' },
