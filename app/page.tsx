@@ -280,7 +280,7 @@ export default function HomePage() {
   const renderExpandedInline = (post: BlogPost) => {
     if (expandedPost?.id !== post.id) return null
     return (
-      <div className="md:col-span-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 animate-in fade-in duration-200">
+      <div className="md:col-span-2 rounded-xl border border-fuchsia-200 dark:border-fuchsia-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 animate-in fade-in duration-200">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <h2 className="text-2xl font-bold">{post.title}</h2>
@@ -320,7 +320,7 @@ export default function HomePage() {
                   saveInlineContent(post)
                 }
               }}
-              className="w-full min-h-[220px] rounded border p-3 text-sm dark:bg-gray-900 dark:border-gray-700"
+              className="w-full min-h-[220px] rounded border border-fuchsia-300 p-3 text-sm focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
             />
           ) : (
             <div
@@ -461,6 +461,9 @@ export default function HomePage() {
       {featuredPost && !loading && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">메인 포스팅</h2>
+          {expandedPost?.id === featuredPost.id ? (
+            renderExpandedInline(featuredPost)
+          ) : (
           <article
             className="p-6 md:p-8 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-indigo-950/30 rounded-xl shadow-lg border border-indigo-200 dark:border-indigo-800 cursor-pointer"
             onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
@@ -480,7 +483,7 @@ export default function HomePage() {
                     }
                     if (e.key === 'Escape') setEditingPostId(null)
                   }}
-                  className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                  className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                 />
               ) : (
                 <h3
@@ -520,7 +523,7 @@ export default function HomePage() {
                   }
                   if (e.key === 'Escape') setEditingExcerptPostId(null)
                 }}
-                className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
               />
             ) : (
               <p
@@ -539,7 +542,7 @@ export default function HomePage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
             <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
           </article>
-          {renderExpandedInline(featuredPost)}
+          )}
         </section>
       )}
 
@@ -558,6 +561,9 @@ export default function HomePage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   {pinnedPosts.map((post) => (
                     <div key={post.id} className="space-y-2 md:col-span-2">
+                    {expandedPost?.id === post.id ? (
+                      renderExpandedInline(post)
+                    ) : (
                     <article
                       className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-yellow-200 dark:border-yellow-700"
                       onClick={() => {
@@ -579,7 +585,7 @@ export default function HomePage() {
                               }
                               if (e.key === 'Escape') setEditingPostId(null)
                             }}
-                            className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                            className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                           />
                         ) : (
                           <h3
@@ -619,7 +625,7 @@ export default function HomePage() {
                             }
                             if (e.key === 'Escape') setEditingExcerptPostId(null)
                           }}
-                          className="text-gray-600 dark:text-gray-300 mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                          className="text-gray-600 dark:text-gray-300 mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                         />
                       ) : (
                         <p
@@ -638,7 +644,7 @@ export default function HomePage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
                       <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
-                    {renderExpandedInline(post)}
+                    )}
                     </div>
                   ))}
                 </div>
@@ -648,6 +654,9 @@ export default function HomePage() {
             <div className="grid gap-8 md:grid-cols-2">
               {normalPosts.map((post) => (
                 <div key={post.id} className={`space-y-2 ${expandedPost?.id === post.id ? 'md:col-span-2' : ''}`}>
+                {expandedPost?.id === post.id ? (
+                  renderExpandedInline(post)
+                ) : (
                 <article
                   className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => {
@@ -669,7 +678,7 @@ export default function HomePage() {
                           }
                           if (e.key === 'Escape') setEditingPostId(null)
                         }}
-                        className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                        className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                       />
                     ) : (
                       <h3
@@ -709,7 +718,7 @@ export default function HomePage() {
                         }
                         if (e.key === 'Escape') setEditingExcerptPostId(null)
                       }}
-                      className="text-gray-600 dark:text-gray-400 mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                      className="text-gray-600 dark:text-gray-400 mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                     />
                   ) : (
                     <p
@@ -737,7 +746,7 @@ export default function HomePage() {
                     )}
                   </div>
                 </article>
-                {renderExpandedInline(post)}
+                )}
                 </div>
               ))}
             </div>
