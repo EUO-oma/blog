@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -59,6 +59,7 @@ export default function TodoPage() {
   const [isSlideVisible, setIsSlideVisible] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
   const [slideMs, setSlideMs] = useState(2800)
+  const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const load = async () => {
     if (!user?.email) {
@@ -80,11 +81,17 @@ export default function TodoPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email])
 
+  const flashMsg = (text: string, ms = 1600) => {
+    setMsg(text)
+    if (msgTimerRef.current) clearTimeout(msgTimerRef.current)
+    msgTimerRef.current = setTimeout(() => setMsg(''), ms)
+  }
+
   useEffect(() => {
-    if (!msg) return
-    const t = setTimeout(() => setMsg(''), 1800)
-    return () => clearTimeout(t)
-  }, [msg])
+    return () => {
+      if (msgTimerRef.current) clearTimeout(msgTimerRef.current)
+    }
+  }, [])
 
   const addTodo = async () => {
     if (adding) return
@@ -165,8 +172,7 @@ export default function TodoPage() {
 
   const copyText = async (text: string) => {
     await navigator.clipboard.writeText(text)
-    setMsg('클립보드에 복사되었습니다')
-    setTimeout(() => setMsg(''), 1200)
+    flashMsg('클립보드에 복사되었습니다', 1200)
   }
 
   const autoResizeTextarea = (el: HTMLTextAreaElement) => {
@@ -231,9 +237,9 @@ export default function TodoPage() {
 
     try {
       await reorderTodos(nextActive)
-      setMsg('순서 저장 완료')
+      flashMsg('순서 저장 완료')
     } catch {
-      setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
+      flashMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.', 2200)
       await load()
     }
   }
