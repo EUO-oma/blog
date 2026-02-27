@@ -7,17 +7,44 @@ import { useAuth } from '@/contexts/AuthContext'
 import LoginModal from './LoginModal'
 
 const menuItems = [
-  { href: '/', icon: '🏠', label: '홈' },
-  { href: '/posting', icon: '📝', label: '포스팅' },
-  { href: '/todo', icon: '☑️', label: 'Todo' },
-  { href: '/schedule', icon: '📅', label: '일정' },
-  { href: '/today', icon: '✅', label: '오늘' },
-  { href: '/notice', icon: '📢', label: '공지' },
-  { href: '/phonebook', icon: '📞', label: '폰북' },
-  { href: '/favorites', icon: '⭐', label: '즐겨찾기' },
-  { href: '/youtube', icon: '▶️', label: '유튜브' },
-  { href: '/word', icon: '📘', label: 'Word' },
+  { href: '/', label: '홈' },
+  { href: '/posting', label: '포스팅' },
+  { href: '/todo', label: 'Todo' },
+  { href: '/schedule', label: '일정' },
+  { href: '/today', label: '오늘' },
+  { href: '/notice', label: '공지' },
+  { href: '/phonebook', label: '폰북' },
+  { href: '/favorites', label: '즐겨찾기' },
+  { href: '/youtube', label: '유튜브' },
+  { href: '/word', label: 'Word' },
 ]
+
+function MenuIcon({ href }: { href: string }) {
+  const cls = 'w-4 h-4'
+  switch (href) {
+    case '/':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" /></svg>
+    case '/posting':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+    case '/todo':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4" /></svg>
+    case '/schedule':
+    case '/today':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+    case '/notice':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.07A7 7 0 004 12v4l-1 2h18l-1-2v-4a7 7 0 00-7-6.93zM9 21h6" /></svg>
+    case '/phonebook':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3l2 5-2 1a11 11 0 005 5l1-2 5 2v3a2 2 0 01-2 2h-1C9.82 19 5 14.18 5 8V7a2 2 0 01-2-2z" /></svg>
+    case '/favorites':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" /></svg>
+    case '/youtube':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12l-5 3V9l5 3zm6-3.5a3 3 0 00-2.1-2.1C17 6 12 6 12 6s-5 0-6.9.4A3 3 0 003 8.5 31 31 0 003 12a31 31 0 00.1 3.5A3 3 0 005.2 17.6C7 18 12 18 12 18s5 0 6.9-.4a3 3 0 002.1-2.1c.1-1.1.1-2.3.1-3.5s0-2.4-.1-3.5z" /></svg>
+    case '/word':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 17A2.5 2.5 0 004 19.5V5a2 2 0 012-2h14v16H6.5z" /></svg>
+    default:
+      return <span className="w-4 h-4" />
+  }
+}
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
@@ -166,7 +193,7 @@ export default function Header() {
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  <span>{item.icon}</span>
+                  <span className="text-gray-600 dark:text-gray-300"><MenuIcon href={item.href} /></span>
                   <span>{item.label}</span>
                 </Link>
               ))}
@@ -177,7 +204,11 @@ export default function Header() {
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  <span>🜂</span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2 8 12.7 4 8.8 9.5 8z" />
+                    </svg>
+                  </span>
                   <span>Walter Board</span>
                 </Link>
               )}
