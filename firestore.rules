@@ -75,6 +75,12 @@ service cloud.firestore {
         && resource.data.authorEmail == request.auth.token.email;
     }
 
+    // images 컬렉션: 공개 read, owner만 write 허용
+    match /images/{imageId} {
+      allow read: if true;
+      allow create, update, delete: if isOwner();
+    }
+
     // 비밀 단어장: owner만 read/write 허용
     match /secret_words/{wordId} {
       allow read, create, update, delete: if isOwner();

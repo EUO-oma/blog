@@ -17,6 +17,7 @@ const menuItems = [
   { href: '/favorites', label: '즐겨찾기' },
   { href: '/youtube', label: '유튜브' },
   { href: '/word', label: 'Word' },
+  { href: '/img', label: 'IMG' },
   { href: '/secret-word', label: 'Secret Word', ownerOnly: true },
 ]
 
@@ -42,6 +43,8 @@ function MenuIcon({ href }: { href: string }) {
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12l-5 3V9l5 3zm6-3.5a3 3 0 00-2.1-2.1C17 6 12 6 12 6s-5 0-6.9.4A3 3 0 003 8.5 31 31 0 003 12a31 31 0 00.1 3.5A3 3 0 005.2 17.6C7 18 12 18 12 18s5 0 6.9-.4a3 3 0 002.1-2.1c.1-1.1.1-2.3.1-3.5s0-2.4-.1-3.5z" /></svg>
     case '/word':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 17A2.5 2.5 0 004 19.5V5a2 2 0 012-2h14v16H6.5z" /></svg>
+    case '/img':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4-4 3 3 5-6 4 7M4 6h16v12H4z" /></svg>
     case '/secret-word':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3V7a3 3 0 10-6 0v1c0 1.657 1.343 3 3 3z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 11h14v9H5z"/></svg>
     default:

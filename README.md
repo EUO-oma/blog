@@ -81,6 +81,23 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_jwt_key
 실행 후 접속:
 - `http://localhost:3000/walter-board`
 
+## IMG Board (Cloudflare R2)
+
+`/img` 페이지에서 이미지 게시판을 사용할 수 있습니다.
+
+필수 환경변수 (`.env.local`):
+
+```bash
+NEXT_PUBLIC_R2_SIGNER_URL=https://your-signer.example.workers.dev
+NEXT_PUBLIC_R2_SIGNER_TOKEN=your_signer_bearer_token
+```
+
+업로드 흐름:
+1. 앱이 signer API(`/sign`)에 파일 메타데이터 전송
+2. signer가 presigned PUT URL + public URL + objectKey 반환
+3. 브라우저가 R2로 직접 PUT 업로드
+4. Firestore `images` 컬렉션에 메타데이터 저장
+
 ## License
 
 MIT
