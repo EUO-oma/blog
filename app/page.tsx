@@ -601,7 +601,7 @@ export default function HomePage() {
                   renderExpandedInline(featuredPost)
                 ) : (
                   <article
-                    className="relative p-6 md:p-8 cursor-pointer rounded-2xl bg-gradient-to-br from-fuchsia-100/80 via-violet-100/70 to-indigo-100/80 dark:from-fuchsia-900/25 dark:via-violet-900/20 dark:to-indigo-900/25 backdrop-blur-[1px]"
+                    className="relative p-6 md:p-8 cursor-pointer bg-transparent"
                     onClick={() => { void openPostEditor(featuredPost) }}
                   >
                     <span className="absolute top-0 left-0 w-10 h-10 border-t-[10px] border-l-[10px] border-gray-400/85" />
