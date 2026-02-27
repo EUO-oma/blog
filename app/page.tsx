@@ -93,12 +93,32 @@ export default function HomePage() {
       const base = typeof window !== 'undefined' ? window.location.origin : ''
       const path = process.env.NODE_ENV === 'production' ? '/blog' : ''
       const link = `${base}${path}/?post=${encodeURIComponent(post.id || '')}`
-      const text = `${post.title}\n\n${post.excerpt || ''}\n\n${link}`
+      const text = `${post.title}\n\n${post.content || ''}\n\n${link}`
       await navigator.clipboard.writeText(text)
       setCopiedPostId(post.id || null)
       setTimeout(() => setCopiedPostId(null), 1500)
     } catch (e) {
       console.error('Copy failed', e)
+    }
+  }
+
+  const copyTitleToClipboard = async (post: BlogPost) => {
+    try {
+      await navigator.clipboard.writeText(post.title || '')
+      setCopiedPostId(post.id || null)
+      setTimeout(() => setCopiedPostId(null), 1500)
+    } catch (e) {
+      console.error('Copy title failed', e)
+    }
+  }
+
+  const copyContentToClipboard = async (post: BlogPost) => {
+    try {
+      await navigator.clipboard.writeText(post.content || '')
+      setCopiedPostId(post.id || null)
+      setTimeout(() => setCopiedPostId(null), 1500)
+    } catch (e) {
+      console.error('Copy content failed', e)
     }
   }
 
@@ -289,6 +309,15 @@ export default function HomePage() {
             <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</p>
           </div>
           <div className="flex items-center gap-1">
+            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-2 rounded border" title="제목 복사">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-2 rounded border" title="본문 복사">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); copyPostToClipboard(post) }} className="p-2 rounded border" title="제목+본문+링크 복사">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+            </button>
             {user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() && (
               <>
                 <button onClick={() => setIsInlineEditModalOpen(true)} className="p-2 rounded border text-indigo-600" title="수정">✏️</button>
@@ -426,7 +455,6 @@ export default function HomePage() {
 
       {featuredPosts.length > 0 && !loading && (
         <section className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">메인 포스팅</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {featuredPosts.map((featuredPost) => (
               <div key={featuredPost.id} className={featuredPosts.length === 1 ? 'md:col-span-2' : ''}>
@@ -437,8 +465,8 @@ export default function HomePage() {
                     className="relative p-6 md:p-8 bg-transparent cursor-pointer"
                     onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
                   >
-                    <span className="absolute top-0 left-0 w-10 h-10 border-t-[5px] border-l-[5px] border-gray-400/85" />
-                    <span className="absolute bottom-0 right-0 w-10 h-10 border-b-[5px] border-r-[5px] border-gray-400/85" />
+                    <span className="absolute top-0 left-0 w-12 h-12 border-t-[10px] border-l-[10px] border-gray-400/85" />
+                    <span className="absolute bottom-0 right-0 w-12 h-12 border-b-[10px] border-r-[10px] border-gray-400/85" />
 
                     <div className="flex items-start justify-between gap-3">
                       {editingPostId === featuredPost.id ? (
@@ -514,7 +542,6 @@ export default function HomePage() {
                     )}
 
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
-                    <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                   </article>
                 )}
               </div>
@@ -619,7 +646,6 @@ export default function HomePage() {
                         </p>
                       )}
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
-                      <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
                     )}
                     </div>
@@ -712,16 +738,13 @@ export default function HomePage() {
                     </p>
                   )}
                   <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">{getContentPreview(post.content || '', 100)}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
-                    <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
-                    {post.tags.length > 0 && (
-                      <div className="flex gap-2">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-indigo-600 dark:text-indigo-400">#{tag}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {post.tags.length > 0 && (
+                    <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-500">
+                      {post.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="text-indigo-600 dark:text-indigo-400">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
                 </article>
                 )}
                 </div>
