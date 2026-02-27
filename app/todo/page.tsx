@@ -177,17 +177,7 @@ export default function TodoPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />
                     </svg>
                   </button>
-                  <button
-                    onClick={async () => {
-                      if (!item.id) return
-                      await deleteTodo(item.id)
-                      await load()
-                    }}
-                    title="삭제"
-                    className="p-1.5 rounded border text-red-500"
-                  >
-                    🗑
-                  </button>
+                  {/* 삭제 버튼 제거: 비움/완료 자동정리 흐름 사용 */}
                 </div>
               </article>
             ))}
