@@ -56,6 +56,7 @@ export default function TodoPage() {
   const [completingIds, setCompletingIds] = useState<string[]>([])
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
+  const [isSlideVisible, setIsSlideVisible] = useState(true)
 
   const load = async () => {
     if (!user?.email) {
@@ -173,8 +174,12 @@ export default function TodoPage() {
   useEffect(() => {
     if (!isSlideshowOpen || slideshowItems.length <= 1) return
     const t = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % slideshowItems.length)
-    }, 2600)
+      setIsSlideVisible(false)
+      setTimeout(() => {
+        setSlideIndex((prev) => (prev + 1) % slideshowItems.length)
+        setIsSlideVisible(true)
+      }, 220)
+    }, 2800)
     return () => clearInterval(t)
   }, [isSlideshowOpen, slideshowItems.length])
 
@@ -383,19 +388,34 @@ export default function TodoPage() {
           >
             닫기
           </button>
-          <div className="text-xs text-white/60 mb-3">{slideIndex + 1} / {slideshowItems.length}</div>
-          <div className="max-w-3xl text-center text-3xl sm:text-5xl font-semibold leading-tight whitespace-pre-wrap break-words">
+          <div className="text-xs text-white/60 mb-3">{slideIndex + 1} / {slideshowItems.length} · 반복재생</div>
+          <div className="w-40 h-1.5 rounded-full bg-white/20 overflow-hidden mb-6">
+            <div className="h-full bg-white/80 animate-pulse" />
+          </div>
+          <div className={`max-w-3xl text-center text-3xl sm:text-5xl font-semibold leading-tight whitespace-pre-wrap break-words transition-all duration-300 ${isSlideVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.985]'}`}>
             {slideshowItems[slideIndex]?.content}
           </div>
           <div className="mt-8 flex gap-3">
             <button
-              onClick={() => setSlideIndex((prev) => (prev - 1 + slideshowItems.length) % slideshowItems.length)}
+              onClick={() => {
+                setIsSlideVisible(false)
+                setTimeout(() => {
+                  setSlideIndex((prev) => (prev - 1 + slideshowItems.length) % slideshowItems.length)
+                  setIsSlideVisible(true)
+                }, 180)
+              }}
               className="px-3 py-1.5 border border-white/40 rounded"
             >
               이전
             </button>
             <button
-              onClick={() => setSlideIndex((prev) => (prev + 1) % slideshowItems.length)}
+              onClick={() => {
+                setIsSlideVisible(false)
+                setTimeout(() => {
+                  setSlideIndex((prev) => (prev + 1) % slideshowItems.length)
+                  setIsSlideVisible(true)
+                }, 180)
+              }}
               className="px-3 py-1.5 border border-white/40 rounded"
             >
               다음
