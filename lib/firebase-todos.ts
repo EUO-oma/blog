@@ -24,7 +24,7 @@ export interface TodoItem {
 }
 
 const COL = 'todos'
-const AUTO_DELETE_HOURS = 48
+const AUTO_DELETE_HOURS = 168
 
 export async function getTodos(authorEmail: string): Promise<TodoItem[]> {
   const q = query(collection(db, COL), where('authorEmail', '==', authorEmail))
