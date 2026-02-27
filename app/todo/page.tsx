@@ -80,12 +80,16 @@ export default function TodoPage() {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, content: next } : it)))
   }
 
+  const copyText = async (text: string) => {
+    await navigator.clipboard.writeText(text)
+    setMsg('클립보드에 복사되었습니다')
+    setTimeout(() => setMsg(''), 1200)
+  }
+
   const longPressCopy = (text: string) => {
     if (typeof window === 'undefined' || !('ontouchstart' in window)) return
     let timer: ReturnType<typeof setTimeout> | null = setTimeout(async () => {
-      await navigator.clipboard.writeText(text)
-      setMsg('클립보드에 복사되었습니다')
-      setTimeout(() => setMsg(''), 1200)
+      await copyText(text)
     }, 450)
 
     const clear = () => {
@@ -160,12 +164,20 @@ export default function TodoPage() {
                       await load()
                     }}
                   />
-                  <input
+                  <textarea
                     defaultValue={item.content}
+                    rows={2}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                     onTouchStart={() => longPressCopy(item.content)}
-                    className="flex-1 bg-transparent outline-none"
+                    className="flex-1 bg-transparent outline-none resize-none leading-5"
                   />
+                  <button
+                    onClick={() => copyText(item.content)}
+                    title="복사"
+                    className="p-1.5 rounded border"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
+                  </button>
                   <button
                     onClick={async () => {
                       await setTodoStarred(item.id!, !item.starred)
@@ -198,11 +210,12 @@ export default function TodoPage() {
                         await load()
                       }}
                     />
-                    <input
+                    <textarea
                       defaultValue={item.content}
+                      rows={2}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                       onTouchStart={() => longPressCopy(item.content)}
-                      className="flex-1 bg-transparent outline-none line-through text-gray-500"
+                      className="flex-1 bg-transparent outline-none resize-none line-through text-gray-500 leading-5"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
                   </div>
