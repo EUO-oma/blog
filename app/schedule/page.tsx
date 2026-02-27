@@ -162,7 +162,8 @@ export default function SchedulePage() {
     setCalendarSynced((prev) => prev.filter((x) => x.eventId !== eventId));
     await deleteCalendarCacheByEventId(eventId).catch(() => {});
 
-    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken });
+    const traceId = `schedule-del-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken, traceId });
     try {
       const res = await fetch(gasWebAppUrl, {
         method: 'POST',
@@ -171,7 +172,7 @@ export default function SchedulePage() {
       });
       const data = await res.json();
       if (!data?.ok) {
-        setSyncMsg(`삭제 실패: ${data?.error || 'unknown'}`);
+        setSyncMsg(`삭제 실패(${data?.errorCode || 'unknown'}): ${data?.errorMessage || data?.error || 'unknown'}`);
         return;
       }
       await fetch(gasWebAppUrl, {
@@ -180,7 +181,13 @@ export default function SchedulePage() {
         body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
       }).catch(() => {});
 
-      setSyncMsg(data?.deleted === false ? '캘린더 원본에서 이벤트를 찾지 못했어. 목록은 정리했어.' : '캘린더 원본 삭제 완료');
+      if (data?.alreadyDeleted) {
+        setSyncMsg('이미 삭제된 일정이야. 목록만 최신화했어.');
+      } else if (data?.verified === false) {
+        setSyncMsg('삭제 요청은 처리했지만 최종 확인이 필요해. 잠시 후 다시 확인해줘.');
+      } else {
+        setSyncMsg('캘린더 원본 삭제 완료');
+      };
       const refreshed = await getCalendarRangeCacheItems(60).catch(() => []);
       setCalendarSynced(refreshed);
     } catch {

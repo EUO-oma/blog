@@ -161,7 +161,8 @@ export default function HomePage() {
     setTodayItems((prev) => prev.filter((x) => x.eventId !== eventId))
     await deleteCalendarCacheByEventId(eventId).catch(() => {})
 
-    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken })
+    const traceId = `home-del-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken, traceId })
 
     try {
       const res = await fetch(gasWebAppUrl, {
@@ -171,7 +172,7 @@ export default function HomePage() {
       })
       const data = await res.json()
       if (!data?.ok) {
-        setTodayMsg(`삭제 실패: ${data?.error || 'unknown'}`)
+        setTodayMsg(`삭제 실패(${data?.errorCode || 'unknown'}): ${data?.errorMessage || data?.error || 'unknown'}`)
         return
       }
 
@@ -181,7 +182,13 @@ export default function HomePage() {
         body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
       }).catch(() => {})
 
-      setTodayMsg(data?.deleted === false ? '캘린더 원본에서 이벤트를 찾지 못했어. 목록은 정리했어.' : '캘린더 원본 삭제 완료')
+      if (data?.alreadyDeleted) {
+        setTodayMsg('이미 삭제된 일정이야. 목록만 최신화했어.')
+      } else if (data?.verified === false) {
+        setTodayMsg('삭제 요청은 처리했지만 최종 확인이 필요해. 잠시 후 다시 확인해줘.')
+      } else {
+        setTodayMsg('캘린더 원본 삭제 완료')
+      }
       const refreshed = await getTodayCalendarCacheItems().catch(() => [])
       setTodayItems(refreshed)
     } catch {
