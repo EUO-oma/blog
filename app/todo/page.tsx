@@ -146,6 +146,11 @@ export default function TodoPage() {
     setTimeout(() => setMsg(''), 1200)
   }
 
+  const autoResizeTextarea = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
   const longPressCopy = (text: string) => {
     if (typeof window === 'undefined' || !('ontouchstart' in window)) return
     let timer: ReturnType<typeof setTimeout> | null = setTimeout(async () => {
@@ -305,11 +310,14 @@ export default function TodoPage() {
                     }}
                   />
                   <textarea
+                    ref={(el) => el && autoResizeTextarea(el)}
                     defaultValue={item.content}
-                    rows={2}
+                    rows={1}
+                    onInput={(e) => autoResizeTextarea(e.currentTarget)}
+                    onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                     onTouchStart={() => longPressCopy(item.content)}
-                    className="flex-1 bg-transparent outline-none resize-none leading-6 py-2 self-center align-middle"
+                    className="flex-1 bg-transparent outline-none resize-none overflow-hidden leading-6 py-2 self-center align-middle"
                   />
                   <button
                     onClick={() => copyText(item.content)}
@@ -355,11 +363,14 @@ export default function TodoPage() {
                       }}
                     />
                     <textarea
+                      ref={(el) => el && autoResizeTextarea(el)}
                       defaultValue={item.content}
-                      rows={2}
+                      rows={1}
+                      onInput={(e) => autoResizeTextarea(e.currentTarget)}
+                      onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                       onTouchStart={() => longPressCopy(item.content)}
-                      className="flex-1 bg-transparent outline-none resize-none line-through text-gray-500 leading-6 py-2 self-center align-middle"
+                      className="flex-1 bg-transparent outline-none resize-none overflow-hidden line-through text-gray-500 leading-6 py-2 self-center align-middle"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
                     <button
