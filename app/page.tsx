@@ -29,6 +29,10 @@ export default function HomePage() {
   const [todayMsg, setTodayMsg] = useState('')
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [editingExcerptPostId, setEditingExcerptPostId] = useState<string | null>(null)
+  const [editingExcerpt, setEditingExcerpt] = useState('')
+  const [editingContentPostId, setEditingContentPostId] = useState<string | null>(null)
+  const [editingContent, setEditingContent] = useState('')
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
   const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
@@ -75,9 +79,6 @@ export default function HomePage() {
     const target = posts.find((p) => p.id === postId)
     if (target) {
       setExpandedPost(target)
-      setTimeout(() => {
-        document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 50)
     }
   }, [loading, posts])
 
@@ -142,10 +143,24 @@ export default function HomePage() {
     }
   }
 
+  const isAuthor = (post: BlogPost) => user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()
+
   const startInlineEdit = (post: BlogPost) => {
-    if (user?.email?.toLowerCase() !== post.authorEmail?.toLowerCase()) return
+    if (!isAuthor(post)) return
     setEditingPostId(post.id || null)
     setEditingTitle(post.title || '')
+  }
+
+  const startInlineExcerptEdit = (post: BlogPost) => {
+    if (!isAuthor(post)) return
+    setEditingExcerptPostId(post.id || null)
+    setEditingExcerpt(post.excerpt || '')
+  }
+
+  const startInlineContentEdit = (post: BlogPost) => {
+    if (!isAuthor(post)) return
+    setEditingContentPostId(post.id || null)
+    setEditingContent(post.content || '')
   }
 
   const saveInlineTitle = async (post: BlogPost) => {
@@ -163,6 +178,42 @@ export default function HomePage() {
       console.error('inline title update failed', e)
     } finally {
       setEditingPostId(null)
+    }
+  }
+
+  const saveInlineExcerpt = async (post: BlogPost) => {
+    if (!post.id) return
+    const next = editingExcerpt.trim()
+    if (!next || next === post.excerpt) {
+      setEditingExcerptPostId(null)
+      return
+    }
+    try {
+      await updatePost(post.id, { excerpt: next })
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, excerpt: next } : p)))
+      if (expandedPost?.id === post.id) setExpandedPost((prev) => (prev ? { ...prev, excerpt: next } : prev))
+    } catch (e) {
+      console.error('inline excerpt update failed', e)
+    } finally {
+      setEditingExcerptPostId(null)
+    }
+  }
+
+  const saveInlineContent = async (post: BlogPost) => {
+    if (!post.id) return
+    const next = editingContent.trim()
+    if (!next || next === post.content) {
+      setEditingContentPostId(null)
+      return
+    }
+    try {
+      await updatePost(post.id, { content: next })
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, content: next } : p)))
+      if (expandedPost?.id === post.id) setExpandedPost((prev) => (prev ? { ...prev, content: next } : prev))
+    } catch (e) {
+      console.error('inline content update failed', e)
+    } finally {
+      setEditingContentPostId(null)
     }
   }
 
@@ -254,8 +305,37 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="prose dark:prose-invert max-w-none max-h-[52vh] overflow-y-auto pr-1">
-          <ReactMarkdown>{post.content}</ReactMarkdown>
+        <div className="max-h-[52vh] overflow-y-auto pr-1">
+          {editingContentPostId === post.id ? (
+            <textarea
+              autoFocus
+              value={editingContent}
+              onChange={(e) => setEditingContent(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={() => saveInlineContent(post)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setEditingContentPostId(null)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                  e.preventDefault()
+                  saveInlineContent(post)
+                }
+              }}
+              className="w-full min-h-[220px] rounded border p-3 text-sm dark:bg-gray-900 dark:border-gray-700"
+            />
+          ) : (
+            <div
+              className={`prose dark:prose-invert max-w-none ${isAuthor(post) ? 'cursor-text' : ''}`}
+              onClick={(e) => {
+                if (isAuthor(post)) {
+                  e.stopPropagation()
+                  startInlineContentEdit(post)
+                }
+              }}
+              title={isAuthor(post) ? '클릭해서 본문 수정 (Ctrl+Enter 저장)' : ''}
+            >
+              <ReactMarkdown>{post.content}</ReactMarkdown>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -386,7 +466,36 @@ export default function HomePage() {
             onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">{featuredPost.title}</h3>
+              {editingPostId === featuredPost.id ? (
+                <input
+                  autoFocus
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={() => saveInlineTitle(featuredPost)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      saveInlineTitle(featuredPost)
+                    }
+                    if (e.key === 'Escape') setEditingPostId(null)
+                  }}
+                  className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                />
+              ) : (
+                <h3
+                  className={`text-2xl md:text-3xl font-bold mb-2 ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                  onClick={(e) => {
+                    if (isAuthor(featuredPost)) {
+                      e.stopPropagation()
+                      startInlineEdit(featuredPost)
+                    }
+                  }}
+                  title={isAuthor(featuredPost) ? '클릭해서 제목 수정' : ''}
+                >
+                  {featuredPost.title}
+                </h3>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -397,7 +506,36 @@ export default function HomePage() {
                 {copiedPostId === featuredPost.id ? '복사됨' : '복사'}
               </button>
             </div>
-            <p className="text-gray-700 dark:text-gray-300 mb-2 text-base">{featuredPost.excerpt}</p>
+            {editingExcerptPostId === featuredPost.id ? (
+              <input
+                autoFocus
+                value={editingExcerpt}
+                onChange={(e) => setEditingExcerpt(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={() => saveInlineExcerpt(featuredPost)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    saveInlineExcerpt(featuredPost)
+                  }
+                  if (e.key === 'Escape') setEditingExcerptPostId(null)
+                }}
+                className="text-gray-700 dark:text-gray-300 mb-2 text-base w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+              />
+            ) : (
+              <p
+                className={`text-gray-700 dark:text-gray-300 mb-2 text-base ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                onClick={(e) => {
+                  if (isAuthor(featuredPost)) {
+                    e.stopPropagation()
+                    startInlineExcerptEdit(featuredPost)
+                  }
+                }}
+                title={isAuthor(featuredPost) ? '클릭해서 요약 수정' : ''}
+              >
+                {featuredPost.excerpt}
+              </p>
+            )}
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
             <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
           </article>
@@ -467,7 +605,36 @@ export default function HomePage() {
                           {copiedPostId === post.id ? '복사됨' : '복사'}
                         </button>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 mb-2">{post.excerpt}</p>
+                      {editingExcerptPostId === post.id ? (
+                        <input
+                          autoFocus
+                          value={editingExcerpt}
+                          onChange={(e) => setEditingExcerpt(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onBlur={() => saveInlineExcerpt(post)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              saveInlineExcerpt(post)
+                            }
+                            if (e.key === 'Escape') setEditingExcerptPostId(null)
+                          }}
+                          className="text-gray-600 dark:text-gray-300 mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p
+                          className={`text-gray-600 dark:text-gray-300 mb-2 ${isAuthor(post) ? 'cursor-text' : ''}`}
+                          onClick={(e) => {
+                            if (isAuthor(post)) {
+                              e.stopPropagation()
+                              startInlineExcerptEdit(post)
+                            }
+                          }}
+                          title={isAuthor(post) ? '클릭해서 요약 수정' : ''}
+                        >
+                          {post.excerpt}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
                       <time className="text-sm text-gray-500">{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
                     </article>
@@ -528,7 +695,36 @@ export default function HomePage() {
                       {copiedPostId === post.id ? '복사됨' : '복사'}
                     </button>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">{post.excerpt}</p>
+                  {editingExcerptPostId === post.id ? (
+                    <input
+                      autoFocus
+                      value={editingExcerpt}
+                      onChange={(e) => setEditingExcerpt(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onBlur={() => saveInlineExcerpt(post)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          saveInlineExcerpt(post)
+                        }
+                        if (e.key === 'Escape') setEditingExcerptPostId(null)
+                      }}
+                      className="text-gray-600 dark:text-gray-400 mb-2 w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+                    />
+                  ) : (
+                    <p
+                      className={`text-gray-600 dark:text-gray-400 mb-2 ${isAuthor(post) ? 'cursor-text' : ''}`}
+                      onClick={(e) => {
+                        if (isAuthor(post)) {
+                          e.stopPropagation()
+                          startInlineExcerptEdit(post)
+                        }
+                      }}
+                      title={isAuthor(post) ? '클릭해서 요약 수정' : ''}
+                    >
+                      {post.excerpt}
+                    </p>
+                  )}
                   <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">{getContentPreview(post.content || '', 100)}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
                     <time>{new Date(post.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
