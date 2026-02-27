@@ -24,6 +24,7 @@ export default function TodoPage() {
   const [adding, setAdding] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
+  const [completingIds, setCompletingIds] = useState<string[]>([])
 
   const load = async () => {
     if (!user?.email) {
@@ -197,8 +198,10 @@ export default function TodoPage() {
                   setOverId(item.id || null)
                 }}
                 onDrop={() => onDropReorder(item.id)}
-                className={`rounded-lg border p-3 transition-all duration-150 bg-white dark:bg-gray-800 ${
-                  draggingId === item.id
+                className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
+                  completingIds.includes(item.id || '')
+                    ? 'opacity-0 -translate-y-1 scale-[0.98]'
+                    : draggingId === item.id
                     ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow'
                     : overId === item.id
                     ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/20'
@@ -206,12 +209,23 @@ export default function TodoPage() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400 cursor-grab active:cursor-grabbing" title="드래그해서 순서 변경">☰</span>
+                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-lg leading-none px-1" title="드래그해서 순서 변경">☰</span>
                   <input
                     type="checkbox"
                     checked={item.completed}
+                    className="w-5 h-5"
                     onChange={async (e) => {
-                      await setTodoCompleted(item.id!, e.target.checked)
+                      const checked = e.target.checked
+                      if (checked && item.id) {
+                        setCompletingIds((prev) => [...prev, item.id!])
+                        setTimeout(async () => {
+                          await setTodoCompleted(item.id!, true)
+                          setCompletingIds((prev) => prev.filter((id) => id !== item.id))
+                          await load()
+                        }, 220)
+                        return
+                      }
+                      await setTodoCompleted(item.id!, checked)
                       await load()
                     }}
                   />
@@ -256,6 +270,7 @@ export default function TodoPage() {
                     <input
                       type="checkbox"
                       checked={item.completed}
+                      className="w-5 h-5"
                       onChange={async (e) => {
                         await setTodoCompleted(item.id!, e.target.checked)
                         await load()
