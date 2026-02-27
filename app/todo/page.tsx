@@ -57,6 +57,8 @@ export default function TodoPage() {
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   const [isSlideVisible, setIsSlideVisible] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
+  const [slideMs, setSlideMs] = useState(2800)
 
   const load = async () => {
     if (!user?.email) {
@@ -172,16 +174,16 @@ export default function TodoPage() {
   }, [slideIndex, slideshowItems.length])
 
   useEffect(() => {
-    if (!isSlideshowOpen || slideshowItems.length <= 1) return
+    if (!isSlideshowOpen || isPaused || slideshowItems.length <= 1) return
     const t = setInterval(() => {
       setIsSlideVisible(false)
       setTimeout(() => {
         setSlideIndex((prev) => (prev + 1) % slideshowItems.length)
         setIsSlideVisible(true)
       }, 220)
-    }, 2800)
+    }, slideMs)
     return () => clearInterval(t)
-  }, [isSlideshowOpen, slideshowItems.length])
+  }, [isSlideshowOpen, isPaused, slideshowItems.length, slideMs])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -221,6 +223,7 @@ export default function TodoPage() {
               return
             }
             setSlideIndex(0)
+            setIsPaused(false)
             setIsSlideshowOpen(true)
           }}
           className="px-3 py-1.5 rounded border bg-black text-white dark:bg-white dark:text-black text-sm"
@@ -381,22 +384,40 @@ export default function TodoPage() {
       )}
 
       {isSlideshowOpen && slideshowItems.length > 0 ? (
-        <div className="fixed inset-0 z-[90] bg-black text-white flex flex-col items-center justify-center px-6">
-          <button
-            onClick={() => setIsSlideshowOpen(false)}
-            className="absolute top-4 right-4 text-white/80 hover:text-white text-sm border border-white/40 rounded px-2 py-1"
-          >
-            닫기
-          </button>
-          <div className="text-xs text-white/60 mb-3">{slideIndex + 1} / {slideshowItems.length} · 반복재생</div>
+        <div className="fixed inset-0 z-[90] bg-black text-white flex flex-col items-center justify-center px-6 overflow-hidden">
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+            <button
+              onClick={() => setSlideMs((prev) => Math.min(6000, prev + 400))}
+              className="text-white/80 hover:text-white text-sm border border-white/40 rounded px-2 py-1"
+              title="속도 느리게"
+            >
+              -
+            </button>
+            <button
+              onClick={() => setSlideMs((prev) => Math.max(1000, prev - 400))}
+              className="text-white/80 hover:text-white text-sm border border-white/40 rounded px-2 py-1"
+              title="속도 빠르게"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setIsSlideshowOpen(false)}
+              className="text-white/80 hover:text-white text-sm border border-white/40 rounded px-2 py-1"
+            >
+              닫기
+            </button>
+          </div>
+          <div className="text-xs text-white/60 mb-3">{slideIndex + 1} / {slideshowItems.length} · {isPaused ? '일시정지' : '반복재생'} · {(slideMs / 1000).toFixed(1)}s</div>
           <div className="w-40 h-1.5 rounded-full bg-white/20 overflow-hidden mb-6">
             <div className="h-full bg-white/80 animate-pulse" />
           </div>
           <div className={`max-w-3xl text-center text-3xl sm:text-5xl font-semibold leading-tight whitespace-pre-wrap break-words transition-all duration-300 ${isSlideVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.985]'}`}>
             {slideshowItems[slideIndex]?.content}
           </div>
-          <div className="mt-8 flex gap-3">
+          <div className="absolute inset-0 z-10 grid grid-cols-3">
             <button
+              aria-label="이전 슬라이드"
+              className="h-full w-full"
               onClick={() => {
                 setIsSlideVisible(false)
                 setTimeout(() => {
@@ -404,11 +425,15 @@ export default function TodoPage() {
                   setIsSlideVisible(true)
                 }, 180)
               }}
-              className="px-3 py-1.5 border border-white/40 rounded"
-            >
-              이전
-            </button>
+            />
             <button
+              aria-label="재생/일시정지"
+              className="h-full w-full"
+              onClick={() => setIsPaused((p) => !p)}
+            />
+            <button
+              aria-label="다음 슬라이드"
+              className="h-full w-full"
               onClick={() => {
                 setIsSlideVisible(false)
                 setTimeout(() => {
@@ -416,10 +441,7 @@ export default function TodoPage() {
                   setIsSlideVisible(true)
                 }, 180)
               }}
-              className="px-3 py-1.5 border border-white/40 rounded"
-            >
-              다음
-            </button>
+            />
           </div>
         </div>
       ) : null}
