@@ -65,5 +65,14 @@ service cloud.firestore {
       allow update, delete: if request.auth != null
         && resource.data.authorEmail == request.auth.token.email;
     }
+
+    // words 컬렉션: 로그인 사용자 본인 데이터만 write 허용
+    match /words/{wordId} {
+      allow create: if request.auth != null
+        && request.resource.data.authorEmail == request.auth.token.email;
+
+      allow update, delete: if request.auth != null
+        && resource.data.authorEmail == request.auth.token.email;
+    }
   }
 }

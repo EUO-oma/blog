@@ -16,6 +16,7 @@ const menuItems = [
   { href: '/phonebook', icon: '📞', label: '폰북' },
   { href: '/favorites', icon: '⭐', label: '즐겨찾기' },
   { href: '/youtube', icon: '▶️', label: '유튜브' },
+  { href: '/word', icon: '📘', label: 'Word' },
 ]
 
 export default function Header() {
