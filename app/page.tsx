@@ -609,7 +609,7 @@ export default function HomePage() {
                   renderExpandedInline(featuredPost)
                 ) : (
                   <article
-                    className="relative p-6 md:p-8 cursor-pointer bg-transparent"
+                    className="relative py-6 px-1.5 md:py-8 md:px-2 cursor-pointer bg-transparent"
                     onClick={() => { void openPostEditor(featuredPost) }}
                   >
                     <span className="absolute top-0 left-0 w-9 h-9 border-t-[10px] border-l-[10px] border-gray-400/85" />
@@ -701,7 +701,7 @@ export default function HomePage() {
                       renderExpandedInline(post)
                     ) : (
                     <article
-                      className="p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/70 dark:border-fuchsia-800/40 bg-gradient-to-br from-fuchsia-100/70 via-violet-100/60 to-indigo-100/70 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
+                      className="py-6 px-1.5 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/70 dark:border-fuchsia-800/40 bg-gradient-to-br from-fuchsia-100/70 via-violet-100/60 to-indigo-100/70 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
                       onClick={() => {
                         void openPostEditor(post)
                       }}
@@ -778,7 +778,7 @@ export default function HomePage() {
                   renderExpandedInline(post)
                 ) : (
                 <article
-                  className="p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/60 dark:border-fuchsia-800/30 bg-gradient-to-br from-fuchsia-50 via-violet-50 to-indigo-50 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
+                  className="py-6 px-1.5 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/60 dark:border-fuchsia-800/30 bg-gradient-to-br from-fuchsia-50 via-violet-50 to-indigo-50 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
                   onClick={() => {
                         void openPostEditor(post)
                       }}
