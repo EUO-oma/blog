@@ -221,8 +221,10 @@ export default function HomePage() {
     })
   }, [posts, search, dateFilter])
 
-  const pinnedPosts = filteredPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
-  const normalPosts = filteredPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
+  const featuredPost = filteredPosts[0] || null
+  const restPosts = filteredPosts.slice(1)
+  const pinnedPosts = restPosts.filter((p) => p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
+  const normalPosts = restPosts.filter((p) => !p.tags?.some((t) => ['pin', 'pinned', '고정'].includes(t.toLowerCase())))
 
   const renderExpandedInline = (post: BlogPost) => {
     if (expandedPost?.id !== post.id) return null
@@ -375,6 +377,33 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {featuredPost && !loading && (
+        <section className="mb-6">
+          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">메인 포스팅</h2>
+          <article
+            className="p-6 md:p-8 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-indigo-950/30 rounded-xl shadow-lg border border-indigo-200 dark:border-indigo-800 cursor-pointer"
+            onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-2xl md:text-3xl font-bold mb-2">{featuredPost.title}</h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyPostToClipboard(featuredPost)
+                }}
+                className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
+              >
+                {copiedPostId === featuredPost.id ? '복사됨' : '복사'}
+              </button>
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 mb-2 text-base">{featuredPost.excerpt}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
+            <time className="text-sm text-gray-500">{new Date(featuredPost.createdAt.toDate()).toLocaleDateString('ko-KR')}</time>
+          </article>
+          {renderExpandedInline(featuredPost)}
+        </section>
+      )}
 
       <section>
         {loading ? (
