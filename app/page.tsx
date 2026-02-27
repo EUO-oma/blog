@@ -601,7 +601,7 @@ export default function HomePage() {
                   renderExpandedInline(featuredPost)
                 ) : (
                   <article
-                    className="relative p-6 md:p-8 bg-transparent cursor-pointer"
+                    className="relative p-6 md:p-8 cursor-pointer rounded-2xl bg-gradient-to-br from-fuchsia-100/80 via-violet-100/70 to-indigo-100/80 dark:from-fuchsia-900/25 dark:via-violet-900/20 dark:to-indigo-900/25 backdrop-blur-[1px]"
                     onClick={() => { void openPostEditor(featuredPost) }}
                   >
                     <span className="absolute top-0 left-0 w-10 h-10 border-t-[10px] border-l-[10px] border-gray-400/85" />
@@ -722,7 +722,7 @@ export default function HomePage() {
                       renderExpandedInline(post)
                     ) : (
                     <article
-                      className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-yellow-200 dark:border-yellow-700"
+                      className="p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/70 dark:border-fuchsia-800/40 bg-gradient-to-br from-fuchsia-100/70 via-violet-100/60 to-indigo-100/70 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
                       onClick={() => {
                         void openPostEditor(post)
                       }}
@@ -828,7 +828,7 @@ export default function HomePage() {
                   renderExpandedInline(post)
                 ) : (
                 <article
-                  className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                  className="p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border border-fuchsia-200/60 dark:border-fuchsia-800/30 bg-gradient-to-br from-fuchsia-50 via-violet-50 to-indigo-50 dark:from-fuchsia-900/20 dark:via-violet-900/15 dark:to-indigo-900/20"
                   onClick={() => {
                         void openPostEditor(post)
                       }}
