@@ -146,7 +146,7 @@ export default function TodoPage() {
 
       <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
         <form
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 min-h-[56px]"
           onSubmit={(e) => {
             e.preventDefault()
             addTodo()
@@ -208,12 +208,12 @@ export default function TodoPage() {
                     : 'border-gray-200 dark:border-gray-700'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-lg leading-none px-1" title="드래그해서 순서 변경">☰</span>
+                <div className="flex items-center gap-2 min-h-[56px]">
+                  <span className="text-gray-400 cursor-grab active:cursor-grabbing text-lg leading-none px-1 self-center" title="드래그해서 순서 변경">☰</span>
                   <input
                     type="checkbox"
                     checked={item.completed}
-                    className="w-5 h-5"
+                    className="w-5 h-5 self-center"
                     onChange={async (e) => {
                       const checked = e.target.checked
                       if (checked && item.id) {
@@ -234,12 +234,12 @@ export default function TodoPage() {
                     rows={2}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
                     onTouchStart={() => longPressCopy(item.content)}
-                    className="flex-1 bg-transparent outline-none resize-none leading-5"
+                    className="flex-1 bg-transparent outline-none resize-none leading-5 self-center"
                   />
                   <button
                     onClick={() => copyText(item.content)}
                     title="복사"
-                    className="p-1.5 rounded border"
+                    className="p-1.5 rounded border self-center"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   </button>
@@ -249,7 +249,7 @@ export default function TodoPage() {
                       await load()
                     }}
                     title="중요"
-                    className="p-1.5 rounded border"
+                    className="p-1.5 rounded border self-center"
                   >
                     <svg className={`w-4 h-4 ${item.starred ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill={item.starred ? 'currentColor' : 'none'}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />
@@ -266,11 +266,11 @@ export default function TodoPage() {
             <div className="space-y-2">
               {completedItems.map((item) => (
                 <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40 opacity-80">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-h-[56px]">
                     <input
                       type="checkbox"
                       checked={item.completed}
-                      className="w-5 h-5"
+                      className="w-5 h-5 self-center"
                       onChange={async (e) => {
                         await setTodoCompleted(item.id!, e.target.checked)
                         await load()
