@@ -11,7 +11,7 @@ import {
 } from '@/lib/firebase-phonebook'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 
-const CATEGORIES = ['통신', '전기/설비', '생활', '병원', '택배/물류', '기타']
+const CATEGORIES = ['통신', '전기/설비', '생활', '병원', '택배/물류', '식당', '기타']
 
 export default function PhonebookPage() {
   const { user } = useAuth()
