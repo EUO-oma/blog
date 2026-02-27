@@ -463,18 +463,25 @@ export default function SchedulePage() {
                   setEditingSchedule(null);
                   setShowFormModal(true);
                 }}
-                className="bg-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base"
+                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-2"
+                title="새 일정"
+                aria-label="새 일정"
               >
-                + 새 일정
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </button>
               <a
                 href="https://calendar.google.com/calendar/u/0/r/eventedit"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm sm:text-base"
-                title="Google Calendar에서 직접 일정 등록"
+                className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 p-2"
+                title="구글캘린더 직접 등록"
+                aria-label="구글캘린더 직접 등록"
               >
-                구글캘린더에 일정 직접등록
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </a>
             </>
           )}
