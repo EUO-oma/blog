@@ -21,6 +21,8 @@ export interface PhonebookItem {
   address?: string
   businessNumber?: string
   memo?: string
+  url1?: string
+  url2?: string
   authorEmail: string
   authorName: string
   createdAt: Timestamp
@@ -88,7 +90,7 @@ export async function createPhonebookItem(
 
 export async function updatePhonebookItem(
   id: string,
-  data: Pick<PhonebookItem, 'company' | 'category' | 'phone' | 'fax' | 'address' | 'businessNumber' | 'memo'>
+  data: Pick<PhonebookItem, 'company' | 'category' | 'phone' | 'fax' | 'address' | 'businessNumber' | 'memo' | 'url1' | 'url2'>
 ): Promise<void> {
   try {
     await updateDoc(doc(db, PHONEBOOK_COLLECTION, id), {

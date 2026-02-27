@@ -22,7 +22,7 @@ export default function PhonebookPage() {
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
+  const [form, setForm] = useState({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
 
   const loadItems = async () => {
     if (!user?.email) {
@@ -51,7 +51,7 @@ export default function PhonebookPage() {
       const categoryMatch = activeCategory === '전체' || it.category === activeCategory
       if (!categoryMatch) return false
       if (!q) return true
-      return [it.company, it.category, it.phone, it.fax || '', it.address || '', it.businessNumber || '', it.memo || ''].join(' ').toLowerCase().includes(q)
+      return [it.company, it.category, it.phone, it.fax || '', it.address || '', it.businessNumber || '', it.memo || '', it.url1 || '', it.url2 || ''].join(' ').toLowerCase().includes(q)
     })
   }, [items, search, activeCategory])
 
@@ -95,6 +95,8 @@ export default function PhonebookPage() {
           address: form.address.trim(),
           businessNumber: form.businessNumber.trim(),
           memo: form.memo.trim(),
+          url1: form.url1.trim(),
+          url2: form.url2.trim(),
         })
         setMessage('연락처를 수정했어.')
       } else {
@@ -106,6 +108,8 @@ export default function PhonebookPage() {
           address: form.address.trim(),
           businessNumber: form.businessNumber.trim(),
           memo: form.memo.trim(),
+          url1: form.url1.trim(),
+          url2: form.url2.trim(),
           authorEmail: user.email,
           authorName: user.displayName || user.email,
         })
@@ -113,7 +117,7 @@ export default function PhonebookPage() {
       }
 
       setEditingId(null)
-      setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
+      setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
       await loadItems()
     } catch (e: any) {
       setMessage(`저장 실패: ${e?.message || e}`)
@@ -212,6 +216,18 @@ export default function PhonebookPage() {
             placeholder="메모(선택)"
             className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
           />
+          <input
+            value={form.url1}
+            onChange={(e) => setForm((p) => ({ ...p, url1: e.target.value }))}
+            placeholder="URL 1 (선택)"
+            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
+          <input
+            value={form.url2}
+            onChange={(e) => setForm((p) => ({ ...p, url2: e.target.value }))}
+            placeholder="URL 2 (선택)"
+            className="px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
         </div>
         <div className="mt-3 flex items-center gap-3">
           <button
@@ -225,7 +241,7 @@ export default function PhonebookPage() {
             <button
               onClick={() => {
                 setEditingId(null)
-                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '' })
+                setForm({ company: '', category: '기타', phone: '', fax: '', address: '', businessNumber: '', memo: '', url1: '', url2: '' })
               }}
               className="px-3 py-2 rounded border text-sm"
             >
@@ -283,6 +299,8 @@ export default function PhonebookPage() {
                     {it.address ? <p className="mt-1 text-xs text-gray-500">주소: {it.address}</p> : null}
                     {it.businessNumber ? <p className="mt-1 text-xs text-gray-500">사업자번호: {it.businessNumber}</p> : null}
                     {it.memo ? <p className="mt-1 text-xs text-gray-500">{it.memo}</p> : null}
+                    {it.url1 ? <a href={it.url1} target="_blank" rel="noreferrer" className="mt-1 block text-xs text-indigo-600 break-all">{it.url1}</a> : null}
+                    {it.url2 ? <a href={it.url2} target="_blank" rel="noreferrer" className="mt-1 block text-xs text-indigo-600 break-all">{it.url2}</a> : null}
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     <button
@@ -314,6 +332,8 @@ export default function PhonebookPage() {
                           address: it.address || '',
                           businessNumber: it.businessNumber || '',
                           memo: it.memo || '',
+                          url1: it.url1 || '',
+                          url2: it.url2 || '',
                         })
                         window.scrollTo({ top: 0, behavior: 'smooth' })
                       }}
