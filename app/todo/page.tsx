@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
+import GuestPlaceholder from '@/components/GuestPlaceholder'
 import {
   createTodo,
   getTodos,
@@ -103,7 +104,7 @@ export default function TodoPage() {
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
 
-  if (!user) return <p className="text-gray-500">로그인 후 Todo를 사용할 수 있어요.</p>
+  if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
 
   return (
     <main className="max-w-4xl mx-auto space-y-4">

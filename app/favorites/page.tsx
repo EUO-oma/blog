@@ -11,6 +11,7 @@ import {
   reorderFavoriteSites,
   updateFavoriteSite,
 } from '@/lib/firebase-favorites'
+import GuestPlaceholder from '@/components/GuestPlaceholder'
 
 export default function FavoritesPage() {
   const { user } = useAuth()
@@ -92,7 +93,7 @@ export default function FavoritesPage() {
   }
 
   if (!user) {
-    return <p className="text-gray-500">로그인 후 즐겨찾기를 사용할 수 있어요.</p>
+    return <GuestPlaceholder title="즐겨찾기는 로그인 후 사용 가능" desc="로그인하면 저장한 사이트 목록을 바로 불러와요." emoji="⭐" />
   }
 
   return (
