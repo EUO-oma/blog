@@ -98,6 +98,30 @@ NEXT_PUBLIC_R2_SIGNER_TOKEN=your_signer_bearer_token
 3. 브라우저가 R2로 직접 PUT 업로드
 4. Firestore `images` 컬렉션에 메타데이터 저장
 
+### Cloudflare Worker signer 배포
+
+레포에 샘플 워커가 포함되어 있습니다:
+- `cloudflare-r2-signer/worker.js`
+- `cloudflare-r2-signer/wrangler.toml`
+
+배포 예시:
+
+```bash
+cd cloudflare-r2-signer
+npm i -g wrangler
+wrangler login
+wrangler secret put SIGNER_TOKEN
+# wrangler.toml 의 bucket_name / PUBLIC_BASE_URL 수정 후
+wrangler deploy
+```
+
+배포 후 앱 `.env.local` 예시:
+
+```bash
+NEXT_PUBLIC_R2_SIGNER_URL=https://euo-r2-signer.<your-subdomain>.workers.dev
+NEXT_PUBLIC_R2_SIGNER_TOKEN=<SIGNER_TOKEN과 동일값>
+```
+
 ## License
 
 MIT

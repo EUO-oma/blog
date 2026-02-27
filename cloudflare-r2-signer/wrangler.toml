@@ -1,0 +1,11 @@
+name = "euo-r2-signer"
+main = "worker.js"
+compatibility_date = "2026-02-28"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "YOUR_R2_BUCKET_NAME"
+
+[vars]
+PUBLIC_BASE_URL = "https://YOUR_PUBLIC_IMAGE_DOMAIN"
+# SIGNER_TOKEN 은 secret으로 넣어주세요.
