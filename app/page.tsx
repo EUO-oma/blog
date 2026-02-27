@@ -111,7 +111,7 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(post.title || '')
       setCopiedPostId(post.id || null)
-      setCopyToast('제목을 클립보드에 복사했습니다')
+      setCopyToast('제목이 복사되었습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
       setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
@@ -532,7 +532,7 @@ export default function HomePage() {
                     <span className="absolute top-0 left-0 w-12 h-12 border-t-[10px] border-l-[10px] border-gray-400/85" />
                     <span className="absolute bottom-0 right-0 w-12 h-12 border-b-[10px] border-r-[10px] border-gray-400/85" />
 
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
                       {editingPostId === featuredPost.id ? (
                         <input
                           autoFocus
@@ -550,28 +550,31 @@ export default function HomePage() {
                           className="text-2xl md:text-3xl font-bold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                         />
                       ) : (
-                        <h3
-                          className={`text-2xl md:text-3xl font-bold mb-2 ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
-                          onClick={(e) => {
-                            if (isAuthor(featuredPost)) {
-                              e.stopPropagation()
-                              startInlineEdit(featuredPost)
-                            }
-                          }}
-                          title={isAuthor(featuredPost) ? '클릭해서 제목 수정' : ''}
-                        >
-                          {featuredPost.title}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(featuredPost) }} className="p-1 rounded border" title="제목 복사">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                          </button>
+                          <h3
+                            className={`text-2xl md:text-3xl font-bold ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                            onTouchStart={() => startLongPressCopy('title', featuredPost)}
+                            onTouchEnd={endLongPressCopy}
+                            onTouchCancel={endLongPressCopy}
+                            onClick={(e) => {
+                              if (longPressCopiedRef.current) {
+                                longPressCopiedRef.current = false
+                                return
+                              }
+                              if (isAuthor(featuredPost)) {
+                                e.stopPropagation()
+                                startInlineEdit(featuredPost)
+                              }
+                            }}
+                            title={isAuthor(featuredPost) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
+                          >
+                            {featuredPost.title}
+                          </h3>
+                        </div>
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          copyPostToClipboard(featuredPost)
-                        }}
-                        className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
-                      >
-                        {copiedPostId === featuredPost.id ? '복사됨' : '복사'}
-                      </button>
                     </div>
 
                     {editingExcerptPostId === featuredPost.id ? (
@@ -605,7 +608,12 @@ export default function HomePage() {
                       </p>
                     )}
 
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{getContentPreview(featuredPost.content || '', 140)}</p>
+                    <div className="flex items-start gap-2 mb-3">
+                      <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="p-1 rounded border mt-0.5" title="본문 복사">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                      </button>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{getContentPreview(featuredPost.content || '', 140)}</p>
+                    </div>
                   </article>
                 )}
               </div>
@@ -638,7 +646,7 @@ export default function HomePage() {
                         setExpandedPost((prev) => (prev?.id === post.id ? null : post))
                       }}
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
                         {editingPostId === post.id ? (
                           <input
                             autoFocus
@@ -656,28 +664,31 @@ export default function HomePage() {
                             className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                           />
                         ) : (
-                          <h3
-                            className="text-xl font-semibold mb-2"
-                            onClick={(e) => {
-                              if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
-                                e.stopPropagation()
-                                startInlineEdit(post)
-                              }
-                            }}
-                            title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정' : ''}
-                          >
-                            {post.title}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                            </button>
+                            <h3
+                              className="text-xl font-semibold"
+                              onTouchStart={() => startLongPressCopy('title', post)}
+                              onTouchEnd={endLongPressCopy}
+                              onTouchCancel={endLongPressCopy}
+                              onClick={(e) => {
+                                if (longPressCopiedRef.current) {
+                                  longPressCopiedRef.current = false
+                                  return
+                                }
+                                if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
+                                  e.stopPropagation()
+                                  startInlineEdit(post)
+                                }
+                              }}
+                              title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
+                            >
+                              {post.title}
+                            </h3>
+                          </div>
                         )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            copyPostToClipboard(post)
-                          }}
-                          className="text-xs px-2 py-1 rounded border bg-white/70 dark:bg-gray-800"
-                        >
-                          {copiedPostId === post.id ? '복사됨' : '복사'}
-                        </button>
                       </div>
                       {editingExcerptPostId === post.id ? (
                         <input
@@ -709,7 +720,12 @@ export default function HomePage() {
                           {post.excerpt}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{getContentPreview(post.content || '', 100)}</p>
+                      <div className="flex items-start gap-2 mb-4">
+                        <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border mt-0.5" title="본문 복사">
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                        </button>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{getContentPreview(post.content || '', 100)}</p>
+                      </div>
                     </article>
                     )}
                     </div>
@@ -748,28 +764,31 @@ export default function HomePage() {
                         className="text-xl font-semibold mb-2 w-full px-2 py-1 rounded border border-fuchsia-300 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 dark:bg-gray-900 dark:border-fuchsia-700"
                       />
                     ) : (
-                      <h3
-                        className="text-xl font-semibold mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                        onClick={(e) => {
-                          if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
-                            e.stopPropagation()
-                            startInlineEdit(post)
-                          }
-                        }}
-                        title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정' : ''}
-                      >
-                        {post.title}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                        </button>
+                        <h3
+                          className="text-xl font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          onTouchStart={() => startLongPressCopy('title', post)}
+                          onTouchEnd={endLongPressCopy}
+                          onTouchCancel={endLongPressCopy}
+                          onClick={(e) => {
+                            if (longPressCopiedRef.current) {
+                              longPressCopiedRef.current = false
+                              return
+                            }
+                            if (user?.email?.toLowerCase() === post.authorEmail?.toLowerCase()) {
+                              e.stopPropagation()
+                              startInlineEdit(post)
+                            }
+                          }}
+                          title={user?.email?.toLowerCase() === post.authorEmail?.toLowerCase() ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
+                        >
+                          {post.title}
+                        </h3>
+                      </div>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        copyPostToClipboard(post)
-                      }}
-                      className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800"
-                    >
-                      {copiedPostId === post.id ? '복사됨' : '복사'}
-                    </button>
                   </div>
                   {editingExcerptPostId === post.id ? (
                     <input
@@ -801,7 +820,12 @@ export default function HomePage() {
                       {post.excerpt}
                     </p>
                   )}
-                  <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">{getContentPreview(post.content || '', 100)}</p>
+                  <div className="flex items-start gap-2 mb-4">
+                    <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="p-1 rounded border mt-0.5" title="본문 복사">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3"/></svg>
+                    </button>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">{getContentPreview(post.content || '', 100)}</p>
+                  </div>
                   {post.tags.length > 0 && (
                     <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-500">
                       {post.tags.slice(0, 3).map((tag) => (
