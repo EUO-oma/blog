@@ -7,6 +7,7 @@ export interface WordItem {
   meaning: string
   example?: string
   starred?: boolean
+  learned?: boolean
   authorEmail: string
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -29,6 +30,7 @@ export async function createWord(input: { term: string; meaning: string; example
     meaning: input.meaning,
     example: input.example || '',
     starred: false,
+    learned: false,
     authorEmail: input.authorEmail,
     createdAt: now,
     updatedAt: now,
