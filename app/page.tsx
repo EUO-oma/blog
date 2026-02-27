@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { BlogPost } from '@/lib/firebase'
 import { deletePost, getPost, getPosts, updatePost } from '@/lib/firebase-posts'
@@ -27,6 +27,7 @@ export default function HomePage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
   const [todayMsg, setTodayMsg] = useState('')
+  const [copyToast, setCopyToast] = useState('')
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingExcerptPostId, setEditingExcerptPostId] = useState<string | null>(null)
@@ -36,6 +37,8 @@ export default function HomePage() {
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
   const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressCopiedRef = useRef(false)
 
   const loadPosts = async () => {
     try {
@@ -96,7 +99,9 @@ export default function HomePage() {
       const text = `${post.title}\n\n${post.content || ''}\n\n${link}`
       await navigator.clipboard.writeText(text)
       setCopiedPostId(post.id || null)
+      setCopyToast('클립보드에 복사되었습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
+      setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
       console.error('Copy failed', e)
     }
@@ -106,7 +111,9 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(post.title || '')
       setCopiedPostId(post.id || null)
+      setCopyToast('제목을 클립보드에 복사했습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
+      setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
       console.error('Copy title failed', e)
     }
@@ -116,9 +123,29 @@ export default function HomePage() {
     try {
       await navigator.clipboard.writeText(post.content || '')
       setCopiedPostId(post.id || null)
+      setCopyToast('본문을 클립보드에 복사했습니다')
       setTimeout(() => setCopiedPostId(null), 1500)
+      setTimeout(() => setCopyToast(''), 1200)
     } catch (e) {
       console.error('Copy content failed', e)
+    }
+  }
+
+  const startLongPressCopy = (kind: 'title' | 'content', post: BlogPost) => {
+    if (typeof window === 'undefined' || !('ontouchstart' in window)) return
+    longPressCopiedRef.current = false
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current)
+    longPressTimerRef.current = setTimeout(async () => {
+      longPressCopiedRef.current = true
+      if (kind === 'title') await copyTitleToClipboard(post)
+      else await copyContentToClipboard(post)
+    }, 450)
+  }
+
+  const endLongPressCopy = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
     }
   }
 
@@ -309,7 +336,25 @@ export default function HomePage() {
               <button onClick={(e) => { e.stopPropagation(); copyTitleToClipboard(post) }} className="p-1 rounded border" title="제목 복사">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="10" height="10" rx="2"/><rect x="5" y="5" width="10" height="10" rx="2"/></svg>
               </button>
-              <h2 className="text-2xl font-bold">{post.title}</h2>
+              <h2
+                className={`text-2xl font-bold ${isAuthor(post) ? 'cursor-text' : ''}`}
+                onTouchStart={() => startLongPressCopy('title', post)}
+                onTouchEnd={endLongPressCopy}
+                onTouchCancel={endLongPressCopy}
+                onClick={(e) => {
+                  if (longPressCopiedRef.current) {
+                    longPressCopiedRef.current = false
+                    return
+                  }
+                  if (isAuthor(post)) {
+                    e.stopPropagation()
+                    startInlineEdit(post)
+                  }
+                }}
+                title={isAuthor(post) ? '클릭해서 제목 수정 (모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
+              >
+                {post.title}
+              </h2>
             </div>
             <p className="text-xs text-gray-500 mt-1">{new Date(post.createdAt.toDate()).toLocaleString('ko-KR')} · {post.authorName}</p>
           </div>
@@ -358,13 +403,20 @@ export default function HomePage() {
           ) : (
             <div
               className={`prose dark:prose-invert max-w-none ${isAuthor(post) ? 'cursor-text' : ''}`}
+              onTouchStart={() => startLongPressCopy('content', post)}
+              onTouchEnd={endLongPressCopy}
+              onTouchCancel={endLongPressCopy}
               onClick={(e) => {
+                if (longPressCopiedRef.current) {
+                  longPressCopiedRef.current = false
+                  return
+                }
                 if (isAuthor(post)) {
                   e.stopPropagation()
                   startInlineContentEdit(post)
                 }
               }}
-              title={isAuthor(post) ? '클릭해서 본문 수정 (Ctrl+Enter 저장)' : ''}
+              title={isAuthor(post) ? '클릭해서 본문 수정 (Ctrl+Enter 저장, 모바일 길게 누르면 복사)' : '모바일 길게 누르면 복사'}
             >
               <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
@@ -787,6 +839,12 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {copyToast ? (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] px-3 py-2 rounded-lg bg-black/80 text-white text-xs shadow-lg">
+          {copyToast}
+        </div>
+      ) : null}
 
       {expandedPost && (
         <EditModal
