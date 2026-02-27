@@ -288,6 +288,21 @@ export default function HomePage() {
     }
   }
 
+  const openPostEditor = async (post: BlogPost) => {
+    if (expandedPost && expandedPost.id === post.id) {
+      setExpandedPost(null)
+      return
+    }
+
+    if (expandedPost?.id) {
+      if (editingContentPostId === expandedPost.id) await saveInlineContent(expandedPost)
+      if (editingExcerptPostId === expandedPost.id) await saveInlineExcerpt(expandedPost)
+      if (editingPostId === expandedPost.id) await saveInlineTitle(expandedPost)
+    }
+
+    setExpandedPost(post)
+  }
+
   const getContentPreview = (content: string, limit = 100) =>
     content
       .replace(/[#>*`\-\[\]()!]/g, ' ')
@@ -365,7 +380,7 @@ export default function HomePage() {
                 <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="p-2 rounded border text-red-600" title="삭제">🗑️</button>
               </>
             )}
-            <button onClick={() => setExpandedPost(null)} className="p-2 rounded border" title="닫기">✕</button>
+            {/* 닫기 버튼 제거: 다른 카드 선택/저장 흐름 사용 */}
           </div>
         </div>
 
@@ -527,7 +542,7 @@ export default function HomePage() {
                 ) : (
                   <article
                     className="relative p-6 md:p-8 bg-transparent cursor-pointer"
-                    onClick={() => setExpandedPost((prev) => (prev?.id === featuredPost.id ? null : featuredPost))}
+                    onClick={() => { void openPostEditor(featuredPost) }}
                   >
                     <span className="absolute top-0 left-0 w-12 h-12 border-t-[10px] border-l-[10px] border-gray-400/85" />
                     <span className="absolute bottom-0 right-0 w-12 h-12 border-b-[10px] border-r-[10px] border-gray-400/85" />
@@ -643,7 +658,7 @@ export default function HomePage() {
                     <article
                       className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-yellow-200 dark:border-yellow-700"
                       onClick={() => {
-                        setExpandedPost((prev) => (prev?.id === post.id ? null : post))
+                        void openPostEditor(post)
                       }}
                     >
                       <div className="flex items-start gap-3">
@@ -743,7 +758,7 @@ export default function HomePage() {
                 <article
                   className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => {
-                        setExpandedPost((prev) => (prev?.id === post.id ? null : post))
+                        void openPostEditor(post)
                       }}
                 >
                   <div className="flex items-start justify-between gap-3">
