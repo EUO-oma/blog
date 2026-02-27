@@ -92,19 +92,32 @@ export default function TodoPage() {
       <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
 
       <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
-        <input
-          value={newText}
-          onChange={(e) => setNewText(e.target.value)}
-          onBlur={addTodo}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              addTodo()
-            }
-          }}
-          placeholder="할 일 입력 후 Enter 또는 다른 영역 클릭"
-          className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onBlur={addTodo}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addTodo()
+              }
+            }}
+            placeholder="할 일 입력 후 Enter 또는 다른 영역 클릭"
+            className="flex-1 px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
+          <button
+            onClick={addTodo}
+            className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+            title="등록하기"
+            aria-label="등록하기"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 2 11 13" />
+              <path d="m22 2-7 20-4-9-9-4Z" />
+            </svg>
+          </button>
+        </div>
         <p className="text-xs text-gray-500 mt-2">입력 후 포커스가 벗어나면 자동 저장돼요.</p>
       </section>
 
