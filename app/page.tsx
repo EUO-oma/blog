@@ -8,7 +8,7 @@ import EditModal from '@/components/EditModal'
 import WriteModal from '@/components/WriteModal'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { useAuth } from '@/contexts/AuthContext'
-import { getTodayCalendarCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache'
+import { deleteCalendarCacheByEventId, getTodayCalendarCacheItems, type CalendarTodayCacheItem } from '@/lib/firebase-calendar-cache'
 import { getFavoriteSites, type FavoriteSite } from '@/lib/firebase-favorites'
 
 type DateFilter = 'all' | '7d' | '30d' | '365d'
@@ -157,6 +157,10 @@ export default function HomePage() {
     }
     if (!confirm('캘린더 원본에서 삭제할까요?')) return
 
+    // 1차: 화면/캐시에서 즉시 제거(체감 개선)
+    setTodayItems((prev) => prev.filter((x) => x.eventId !== eventId))
+    await deleteCalendarCacheByEventId(eventId).catch(() => {})
+
     const payload = JSON.stringify({ action: 'deleteEvent', eventId, token: gasApiToken })
 
     try {
@@ -170,14 +174,14 @@ export default function HomePage() {
         setTodayMsg(`삭제 실패: ${data?.error || 'unknown'}`)
         return
       }
-      // 삭제 직후 즉시 동기화 트리거
+
       await fetch(gasWebAppUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'syncNow', token: gasApiToken }),
       }).catch(() => {})
 
-      setTodayMsg(data?.deleted === false ? '캘린더 원본에서 이벤트를 찾지 못했어. 목록은 최신화했어.' : '캘린더 원본 삭제 완료')
+      setTodayMsg(data?.deleted === false ? '캘린더 원본에서 이벤트를 찾지 못했어. 목록은 정리했어.' : '캘린더 원본 삭제 완료')
       const refreshed = await getTodayCalendarCacheItems().catch(() => [])
       setTodayItems(refreshed)
     } catch {
