@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { BlogPost } from '@/lib/firebase'
-import { getPosts, updatePost } from '@/lib/firebase-posts'
-import PostModal from '@/components/PostModal'
+import { deletePost, getPost, getPosts, updatePost } from '@/lib/firebase-posts'
+import EditModal from '@/components/EditModal'
 import WriteModal from '@/components/WriteModal'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { useAuth } from '@/contexts/AuthContext'
@@ -16,8 +17,9 @@ export default function HomePage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [todayItems, setTodayItems] = useState<CalendarTodayCacheItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [expandedPost, setExpandedPost] = useState<BlogPost | null>(null)
+  const [isInlineEditModalOpen, setIsInlineEditModalOpen] = useState(false)
+  const [isDeletingExpanded, setIsDeletingExpanded] = useState(false)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
@@ -54,8 +56,10 @@ export default function HomePage() {
     if (!postId) return
     const target = posts.find((p) => p.id === postId)
     if (target) {
-      setSelectedPost(target)
-      setIsModalOpen(true)
+      setExpandedPost(target)
+      setTimeout(() => {
+        document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
     }
   }, [loading, posts])
 
@@ -136,10 +140,35 @@ export default function HomePage() {
     try {
       await updatePost(post.id, { title: next })
       setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, title: next } : p)))
+      if (expandedPost?.id === post.id) setExpandedPost((prev) => (prev ? { ...prev, title: next } : prev))
     } catch (e) {
       console.error('inline title update failed', e)
     } finally {
       setEditingPostId(null)
+    }
+  }
+
+  const refreshExpandedPost = async () => {
+    if (!expandedPost?.id) return
+    const latest = await getPost(expandedPost.id)
+    if (latest) {
+      setExpandedPost(latest)
+      setPosts((prev) => prev.map((p) => (p.id === latest.id ? latest : p)))
+    }
+  }
+
+  const deleteExpandedPost = async () => {
+    if (!expandedPost?.id) return
+    if (!window.confirm('이 포스트를 삭제할까요?')) return
+    setIsDeletingExpanded(true)
+    try {
+      await deletePost(expandedPost.id)
+      setPosts((prev) => prev.filter((p) => p.id !== expandedPost.id))
+      setExpandedPost(null)
+    } catch (e) {
+      console.error('delete expanded post failed', e)
+    } finally {
+      setIsDeletingExpanded(false)
     }
   }
 
@@ -256,6 +285,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section id="inline-post-panel" className={`mb-6 transition-all duration-300 overflow-hidden ${expandedPost ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'}`}>
+        {expandedPost && (
+          <div className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-2xl font-bold">{expandedPost.title}</h2>
+                <p className="text-xs text-gray-500 mt-1">{new Date(expandedPost.createdAt.toDate()).toLocaleString('ko-KR')} · {expandedPost.authorName}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                {user?.email?.toLowerCase() === expandedPost.authorEmail?.toLowerCase() && (
+                  <>
+                    <button onClick={() => setIsInlineEditModalOpen(true)} className="p-2 rounded border text-indigo-600" title="수정">
+                      ✏️
+                    </button>
+                    <button onClick={deleteExpandedPost} disabled={isDeletingExpanded} className="p-2 rounded border text-red-600" title="삭제">
+                      🗑️
+                    </button>
+                  </>
+                )}
+                <button onClick={() => setExpandedPost(null)} className="p-2 rounded border" title="닫기">✕</button>
+              </div>
+            </div>
+
+            {expandedPost.tags?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {expandedPost.tags.map((tag) => (
+                  <span key={tag} className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">#{tag}</span>
+                ))}
+              </div>
+            )}
+
+            <div className="prose dark:prose-invert max-w-none max-h-[52vh] overflow-y-auto pr-1">
+              <ReactMarkdown>{expandedPost.content}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+      </section>
+
       <section>
         {loading ? (
           <div className="flex justify-center items-center min-h-[50vh]">
@@ -274,8 +341,10 @@ export default function HomePage() {
                       key={post.id}
                       className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-yellow-200 dark:border-yellow-700"
                       onClick={() => {
-                        setSelectedPost(post)
-                        setIsModalOpen(true)
+                        setExpandedPost(post)
+                        setTimeout(() => {
+                          document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 50)
                       }}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -334,8 +403,10 @@ export default function HomePage() {
                   key={post.id}
                   className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => {
-                    setSelectedPost(post)
-                    setIsModalOpen(true)
+                    setExpandedPost(post)
+                    setTimeout(() => {
+                      document.getElementById('inline-post-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }, 50)
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -398,15 +469,17 @@ export default function HomePage() {
         )}
       </section>
 
-      <PostModal
-        post={selectedPost}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setSelectedPost(null)
-        }}
-        onUpdate={loadPosts}
-      />
+      {expandedPost && (
+        <EditModal
+          post={expandedPost}
+          isOpen={isInlineEditModalOpen}
+          onClose={() => setIsInlineEditModalOpen(false)}
+          onSuccess={async () => {
+            setIsInlineEditModalOpen(false)
+            await refreshExpandedPost()
+          }}
+        />
+      )}
 
       <WriteModal
         isOpen={isWriteModalOpen}
