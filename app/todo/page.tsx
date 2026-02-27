@@ -22,10 +22,12 @@ function SortableTodoRow({
   item,
   children,
   completing,
+  isPressing,
 }: {
   item: TodoItem
-  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void }) => ReactNode
+  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void; isDragging: boolean }) => ReactNode
   completing: boolean
+  isPressing: boolean
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id || '',
@@ -37,11 +39,17 @@ function SortableTodoRow({
     <article
       ref={setNodeRef}
       style={style}
-      className={`p-1 border-b border-gray-200/70 dark:border-gray-700/60 transition-all duration-300 bg-transparent ${
-        completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98]' : ''
+      className={`p-1 border-b border-gray-200/70 dark:border-gray-700/60 transition-all duration-100 bg-transparent ${
+        completing
+          ? 'opacity-0 -translate-y-1 scale-[0.98]'
+          : isDragging
+          ? 'opacity-80 scale-[0.97] border-indigo-300 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-900/10'
+          : isPressing
+          ? 'scale-[0.98] border-indigo-200 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/10'
+          : ''
       }`}
     >
-      {children({ attributes, listeners, setActivatorNodeRef })}
+      {children({ attributes, listeners, setActivatorNodeRef, isDragging })}
     </article>
   )
 }
@@ -54,6 +62,7 @@ export default function TodoPage() {
   const [msg, setMsg] = useState('')
   const [adding, setAdding] = useState(false)
   const [completingIds, setCompletingIds] = useState<string[]>([])
+  const [pressingId, setPressingId] = useState<string | null>(null)
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   const [isSlideVisible, setIsSlideVisible] = useState(true)
@@ -220,11 +229,12 @@ export default function TodoPage() {
   }, [isSlideshowOpen, isPaused, slideshowItems.length, slideMs])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })
   )
 
   const onDragEnd = async (event: any) => {
+    setPressingId(null)
     const { active, over } = event
     if (!over || active.id === over.id) return
 
@@ -306,19 +316,29 @@ export default function TodoPage() {
         <>
           <section className="space-y-2">
             <p className="text-xs text-gray-500">💡 항목을 길게 누르거나 드래그 핸들(☰)로 순서를 바꿀 수 있어.</p>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={(e) => setPressingId(String(e.active.id))}
+              onDragEnd={onDragEnd}
+              onDragCancel={() => setPressingId(null)}
+            >
               <SortableContext items={activeItems.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
                 {activeItems.map((item) => (
-                  <SortableTodoRow key={item.id} item={item} completing={completingIds.includes(item.id || '')}>
+                  <SortableTodoRow key={item.id} item={item} completing={completingIds.includes(item.id || '')} isPressing={pressingId === item.id}>
                     {({ attributes, listeners, setActivatorNodeRef }) => (
                 <div className="flex items-center gap-1 min-h-[40px]">
-                  <span
+                  <button
+                    type="button"
                     ref={setActivatorNodeRef as any}
                     {...attributes}
                     {...listeners}
-                    className="text-gray-400 cursor-grab active:cursor-grabbing text-xl leading-none px-1 self-center"
+                    onPointerDown={() => setPressingId(item.id || null)}
+                    onPointerUp={() => setPressingId(null)}
+                    onPointerCancel={() => setPressingId(null)}
+                    className="text-gray-400 cursor-grab active:cursor-grabbing text-2xl leading-none p-2 self-center touch-none"
                     title="드래그해서 순서 변경"
-                  >☰</span>
+                  >☰</button>
                   <button
                     onClick={async () => {
                       if (!item.id) return
