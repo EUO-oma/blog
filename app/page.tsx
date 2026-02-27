@@ -612,8 +612,8 @@ export default function HomePage() {
                     className="relative p-6 md:p-8 cursor-pointer bg-transparent"
                     onClick={() => { void openPostEditor(featuredPost) }}
                   >
-                    <span className="absolute top-0 left-0 w-10 h-10 border-t-[10px] border-l-[10px] border-gray-400/85" />
-                    <span className="absolute bottom-0 right-0 w-10 h-10 border-b-[10px] border-r-[10px] border-gray-400/85" />
+                    <span className="absolute top-0 left-0 w-9 h-9 border-t-[10px] border-l-[10px] border-gray-400/85" />
+                    <span className="absolute bottom-0 right-0 w-9 h-9 border-b-[10px] border-r-[10px] border-gray-400/85" />
 
                     <div className="flex items-start gap-3">
                       {editingPostId === featuredPost.id ? (
