@@ -9,9 +9,14 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == 'abundant255@naver.com';
     }
 
-    // 모든 문서 read 허용(공개 블로그)
+    // 비밀 단어장은 owner만 read 허용
+    match /secret_words/{wordId} {
+      allow read, create, update, delete: if isOwner();
+    }
+
+    // 모든 문서 read 허용(공개 블로그) - 단, secret_words 제외
     match /{document=**} {
-      allow read: if true;
+      allow read: if !request.path.matches('/databases/.*/documents/secret_words/.*');
     }
 
     // posts 컬렉션: owner만 write 허용
