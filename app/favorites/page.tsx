@@ -21,7 +21,7 @@ function SortableFavoriteRow({
   children,
 }: {
   item: FavoriteSite
-  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void }) => ReactNode
+  children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void; isDragging: boolean }) => ReactNode
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id || '',
@@ -39,7 +39,7 @@ function SortableFavoriteRow({
           : 'border-gray-200 dark:border-gray-700'
       }`}
     >
-      {children({ attributes, listeners, setActivatorNodeRef })}
+      {children({ attributes, listeners, setActivatorNodeRef, isDragging })}
     </article>
   )
 }
@@ -54,8 +54,8 @@ export default function FavoritesPage() {
   const [msg, setMsg] = useState('')
   const [form, setForm] = useState({ title: '', url: '', note: '' })
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })
   )
 
   const load = async () => {
@@ -194,19 +194,20 @@ export default function FavoritesPage() {
             <SortableContext items={items.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
               {items.map((it) => (
                 <SortableFavoriteRow key={it.id} item={it}>
-                  {({ attributes, listeners, setActivatorNodeRef }) => (
+                  {({ attributes, listeners, setActivatorNodeRef, isDragging }) => (
                     <div className="flex flex-wrap justify-between items-start gap-3">
                       <div className="flex items-start gap-2">
-                        <span
+                        <button
+                          type="button"
                           ref={setActivatorNodeRef as any}
                           {...attributes}
                           {...listeners}
-                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-xl p-1.5 touch-none"
+                          className="mt-0.5 select-none cursor-grab active:cursor-grabbing text-gray-400 text-2xl leading-none p-2 touch-none"
                           title="드래그해서 순서 변경"
                           aria-label="드래그 핸들"
                         >
                           ☰
-                        </span>
+                        </button>
                         <div>
                           {editingTitleId === it.id ? (
                             <input
@@ -235,7 +236,16 @@ export default function FavoritesPage() {
                               {it.title}
                             </h2>
                           )}
-                          <a href={it.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 break-all">{it.url}</a>
+                          <a
+                            href={it.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            draggable={false}
+                            onPointerDown={(e) => isDragging && e.preventDefault()}
+                            className="text-sm text-indigo-600 break-all"
+                          >
+                            {it.url}
+                          </a>
                           {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
                         </div>
                       </div>
