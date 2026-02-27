@@ -37,7 +37,7 @@ function SortableTodoRow({
     <article
       ref={setNodeRef}
       style={style}
-      className={`p-1 transition-all duration-300 bg-transparent ${
+      className={`p-1 border-b border-gray-200/70 dark:border-gray-700/60 transition-all duration-300 bg-transparent ${
         completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98]' : ''
       }`}
     >
@@ -346,7 +346,7 @@ export default function TodoPage() {
             <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록 (수동 삭제 가능)</h2>
             <div className="space-y-2">
               {completedItems.map((item) => (
-                <article key={item.id} className="p-1 bg-transparent opacity-80">
+                <article key={item.id} className="p-1 bg-transparent opacity-80 border-b border-gray-200/70 dark:border-gray-700/60">
                   <div className="flex items-center gap-1 min-h-[40px]">
                     <input
                       type="checkbox"
