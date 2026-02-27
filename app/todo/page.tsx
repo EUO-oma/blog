@@ -38,7 +38,7 @@ function SortableTodoRow({
       ref={setNodeRef}
       style={style}
       className={`rounded-lg border p-3 transition-all duration-300 bg-white dark:bg-gray-800 ${
-        completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98] border-indigo-300 dark:border-indigo-700 shadow' : 'border-gray-200 dark:border-gray-700'
+        completing ? 'opacity-0 -translate-y-1 scale-[0.98]' : isDragging ? 'opacity-60 scale-[0.98]' : ''
       }`}
     >
       {children({ attributes, listeners, setActivatorNodeRef })}
@@ -237,7 +237,7 @@ export default function TodoPage() {
         </button>
       </div>
 
-      <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-white dark:bg-gray-800">
+      <section className="p-1 bg-transparent">
         <form
           className="flex items-center gap-1 min-h-[40px]"
           onSubmit={(e) => {
@@ -351,7 +351,7 @@ export default function TodoPage() {
             <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록 (수동 삭제 가능)</h2>
             <div className="space-y-2">
               {completedItems.map((item) => (
-                <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-50 dark:bg-gray-900/40 opacity-80">
+                <article key={item.id} className="p-1 bg-transparent opacity-80">
                   <div className="flex items-center gap-1 min-h-[40px]">
                     <input
                       type="checkbox"
