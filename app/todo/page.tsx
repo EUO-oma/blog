@@ -218,7 +218,7 @@ export default function TodoPage() {
   if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
 
   return (
-    <main className="max-w-4xl mx-auto space-y-4">
+    <main className="max-w-4xl mx-auto space-y-1">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
         <button
@@ -237,9 +237,9 @@ export default function TodoPage() {
         </button>
       </div>
 
-      <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+      <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-white dark:bg-gray-800">
         <form
-          className="flex items-center gap-2 min-h-[56px]"
+          className="flex items-center gap-1 min-h-[40px]"
           onSubmit={(e) => {
             e.preventDefault()
             addTodo()
@@ -253,12 +253,12 @@ export default function TodoPage() {
               if (e.key === 'Enter' && (e.nativeEvent as KeyboardEvent).isComposing) return
             }}
             placeholder="할 일 입력 후 Enter 또는 다른 영역 클릭"
-            className="flex-1 px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+            className="flex-1 px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
           />
           <button
             type="submit"
             disabled={adding}
-            className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="p-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
             title="등록하기"
             aria-label="등록하기"
           >
@@ -282,7 +282,7 @@ export default function TodoPage() {
                 {activeItems.map((item) => (
                   <SortableTodoRow key={item.id} item={item} completing={completingIds.includes(item.id || '')}>
                     {({ attributes, listeners, setActivatorNodeRef }) => (
-                <div className="flex items-center gap-2 min-h-[56px]">
+                <div className="flex items-center gap-1 min-h-[40px]">
                   <span
                     ref={setActivatorNodeRef as any}
                     {...attributes}
@@ -351,8 +351,8 @@ export default function TodoPage() {
             <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">완료 목록 (수동 삭제 가능)</h2>
             <div className="space-y-2">
               {completedItems.map((item) => (
-                <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40 opacity-80">
-                  <div className="flex items-center gap-2 min-h-[56px]">
+                <article key={item.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-50 dark:bg-gray-900/40 opacity-80">
+                  <div className="flex items-center gap-1 min-h-[40px]">
                     <input
                       type="checkbox"
                       checked={item.completed}
@@ -380,7 +380,7 @@ export default function TodoPage() {
                         await load()
                       }}
                       title="삭제"
-                      className="px-2 py-1 rounded border text-xs text-red-500"
+                      className="px-1 py-0.5 rounded border text-xs text-red-500"
                     >
                       삭제
                     </button>
