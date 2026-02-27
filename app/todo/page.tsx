@@ -310,7 +310,7 @@ export default function TodoPage() {
                     }}
                   />
                   <textarea
-                    ref={(el) => el && autoResizeTextarea(el)}
+                    ref={(el) => { if (el) autoResizeTextarea(el) }}
                     defaultValue={item.content}
                     rows={1}
                     onInput={(e) => autoResizeTextarea(e.currentTarget)}
@@ -363,7 +363,7 @@ export default function TodoPage() {
                       }}
                     />
                     <textarea
-                      ref={(el) => el && autoResizeTextarea(el)}
+                      ref={(el) => { if (el) autoResizeTextarea(el) }}
                       defaultValue={item.content}
                       rows={1}
                       onInput={(e) => autoResizeTextarea(e.currentTarget)}
