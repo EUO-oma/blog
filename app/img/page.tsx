@@ -168,11 +168,19 @@ export default function ImgPage() {
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="block w-full text-sm text-gray-700 dark:text-gray-200"
           />
-          <button onClick={add} disabled={uploading} className="text-emerald-600 hover:text-emerald-900 p-1 disabled:opacity-50" title="등록">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </button>
+          <div className="flex justify-end">
+            <button
+              onClick={add}
+              disabled={uploading}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              title="전송"
+              aria-label="전송"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21.426 11.095 4.23 3.488a1 1 0 0 0-1.37 1.16l1.7 5.95a1 1 0 0 0 .74.7l7.13 1.54-7.13 1.54a1 1 0 0 0-.74.7l-1.7 5.95a1 1 0 0 0 1.37 1.16l17.196-7.607a1 1 0 0 0 0-1.828z" />
+              </svg>
+            </button>
+          </div>
         </section>
       )}
 
