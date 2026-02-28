@@ -109,9 +109,9 @@ export default function CommunityPage() {
       {loading ? (
         <div className="py-8 flex justify-center"><LoaderSwitcher label="커뮤니티 불러오는 중..." /></div>
       ) : (
-        <section className="space-y-2">
+        <section className="space-y-0">
           {posts.map((p) => (
-            <article key={p.id} className="rounded border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+            <article key={p.id} className="py-3 border-b border-gray-200/80 dark:border-gray-700/80">
               <h2 className="font-semibold">{p.title}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap mt-1">{p.content}</p>
               <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
@@ -127,7 +127,7 @@ export default function CommunityPage() {
               </div>
             </article>
           ))}
-          {posts.length === 0 && <p className="text-sm text-gray-500">아직 글이 없습니다.</p>}
+          {posts.length === 0 && <p className="text-sm text-gray-500 py-3">아직 글이 없습니다.</p>}
         </section>
       )}
 
