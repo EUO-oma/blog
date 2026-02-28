@@ -149,7 +149,12 @@ export default function MusicPage() {
     }
   }
 
-  const playing = useMemo(() => items.find((x) => x.id === playingId) || null, [items, playingId])
+  const visibleItems = useMemo(
+    () => (owner ? items : items.filter((x) => (x.sourceType || 'youtube') !== 'audio')),
+    [items, owner]
+  )
+
+  const playing = useMemo(() => visibleItems.find((x) => x.id === playingId) || null, [visibleItems, playingId])
 
   return (
     <main className="max-w-5xl mx-auto space-y-4">
@@ -205,18 +210,18 @@ export default function MusicPage() {
 
       {loading ? (
         <div className="py-8 flex justify-center"><LoaderSwitcher label="뮤직 목록 불러오는 중..." /></div>
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <p className="text-gray-500 text-sm">등록된 음악이 없습니다.</p>
       ) : (
         <div className="space-y-2">
-          {items.map((item, idx) => (
+          {visibleItems.map((item, idx) => (
             <div key={item.id} className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 flex items-center gap-2">
               <button onClick={() => setPlayingId(item.id || null)} className="text-emerald-600 hover:text-emerald-800 p-1" title="재생">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-5.197-3A1 1 0 008 9.034v5.932a1 1 0 001.555.832l5.197-3a1 1 0 000-1.73z" /></svg>
               </button>
 
               {owner && <button onClick={() => move(idx, -1)} disabled={idx === 0} className="text-gray-500 hover:text-gray-700 disabled:opacity-30 p-1" title="위로"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></button>}
-              {owner && <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="text-gray-500 hover:text-gray-700 disabled:opacity-30 p-1" title="아래로"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></button>}
+              {owner && <button onClick={() => move(idx, 1)} disabled={idx === visibleItems.length - 1} className="text-gray-500 hover:text-gray-700 disabled:opacity-30 p-1" title="아래로"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></button>}
 
               <div className="flex-1 min-w-0">
                 {owner && editingTitleId === item.id ? (
