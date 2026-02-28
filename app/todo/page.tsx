@@ -104,10 +104,10 @@ export default function TodoPage() {
 
   const addTodo = async () => {
     if (adding) return
-    if (!user?.email) return setMsg('로그인 후 사용 가능해요.')
+    if (!user?.email) return flashMsg('로그인 후 사용 가능해요.')
     const content = newText.trim()
     if (!content) {
-      setMsg('내용을 입력해줘.')
+      flashMsg('내용을 입력해줘.')
       return
     }
 
@@ -141,10 +141,10 @@ export default function TodoPage() {
       // 새 항목은 즉시 입력폼 아래(활성 목록 맨 위)에 끼워 넣기
       setItems((prev) => [newItem, ...prev])
       setNewText('')
-      setMsg('추가 완료')
+      flashMsg('추가 완료')
     } catch (e: any) {
       console.error('todo add failed:', e)
-      setMsg(`등록 실패: ${e?.message || e}`)
+      flashMsg(`등록 실패: ${e?.message || e}`, 2400)
     } finally {
       setAdding(false)
     }
@@ -155,7 +155,7 @@ export default function TodoPage() {
     const next = content.trim()
     if (!next) {
       setItems((prev) => prev.filter((it) => it.id !== id))
-      setMsg('비워진 항목은 숨김 처리됨 (완료 항목 자동정리)')
+      flashMsg('비워진 항목은 숨김 처리됨 (완료 항목 자동정리)')
       return
     }
     await updateTodo(id, { content: next })
@@ -165,7 +165,7 @@ export default function TodoPage() {
   const deleteAllCompleted = async () => {
     const targets = completedItems.filter((i) => i.id && !i.starred)
     if (targets.length === 0) {
-      setMsg('삭제할 완료 항목이 없어. (중요 별표 항목은 유지됨)')
+      flashMsg('삭제할 완료 항목이 없어. (중요 별표 항목은 유지됨)')
       return
     }
     if (!confirm(`완료 항목 ${targets.length}개(별표 제외)를 삭제할까요?`)) return
@@ -173,9 +173,9 @@ export default function TodoPage() {
     try {
       await Promise.all(targets.map((i) => deleteTodo(i.id!)))
       setItems((prev) => prev.filter((i) => !(i.completed && !i.starred)))
-      setMsg('완료 목록에서 별표 제외 항목을 모두 삭제했어.')
+      flashMsg('완료 목록에서 별표 제외 항목을 모두 삭제했어.')
     } catch (e: any) {
-      setMsg(`일괄 삭제 실패: ${e?.message || e}`)
+      flashMsg(`일괄 삭제 실패: ${e?.message || e}`, 2400)
     }
   }
 
@@ -263,7 +263,7 @@ export default function TodoPage() {
         <button
           onClick={() => {
             if (slideshowItems.length === 0) {
-              setMsg('표시할 Todo가 없어요.')
+              flashMsg('표시할 Todo가 없어요.')
               return
             }
             setSlideIndex(0)
