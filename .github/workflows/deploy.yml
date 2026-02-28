@@ -49,6 +49,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_GAS_WEBAPP_URL: ${{ secrets.NEXT_PUBLIC_GAS_WEBAPP_URL }}
           NEXT_PUBLIC_GAS_SYNC_TOKEN: ${{ secrets.NEXT_PUBLIC_GAS_SYNC_TOKEN }}
+          NEXT_PUBLIC_R2_SIGNER_URL: ${{ secrets.NEXT_PUBLIC_R2_SIGNER_URL }}
+          NEXT_PUBLIC_R2_SIGNER_TOKEN: ${{ secrets.NEXT_PUBLIC_R2_SIGNER_TOKEN }}
 
       - name: Check build output
         run: |
