@@ -20,7 +20,11 @@ function defaultTitle() {
   const hh = String(d.getHours()).padStart(2, '0')
   const mi = String(d.getMinutes()).padStart(2, '0')
   const ss = String(d.getSeconds()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`
+  return `IMG_${yyyy}${mm}${dd}_${hh}${mi}${ss}`
+}
+
+function safeFilename(name: string) {
+  return (name || 'image').replace(/[\\/:*?"<>|\s]+/g, '_')
 }
 
 export default function ImgPage() {
@@ -34,6 +38,8 @@ export default function ImgPage() {
   const [msg, setMsg] = useState('')
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -138,6 +144,57 @@ export default function ImgPage() {
     }
   }
 
+  const downloadImage = async (item: ImageItem) => {
+    if (!isOwner) return
+
+    const highQuality = window.confirm('고화질로 다운로드할까?\n확인 = 고화질 / 취소 = 저용량')
+
+    try {
+      setDownloadingId(item.id || null)
+      const response = await fetch(item.imageUrl)
+      if (!response.ok) throw new Error(`다운로드 실패 (${response.status})`)
+      const blob = await response.blob()
+
+      let finalBlob = blob
+      if (!highQuality) {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const el = new Image()
+          el.crossOrigin = 'anonymous'
+          el.onload = () => resolve(el)
+          el.onerror = reject
+          el.src = URL.createObjectURL(blob)
+        })
+
+        const maxWidth = 1280
+        const ratio = img.width > maxWidth ? maxWidth / img.width : 1
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) throw new Error('canvas 생성 실패')
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+        finalBlob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('저용량 변환 실패'))), 'image/jpeg', 0.82)
+        })
+      }
+
+      const url = URL.createObjectURL(finalBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${safeFilename(item.title)}${highQuality ? '' : '_lite'}.jpg`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      flashMsg(highQuality ? '고화질 다운로드 완료' : '저용량 다운로드 완료')
+    } catch (e: any) {
+      flashMsg(`다운로드 실패: ${e?.message || e}`, 2200)
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
   const remove = async (item: ImageItem) => {
     if (!isOwner || !item.id) return
 
@@ -203,48 +260,12 @@ export default function ImgPage() {
           {filtered.map((it) => (
             <article key={it.id} className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
               <div className="aspect-video bg-gray-100 dark:bg-gray-900">
-                <img src={it.imageUrl} alt={it.title} className="w-full h-full object-cover" loading="lazy" />
+                <button type="button" onClick={() => setPreviewUrl(it.imageUrl)} className="w-full h-full">
+                  <img src={it.imageUrl} alt={it.title} className="w-full h-full object-cover" loading="lazy" />
+                </button>
               </div>
               <div className="p-3 space-y-2">
-                {isOwner && editingTitleId === it.id ? (
-                  <input
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    onBlur={() => saveTitleEdit(it)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        saveTitleEdit(it)
-                      }
-                      if (e.key === 'Escape') {
-                        setEditingTitleId(null)
-                        setEditingTitle('')
-                      }
-                    }}
-                    autoFocus
-                    className="w-full bg-transparent outline-none font-semibold"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!isOwner) return
-                      setEditingTitleId(it.id || null)
-                      setEditingTitle(it.title || '')
-                    }}
-                    className="w-full text-left bg-transparent outline-none font-semibold"
-                    title="제목 수정"
-                  >
-                    {it.title}
-                  </button>
-                )}
-                <input
-                  defaultValue={it.note || ''}
-                  onBlur={(e) => it.id && isOwner && updateImage(it.id, { note: e.target.value.trim() })}
-                  readOnly={!isOwner}
-                  className="w-full bg-transparent outline-none text-sm text-gray-500 dark:text-gray-400"
-                />
-                <div className="flex items-center justify-end gap-1">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={async () => {
                       try {
@@ -261,6 +282,57 @@ export default function ImgPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </button>
+
+                  <div className="flex-1 min-w-0">
+                    {isOwner && editingTitleId === it.id ? (
+                      <input
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onBlur={() => saveTitleEdit(it)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            saveTitleEdit(it)
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingTitleId(null)
+                            setEditingTitle('')
+                          }
+                        }}
+                        autoFocus
+                        className="w-full bg-transparent outline-none font-semibold text-center"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isOwner) return
+                          setEditingTitleId(it.id || null)
+                          setEditingTitle(it.title || '')
+                        }}
+                        className="w-full text-center bg-transparent outline-none font-semibold truncate"
+                        title="제목 수정"
+                      >
+                        {it.title}
+                      </button>
+                    )}
+                  </div>
+
+                  {isOwner && (
+                    <button
+                      onClick={() => downloadImage(it)}
+                      disabled={downloadingId === it.id}
+                      className="text-emerald-600 hover:text-emerald-800 p-1 disabled:opacity-50"
+                      title="다운로드 (고화질/저용량 선택)"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 5v10m0 0l-3-3m3 3l3-3" />
+                      </svg>
+                    </button>
+                  )}
+
+                  <span className="w-2" />
+
                   {isOwner && (
                     <button onClick={() => remove(it)} className="text-red-600 hover:text-red-800 p-1" title="삭제">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,11 +341,41 @@ export default function ImgPage() {
                     </button>
                   )}
                 </div>
+
+                <input
+                  defaultValue={it.note || ''}
+                  onBlur={(e) => it.id && isOwner && updateImage(it.id, { note: e.target.value.trim() })}
+                  readOnly={!isOwner}
+                  className="w-full bg-transparent outline-none text-sm text-gray-500 dark:text-gray-400"
+                />
               </div>
             </article>
           ))}
           {filtered.length === 0 && <p className="text-sm text-gray-500">등록된 이미지가 없습니다.</p>}
         </section>
+      )}
+
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-[94] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <img
+            src={previewUrl}
+            alt="preview"
+            className="max-w-[96vw] max-h-[92vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setPreviewUrl(null)}
+            className="absolute top-4 right-4 text-white/90 hover:text-white p-2"
+            title="닫기"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {msg ? <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/85 text-white text-xs px-3 py-2 rounded z-[95]">{msg}</div> : null}
