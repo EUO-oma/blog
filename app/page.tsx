@@ -27,6 +27,7 @@ export default function HomePage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
   const [todayMsg, setTodayMsg] = useState('')
+  const [todayWeather, setTodayWeather] = useState('대전 날씨 불러오는 중...')
   const [copyToast, setCopyToast] = useState('')
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -61,6 +62,22 @@ export default function HomePage() {
 
   useEffect(() => {
     loadPosts()
+  }, [])
+
+  useEffect(() => {
+    const loadWeather = async () => {
+      try {
+        const res = await fetch('https://wttr.in/Daejeon?format=3')
+        const text = (await res.text()).trim()
+        const today = new Date()
+        const month = today.getMonth() + 1
+        const day = today.getDate()
+        setTodayWeather(`오늘은 ${month}월 ${day}일, ${text}`)
+      } catch {
+        setTodayWeather('오늘 날씨 정보를 불러오지 못했어요.')
+      }
+    }
+    loadWeather()
   }, [])
 
   useEffect(() => {
@@ -519,6 +536,10 @@ export default function HomePage() {
 
   return (
     <>
+      <section className="mb-3 rounded-lg border border-sky-100 bg-sky-50 p-3 dark:border-sky-900/40 dark:bg-sky-900/20">
+        <p className="text-sm text-sky-800 dark:text-sky-200">🌤️ {todayWeather}</p>
+      </section>
+
       <section className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-900/40 dark:bg-indigo-900/20">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">오늘 일정</h2>
