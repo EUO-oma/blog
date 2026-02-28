@@ -93,10 +93,9 @@ NEXT_PUBLIC_R2_SIGNER_TOKEN=your_signer_bearer_token
 ```
 
 업로드 흐름:
-1. 앱이 signer API(`/sign`)에 파일 메타데이터 전송
-2. signer가 presigned PUT URL + public URL + objectKey 반환
-3. 브라우저가 R2로 직접 PUT 업로드
-4. Firestore `images` 컬렉션에 메타데이터 저장
+1. 앱이 signer API(`/upload`)로 파일을 직접 전송
+2. signer가 R2에 저장 후 `publicUrl + objectKey` 반환
+3. Firestore `images` 컬렉션에 메타데이터 저장
 
 ### Cloudflare Worker signer 배포
 

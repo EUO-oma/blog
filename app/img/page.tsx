@@ -7,10 +7,20 @@ import { createImage, deleteImage, getImages, updateImage, type ImageItem } from
 
 const OWNER_EMAIL = 'icandoit13579@gmail.com'
 
-type SignResponse = {
-  signedUrl: string
+type UploadResponse = {
   publicUrl: string
   objectKey: string
+}
+
+function defaultTitle() {
+  const d = new Date()
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`
 }
 
 export default function ImgPage() {
@@ -19,15 +29,12 @@ export default function ImgPage() {
 
   const [items, setItems] = useState<ImageItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [title, setTitle] = useState('')
-  const [note, setNote] = useState('')
-  const [file, setFile] = useState<File | null>(null)
   const [q, setQ] = useState('')
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
 
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const flashMsg = (text: string, ms = 1800) => {
     setMsg(text)
@@ -42,6 +49,8 @@ export default function ImgPage() {
     setLoading(true)
     try {
       setItems(await getImages())
+    } catch (e: any) {
+      flashMsg(`load failed: ${e?.message || e}`, 2400)
     } finally {
       setLoading(false)
     }
@@ -50,6 +59,7 @@ export default function ImgPage() {
   useEffect(() => {
     document.title = 'euo-img'
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -64,59 +74,49 @@ export default function ImgPage() {
     return items.filter((i) => `${i.title} ${i.note || ''}`.toLowerCase().includes(k))
   }, [items, q])
 
-  const add = async () => {
+  const uploadNow = async (file: File) => {
     if (!isOwner) return flashMsg('등록 권한이 없어.')
-    if (!title.trim() || !file) return flashMsg('제목/이미지는 필수야.')
     if (!signerUrl || !signerToken) return flashMsg('R2 signer 환경변수를 먼저 설정해줘.', 2600)
+    if (!file.type.startsWith('image/')) return flashMsg('이미지 파일만 업로드 가능해.')
 
     try {
       setUploading(true)
-      flashMsg('업로드 준비 중...')
+      flashMsg('업로드 중...')
 
-      const signRes = await fetch(`${signerUrl.replace(/\/$/, '')}/sign`, {
+      const uploadRes = await fetch(`${signerUrl.replace(/\/$/, '')}/upload`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${signerToken}`,
-        },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type || 'application/octet-stream',
-          size: file.size,
-        }),
-      })
-
-      if (!signRes.ok) throw new Error(`서명 요청 실패 (${signRes.status})`)
-      const signed = (await signRes.json()) as SignResponse
-
-      flashMsg('R2 업로드 중...')
-      const putRes = await fetch(signed.signedUrl, {
-        method: 'PUT',
-        headers: {
+          'x-filename': encodeURIComponent(file.name),
+          'x-content-type': file.type || 'application/octet-stream',
+          'x-size': String(file.size),
           'Content-Type': file.type || 'application/octet-stream',
         },
         body: file,
       })
-      if (!putRes.ok) throw new Error(`R2 업로드 실패 (${putRes.status})`)
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text().catch(() => '')
+        throw new Error(`R2 업로드 실패 (${uploadRes.status}) ${errText}`)
+      }
+
+      const uploaded = (await uploadRes.json()) as UploadResponse
 
       await createImage({
-        title: title.trim(),
-        note: note.trim(),
-        imageUrl: signed.publicUrl,
-        objectKey: signed.objectKey,
+        title: defaultTitle(),
+        note: '',
+        imageUrl: uploaded.publicUrl,
+        objectKey: uploaded.objectKey,
         authorEmail: user?.email || OWNER_EMAIL,
       })
 
-      setTitle('')
-      setNote('')
-      setFile(null)
-      setShowAddForm(false)
       flashMsg('등록 완료')
       await load()
     } catch (e: any) {
-      flashMsg(`등록 실패: ${e?.message || e}`, 2800)
+      flashMsg(`등록 실패: ${e?.message || e}`, 3000)
     } finally {
       setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -148,41 +148,33 @@ export default function ImgPage() {
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-bold">IMG</h1>
         {isOwner && (
-          <button onClick={() => setShowAddForm((v) => !v)} className="text-indigo-600 hover:text-indigo-900 p-1" title="이미지 등록">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) uploadNow(f)
+              }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              title="이미지 추가"
+              aria-label="이미지 추가"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 11H13V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2z" />
+              </svg>
+            </button>
+          </>
         )}
       </div>
 
-      {isOwner && showAddForm && (
-        <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 space-y-2">
-          <div className="grid sm:grid-cols-2 gap-2">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="메모(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="block w-full text-sm text-gray-700 dark:text-gray-200"
-          />
-          <div className="flex justify-end">
-            <button
-              onClick={add}
-              disabled={uploading}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-              title="전송"
-              aria-label="전송"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M21.426 11.095 4.23 3.488a1 1 0 0 0-1.37 1.16l1.7 5.95a1 1 0 0 0 .74.7l7.13 1.54-7.13 1.54a1 1 0 0 0-.74.7l-1.7 5.95a1 1 0 0 0 1.37 1.16l17.196-7.607a1 1 0 0 0 0-1.828z" />
-              </svg>
-            </button>
-          </div>
-        </section>
-      )}
+      <p className="text-xs text-gray-500">+ 버튼을 누르면 사진 선택 후 바로 저장돼. 제목은 날짜/시간으로 자동 생성되고 나중에 수정 가능해.</p>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="검색" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700 w-full" />
 

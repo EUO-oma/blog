@@ -13,11 +13,10 @@ export default {
       return json({ error: 'unauthorized' }, 401)
     }
 
-    if (request.method === 'POST' && url.pathname === '/sign') {
-      const body = await request.json().catch(() => null)
-      const filename = String(body?.filename || 'file.bin')
-      const contentType = String(body?.contentType || 'application/octet-stream')
-      const size = Number(body?.size || 0)
+    if (request.method === 'POST' && url.pathname === '/upload') {
+      const filename = String(request.headers.get('x-filename') || 'file.bin')
+      const contentType = String(request.headers.get('x-content-type') || 'application/octet-stream')
+      const size = Number(request.headers.get('x-size') || 0)
 
       if (!filename) return json({ error: 'filename required' }, 400)
       if (size <= 0 || size > 10 * 1024 * 1024) return json({ error: 'invalid size (max 10MB)' }, 400)
@@ -27,15 +26,15 @@ export default {
 
       const ext = getExt(filename)
       const objectKey = `img/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${ext}`
+      const body = await request.arrayBuffer()
 
-      const signedUrl = await env.BUCKET.createPresignedUrl({
-        method: 'PUT',
-        key: objectKey,
-        expiration: 60 * 5,
+      await env.BUCKET.put(objectKey, body, {
+        httpMetadata: {
+          contentType,
+        },
       })
 
       return json({
-        signedUrl,
         objectKey,
         publicUrl: `${String(env.PUBLIC_BASE_URL || '').replace(/\/$/, '')}/${objectKey}`,
       })
@@ -69,7 +68,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-filename, x-content-type, x-size',
   }
 }
 
