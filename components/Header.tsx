@@ -121,25 +121,26 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap touch-pan-x max-w-[calc(100vw-140px)] pr-1">
-              <button
-                onClick={() => setMenuOpen(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="메뉴 열기"
-                title="메뉴"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+              aria-label="메뉴 열기"
+              title="메뉴"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
 
-              <Link
-                href="/"
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-rose-600 dark:text-rose-400"
-                aria-label="홈 바로가기"
-                title="홈"
-              >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap touch-pan-x pr-1">
+                <Link
+                  href="/"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-rose-600 dark:text-rose-400"
+                  aria-label="홈 바로가기"
+                  title="홈"
+                >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" />
                 </svg>
@@ -214,9 +215,10 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm12-2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </Link>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
