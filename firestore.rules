@@ -87,10 +87,38 @@ service cloud.firestore {
       allow create, update, delete: if isOwner();
     }
 
+    function isApprovedUser() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/user_approvals/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/user_approvals/$(request.auth.token.email)).data.status == 'approved';
+    }
+
     // files 컬렉션: 공개 read, owner만 write 허용
     match /files/{fileId} {
       allow read: if true;
       allow create, update, delete: if isOwner();
+    }
+
+    // community_posts: 공개 read, 승인된 회원+owner write 허용
+    match /community_posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && (isOwner() || isApprovedUser())
+        && request.resource.data.authorEmail == request.auth.token.email;
+      allow update, delete: if request.auth != null
+        && (isOwner() || resource.data.authorEmail == request.auth.token.email);
+    }
+
+    // user_approvals: owner는 전체 조회/수정, 사용자는 본인 조회/요청 가능
+    match /user_approvals/{emailId} {
+      allow read: if isOwner() || (request.auth != null && emailId == request.auth.token.email);
+      allow create: if isOwner() || (
+        request.auth != null
+        && emailId == request.auth.token.email
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'pending'
+      );
+      allow update, delete: if isOwner();
     }
 
     // 비밀 단어장: owner만 read/write 허용

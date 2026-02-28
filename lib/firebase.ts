@@ -153,4 +153,14 @@ export interface FileItem {
   updatedAt: Timestamp
 }
 
+export interface CommunityPost {
+  id?: string
+  title: string
+  content: string
+  authorEmail: string
+  authorName: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export { Timestamp }
