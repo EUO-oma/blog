@@ -13,6 +13,7 @@ import {
   Timestamp 
 } from 'firebase/firestore'
 import { db, BlogPost } from './firebase'
+import { buildPostSummaries } from './summarize'
 
 const POSTS_COLLECTION = 'posts'
 
@@ -76,10 +77,14 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 
 export async function createPost(data: Omit<BlogPost, 'id'>): Promise<string> {
   try {
+    const now = Timestamp.now()
+    const summaries = buildPostSummaries(data.content || '')
     const docRef = await addDoc(collection(db, POSTS_COLLECTION), {
       ...data,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      ...summaries,
+      summaryUpdatedAt: now,
+      createdAt: now,
+      updatedAt: now
     })
     return docRef.id
   } catch (error) {
@@ -91,9 +96,12 @@ export async function createPost(data: Omit<BlogPost, 'id'>): Promise<string> {
 export async function updatePost(id: string, data: Partial<BlogPost>): Promise<void> {
   try {
     const postRef = doc(db, POSTS_COLLECTION, id)
+    const now = Timestamp.now()
+    const summaryPatch = data.content ? { ...buildPostSummaries(data.content), summaryUpdatedAt: now } : {}
     await updateDoc(postRef, {
       ...data,
-      updatedAt: Timestamp.now()
+      ...summaryPatch,
+      updatedAt: now
     })
   } catch (error) {
     console.error('Error updating post:', error)

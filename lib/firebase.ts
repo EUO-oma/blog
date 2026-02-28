@@ -68,6 +68,9 @@ export interface BlogPost {
   slug: string
   excerpt: string
   content: string
+  summaryShort?: string
+  summaryLong?: string
+  summaryUpdatedAt?: Timestamp
   tags: string[]
   authorEmail: string
   authorName: string
