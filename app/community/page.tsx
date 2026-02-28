@@ -11,8 +11,7 @@ export default function CommunityPage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<CommunityPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [draft, setDraft] = useState('')
   const [approval, setApproval] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none')
   const [msg, setMsg] = useState('')
 
@@ -48,15 +47,19 @@ export default function CommunityPage() {
 
   const submit = async () => {
     if (!user?.email || !canWrite) return
-    if (!title.trim() || !content.trim()) return flash('제목/내용을 입력해줘')
+
+    const lines = draft.split(/\r?\n/)
+    const first = (lines[0] || '').trim()
+    const rest = lines.slice(1).join('\n').trim()
+    if (!first || !rest) return flash('첫 줄은 제목, 아래 줄은 본문으로 입력해줘')
+
     await createCommunityPost({
-      title: title.trim(),
-      content: content.trim(),
+      title: first,
+      content: rest,
       authorEmail: user.email,
       authorName: user.displayName || user.email,
     })
-    setTitle('')
-    setContent('')
+    setDraft('')
     flash('등록 완료')
     await load()
   }
@@ -81,8 +84,13 @@ export default function CommunityPage() {
 
       {user && canWrite && (
         <section className="rounded border border-gray-200 dark:border-gray-700 p-3 space-y-2">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목" className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용" rows={4} className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={"첫 줄 = 제목\n둘째 줄부터 = 본문\n\n텔레그램 채팅처럼 편하게 입력해줘"}
+            rows={6}
+            className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
+          />
           <button onClick={submit} className="text-indigo-600 hover:text-indigo-900 p-1" title="등록">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           </button>
