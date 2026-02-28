@@ -107,14 +107,17 @@ export default function MusicPage() {
 
       {playing && (
         <div ref={iframeWrapRef} className="rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/60 dark:bg-emerald-900/20 p-3">
-          <div className="text-sm font-semibold mb-1">재생 중: {playing.title}</div>
-          <iframe
-            key={playing.id}
-            className="w-full h-14"
-            src={`https://www.youtube.com/embed/${playing.videoId}?autoplay=1&controls=1&modestbranding=1&rel=0`}
-            title={playing.title}
-            allow="autoplay; encrypted-media"
-          />
+          <div className="text-sm font-semibold mb-2">재생 중: {playing.title}</div>
+          <div className="relative rounded-md overflow-hidden bg-black">
+            <iframe
+              key={playing.id}
+              className="w-full h-56"
+              src={`https://www.youtube.com/embed/${playing.videoId}?autoplay=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+              title={playing.title}
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+          <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">※ 일부 브라우저는 자동재생 정책으로 첫 재생 시 한 번 더 눌러야 할 수 있어.</p>
         </div>
       )}
 
