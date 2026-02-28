@@ -9,8 +9,12 @@ import Footer from '@/components/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'euo',
+  title: 'euo-home',
   description: 'A modern blog with dark mode support',
+  icons: {
+    icon: '/page-icons/home.svg',
+    apple: '/page-icons/home.svg',
+  },
 };
 
 export default function RootLayout({
