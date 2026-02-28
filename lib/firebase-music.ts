@@ -15,21 +15,25 @@ export async function getMusicItems(): Promise<MusicItem[]> {
   }
 }
 
+function withoutUndefined<T extends Record<string, any>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T
+}
+
 export async function createMusicItem(data: Omit<MusicItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const now = Timestamp.now()
-  const ref = await addDoc(collection(db, MUSIC_COLLECTION), {
+  const ref = await addDoc(collection(db, MUSIC_COLLECTION), withoutUndefined({
     ...data,
     createdAt: now,
     updatedAt: now,
-  })
+  }))
   return ref.id
 }
 
 export async function updateMusicItem(id: string, data: Partial<MusicItem>) {
-  await updateDoc(doc(db, MUSIC_COLLECTION, id), {
+  await updateDoc(doc(db, MUSIC_COLLECTION, id), withoutUndefined({
     ...data,
     updatedAt: Timestamp.now(),
-  })
+  }))
 }
 
 export async function deleteMusicItem(id: string) {

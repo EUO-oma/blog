@@ -116,7 +116,10 @@ export interface YouTubeVideo {
 
 export interface MusicItem {
   id?: string
-  videoId: string
+  videoId?: string
+  sourceType?: 'youtube' | 'audio'
+  audioUrl?: string
+  objectKey?: string
   title: string
   note?: string
   sortOrder?: number

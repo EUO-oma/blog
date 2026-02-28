@@ -20,12 +20,15 @@ export default {
 
       if (!filename) return json({ error: 'filename required' }, 400)
       if (size <= 0 || size > 10 * 1024 * 1024) return json({ error: 'invalid size (max 10MB)' }, 400)
-      if (!/^image\/(jpeg|jpg|png|webp|gif|avif)$/i.test(contentType)) {
+      const isImage = /^image\/(jpeg|jpg|png|webp|gif|avif)$/i.test(contentType)
+      const isAudio = /^audio\/(mpeg|mp3|mp4|x-m4a|aac|wav|webm|ogg)$/i.test(contentType)
+      if (!isImage && !isAudio) {
         return json({ error: 'invalid contentType' }, 400)
       }
 
       const ext = getExt(filename)
-      const objectKey = `img/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${ext}`
+      const prefix = isAudio ? 'music' : 'img'
+      const objectKey = `${prefix}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${ext}`
       const body = await request.arrayBuffer()
 
       await env.BUCKET.put(objectKey, body, {
