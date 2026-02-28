@@ -35,14 +35,20 @@ export async function getImages(): Promise<ImageItem[]> {
   }
 }
 
+function withoutUndefined<T extends Record<string, any>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T
+}
+
 export async function createImage(data: Omit<ImageItem, 'id' | 'createdAt' | 'updatedAt'>) {
   const now = Timestamp.now()
-  const ref = await addDoc(collection(db, COL), { ...data, createdAt: now, updatedAt: now })
+  const payload = withoutUndefined({ ...data, createdAt: now, updatedAt: now })
+  const ref = await addDoc(collection(db, COL), payload)
   return ref.id
 }
 
 export async function updateImage(id: string, data: Partial<Pick<ImageItem, 'title' | 'note'>>) {
-  await updateDoc(doc(db, COL, id), { ...data, updatedAt: Timestamp.now() })
+  const payload = withoutUndefined({ ...data, updatedAt: Timestamp.now() })
+  await updateDoc(doc(db, COL, id), payload)
 }
 
 export async function deleteImage(id: string) {
