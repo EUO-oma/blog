@@ -4,8 +4,14 @@ import { db } from './firebase'
 export interface ImageItem {
   id?: string
   title: string
-  imageUrl: string
-  objectKey?: string
+  imageUrl: string // legacy/original fallback
+  imageUrlThumb?: string
+  imageUrlMedium?: string
+  imageUrlOriginal?: string
+  objectKey?: string // legacy/original fallback
+  objectKeyThumb?: string
+  objectKeyMedium?: string
+  objectKeyOriginal?: string
   note?: string
   authorEmail: string
   createdAt: Timestamp
