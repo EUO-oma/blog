@@ -126,6 +126,11 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner();
     }
 
+    // people 게시판: owner만 read/write 허용
+    match /people/{peopleId} {
+      allow read, create, update, delete: if isOwner();
+    }
+
     // 명시되지 않은 기타 컬렉션은 차단
     match /{document=**} {
       allow read, write: if false;

@@ -20,6 +20,7 @@ const menuItems = [
   { href: '/file', label: 'File' },
   { href: '/community', label: 'Community' },
   { href: '/word', label: 'Word' },
+  { href: '/people', label: 'People', ownerOnly: true },
   { href: '/admin', label: 'Admin', ownerOnly: true },
   { href: '/img', label: 'IMG' },
   { href: '/secret-word', label: 'Secret Word', ownerOnly: true },
@@ -55,6 +56,8 @@ function MenuIcon({ href }: { href: string }) {
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3V7a3 3 0 10-6 0v1c0 1.657 1.343 3 3 3z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 20v-1a7 7 0 0114 0v1"/></svg>
     case '/word':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 17A2.5 2.5 0 004 19.5V5a2 2 0 012-2h14v16H6.5z" /></svg>
+    case '/people':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11a4 4 0 10-3.999-4A4 4 0 0016 11zM8 12a4 4 0 10-3.999-4A4 4 0 008 12zm0 2c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5zm8 1c2.761 0 5 1.791 5 4v1h-5" /></svg>
     case '/img':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4-4 3 3 5-6 4 7M4 6h16v12H4z" /></svg>
     case '/secret-word':
