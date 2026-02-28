@@ -132,6 +132,17 @@ export default function Header() {
               </button>
 
               <Link
+                href="/"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-rose-600 dark:text-rose-400"
+                aria-label="홈 바로가기"
+                title="홈"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" />
+                </svg>
+              </Link>
+
+              <Link
                 href="/todo"
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-indigo-600 dark:text-indigo-400"
                 aria-label="Todo 바로가기"
@@ -161,6 +172,17 @@ export default function Header() {
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4-4 3 3 5-6 4 7M4 6h16v12H4z" />
+                </svg>
+              </Link>
+
+              <Link
+                href="/youtube"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-red-600 dark:text-red-400"
+                aria-label="유튜브 바로가기"
+                title="유튜브"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12l-5 3V9l5 3zm6-3.5a3 3 0 00-2.1-2.1C17 6 12 6 12 6s-5 0-6.9.4A3 3 0 003 8.5 31 31 0 003 12a31 31 0 00.1 3.5A3 3 0 005.2 17.6C7 18 12 18 12 18s5 0 6.9-.4a3 3 0 002.1-2.1c.1-1.1.1-2.3.1-3.5s0-2.4-.1-3.5z" />
                 </svg>
               </Link>
             </div>
