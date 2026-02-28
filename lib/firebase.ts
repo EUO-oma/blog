@@ -129,4 +129,22 @@ export interface MusicItem {
   updatedAt: Timestamp
 }
 
+export interface FileItem {
+  id?: string
+  title: string
+  fileUrl: string
+  objectKey?: string
+  contentType?: string
+  size?: number
+  driveSyncStatus?: 'idle' | 'pending' | 'success' | 'failed'
+  driveFileId?: string
+  driveFolderName?: string
+  lastSyncedAt?: string
+  lastError?: string
+  authorEmail: string
+  authorName: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export { Timestamp }

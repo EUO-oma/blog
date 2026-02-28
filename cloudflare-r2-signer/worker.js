@@ -22,12 +22,13 @@ export default {
       if (size <= 0 || size > 10 * 1024 * 1024) return json({ error: 'invalid size (max 10MB)' }, 400)
       const isImage = /^image\/(jpeg|jpg|png|webp|gif|avif)$/i.test(contentType)
       const isAudio = /^audio\/(mpeg|mp3|mp4|x-m4a|aac|wav|webm|ogg)$/i.test(contentType)
-      if (!isImage && !isAudio) {
+      const isFile = /^(application|text|video)\//i.test(contentType)
+      if (!isImage && !isAudio && !isFile) {
         return json({ error: 'invalid contentType' }, 400)
       }
 
       const ext = getExt(filename)
-      const prefix = isAudio ? 'music' : 'img'
+      const prefix = isAudio ? 'music' : isImage ? 'img' : 'files'
       const objectKey = `${prefix}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${ext}`
       const body = await request.arrayBuffer()
 
