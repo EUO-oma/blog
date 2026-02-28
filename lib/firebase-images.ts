@@ -46,7 +46,10 @@ export async function createImage(data: Omit<ImageItem, 'id' | 'createdAt' | 'up
   return ref.id
 }
 
-export async function updateImage(id: string, data: Partial<Pick<ImageItem, 'title' | 'note'>>) {
+export async function updateImage(
+  id: string,
+  data: Partial<Omit<ImageItem, 'id' | 'createdAt' | 'updatedAt' | 'authorEmail'>>
+) {
   const payload = withoutUndefined({ ...data, updatedAt: Timestamp.now() })
   await updateDoc(doc(db, COL, id), payload)
 }
