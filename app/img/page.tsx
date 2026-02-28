@@ -293,26 +293,26 @@ export default function ImgPage() {
         {isOwner && (
           <>
             <input
+              id="img-upload-input"
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               onChange={(e) => {
                 const f = e.target.files?.[0]
                 if (f) uploadNow(f)
               }}
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            <label
+              htmlFor="img-upload-input"
+              className={`inline-flex items-center justify-center w-11 h-11 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition shadow-sm ${uploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
               title="이미지 추가"
               aria-label="이미지 추가"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 11H13V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2z" />
               </svg>
-            </button>
+            </label>
           </>
         )}
       </div>
