@@ -4,8 +4,8 @@ compatibility_date = "2026-02-28"
 
 [[r2_buckets]]
 binding = "BUCKET"
-bucket_name = "YOUR_R2_BUCKET_NAME"
+bucket_name = "euo-img"
 
 [vars]
-PUBLIC_BASE_URL = "https://YOUR_PUBLIC_IMAGE_DOMAIN"
+PUBLIC_BASE_URL = "https://pub-654147ea1ae04149b873d0f1e454c87a.r2.dev"
 # SIGNER_TOKEN 은 secret으로 넣어주세요.
