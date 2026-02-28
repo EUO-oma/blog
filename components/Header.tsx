@@ -61,6 +61,7 @@ function MenuIcon({ href }: { href: string }) {
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuth()
+  const isOwner = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [drawerLeft, setDrawerLeft] = useState(0)
@@ -148,27 +149,31 @@ export default function Header() {
                 </svg>
               </Link>
 
-              <Link
-                href="/todo"
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-indigo-600 dark:text-indigo-400"
-                aria-label="Todo 바로가기"
-                title="Todo"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4" />
-                </svg>
-              </Link>
+              {isOwner && (
+                <Link
+                  href="/todo"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-indigo-600 dark:text-indigo-400"
+                  aria-label="Todo 바로가기"
+                  title="Todo"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4" />
+                  </svg>
+                </Link>
+              )}
 
-              <Link
-                href="/schedule"
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-purple-600 dark:text-purple-400"
-                aria-label="일정 바로가기"
-                title="일정"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </Link>
+              {isOwner && (
+                <Link
+                  href="/schedule"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-purple-600 dark:text-purple-400"
+                  aria-label="일정 바로가기"
+                  title="일정"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </Link>
+              )}
 
               <Link
                 href="/img"
