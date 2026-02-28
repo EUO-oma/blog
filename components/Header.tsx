@@ -132,7 +132,7 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <nav className="container mx-auto px-4 py-2 md:py-4 max-w-5xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap touch-pan-x max-w-[calc(100vw-140px)] pr-1">
               <button
                 onClick={() => setMenuOpen(true)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
