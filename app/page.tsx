@@ -66,15 +66,26 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadWeather = async () => {
+      const today = new Date()
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+
       try {
-        const res = await fetch('https://wttr.in/Daejeon?format=3')
-        const text = (await res.text()).trim()
-        const today = new Date()
-        const month = today.getMonth() + 1
-        const day = today.getDate()
-        setTodayWeather(`오늘은 ${month}월 ${day}일, ${text}`)
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), 6000)
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=36.35&longitude=127.38&current=temperature_2m,weather_code&timezone=Asia%2FSeoul', { signal: controller.signal })
+        clearTimeout(timer)
+        const data = await res.json()
+        const temp = data?.current?.temperature_2m
+        const code = Number(data?.current?.weather_code)
+        const label = code <= 1 ? '맑음' : code <= 3 ? '구름 조금' : code <= 67 ? '비 가능성' : code <= 77 ? '눈 가능성' : '변화 있음'
+        if (typeof temp === 'number') {
+          setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨는 ${label} · ${temp}°C`)
+        } else {
+          setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨 정보를 확인 중이야.`)
+        }
       } catch {
-        setTodayWeather('오늘 날씨 정보를 불러오지 못했어요.')
+        setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨 정보를 불러오지 못했어요.`)
       }
     }
     loadWeather()
