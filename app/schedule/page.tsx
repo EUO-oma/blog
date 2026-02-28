@@ -533,7 +533,7 @@ export default function SchedulePage() {
       )}
 
       {/* Google Calendar 동기화 (1개월) */}
-      {calendarSynced.length > 0 && (
+      {canDeleteCalendar && calendarSynced.length > 0 && (
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
