@@ -649,7 +649,7 @@ export default function HomePage() {
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                           </button>
                           <h3
-                            className={`text-xl font-semibold ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
+                            className={`text-xl font-semibold mt-[5px] ${isAuthor(featuredPost) ? 'cursor-text' : ''}`}
                             onTouchStart={() => startLongPressCopy('title', featuredPost)}
                             onTouchEnd={endLongPressCopy}
                             onTouchCancel={endLongPressCopy}
@@ -673,7 +673,7 @@ export default function HomePage() {
 
                     
 
-                    <div className="flex items-start gap-2 mb-3">
+                    <div className="flex items-start gap-1 mb-3">
                       <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       </button>
@@ -740,7 +740,7 @@ export default function HomePage() {
                               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                             </button>
                             <h3
-                              className="text-xl font-semibold"
+                              className="text-xl font-semibold mt-[5px]"
                               onTouchStart={() => startLongPressCopy('title', post)}
                               onTouchEnd={endLongPressCopy}
                               onTouchCancel={endLongPressCopy}
@@ -762,7 +762,7 @@ export default function HomePage() {
                         )}
                       </div>
                       
-                      <div className="flex items-start gap-2 mb-4">
+                      <div className="flex items-start gap-1 mb-4">
                         <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
@@ -817,7 +817,7 @@ export default function HomePage() {
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                         <h3
-                          className="text-xl font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          className="text-xl font-semibold mt-[5px] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                           onTouchStart={() => startLongPressCopy('title', post)}
                           onTouchEnd={endLongPressCopy}
                           onTouchCancel={endLongPressCopy}
@@ -839,7 +839,7 @@ export default function HomePage() {
                     )}
                   </div>
                   
-                  <div className="flex items-start gap-2 mb-4">
+                  <div className="flex items-start gap-1 mb-4">
                     <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                     </button>
