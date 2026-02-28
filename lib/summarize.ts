@@ -11,7 +11,7 @@ export function summarizeExtractive(text: string, sentenceCount = 3): string {
 
   const tokens = clean
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s]/g, ' ')
     .split(/\s+/)
     .filter((t) => t.length > 1)
 
@@ -21,7 +21,7 @@ export function summarizeExtractive(text: string, sentenceCount = 3): string {
   const scored = sentences.map((s, idx) => {
     const words = s
       .toLowerCase()
-      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s]/g, ' ')
       .split(/\s+/)
       .filter((w) => w.length > 1)
     const score = words.reduce((acc, w) => acc + (freq.get(w) || 0), 0) / Math.max(1, words.length)
