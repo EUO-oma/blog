@@ -80,11 +80,9 @@ export default function ImgPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [keepOriginal, setKeepOriginal] = useState(false)
-  const [replacingId, setReplacingId] = useState<string | null>(null)
 
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const replaceInputRef = useRef<HTMLInputElement | null>(null)
 
   const flashMsg = (text: string, ms = 1800) => {
     setMsg(text)
@@ -286,40 +284,7 @@ export default function ImgPage() {
     }
   }
 
-  const replaceImage = async (item: ImageItem, file: File) => {
-    if (!isOwner || !item.id) return
-    if (!file.type.startsWith('image/')) return flashMsg('이미지 파일만 선택해줘.')
-
-    const oldKeys = [item.objectKeyThumb, item.objectKeyMedium, item.objectKeyOriginal, item.objectKey]
-
-    try {
-      setReplacingId(item.id)
-      flashMsg('이미지 교체(재크롭) 중...')
-
-      const shouldKeepOriginal = !!item.imageUrlOriginal || keepOriginal
-      const { thumbUploaded, mediumUploaded, originalUploaded } = await uploadPreparedVariants(file, shouldKeepOriginal)
-
-      await updateImage(item.id, {
-        imageUrl: originalUploaded?.publicUrl || mediumUploaded.publicUrl,
-        imageUrlThumb: thumbUploaded.publicUrl,
-        imageUrlMedium: mediumUploaded.publicUrl,
-        imageUrlOriginal: originalUploaded?.publicUrl,
-        objectKey: originalUploaded?.objectKey || mediumUploaded.objectKey,
-        objectKeyThumb: thumbUploaded.objectKey,
-        objectKeyMedium: mediumUploaded.objectKey,
-        objectKeyOriginal: originalUploaded?.objectKey,
-      })
-
-      await deleteR2Keys(oldKeys)
-      flashMsg('재크롭 반영 완료')
-      await load()
-    } catch (e: any) {
-      flashMsg(`재크롭 실패: ${e?.message || e}`, 2600)
-    } finally {
-      setReplacingId(null)
-      if (replaceInputRef.current) replaceInputRef.current.value = ''
-    }
-  }
+  // recrop/replace feature removed by request
 
   const remove = async (item: ImageItem) => {
     if (!isOwner || !item.id) return
@@ -351,19 +316,7 @@ export default function ImgPage() {
                 if (f) uploadNow(f)
               }}
             />
-            <input
-              ref={replaceInputRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (!f || !replacingId) return
-                const target = items.find((v) => v.id === replacingId)
-                if (!target) return
-                replaceImage(target, f)
-              }}
-            />
+            {/* recrop input removed */}
             <label
               htmlFor="img-upload-input"
               className={`inline-flex items-center justify-center w-11 h-11 rounded-full bg-sky-500 text-white hover:bg-sky-600 active:scale-95 transition shadow-sm ${uploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
@@ -458,21 +411,7 @@ export default function ImgPage() {
                       )}
                     </div>
 
-                    {isOwner && (
-                      <button
-                        onClick={() => {
-                          setReplacingId(it.id || null)
-                          replaceInputRef.current?.click()
-                        }}
-                        disabled={replacingId === it.id || uploading}
-                        className="text-violet-600 hover:text-violet-800 p-1 disabled:opacity-50"
-                        title="재크롭(이미지 교체)"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h5m-5 0V2m0 5 4-4M20 17h-5m5 0v5m0-5-4 4M7 20a5 5 0 01-5-5m18 0a5 5 0 01-5 5M7 4a5 5 0 015 5m8 0a5 5 0 00-5-5" />
-                        </svg>
-                      </button>
-                    )}
+                    {/* recrop action removed */}
 
                     {isOwner && (
                       <button
