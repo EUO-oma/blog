@@ -53,9 +53,17 @@ async function makeResizedBlob(file: File, targetLongEdge: number, quality = 0.8
   if (!ctx) throw new Error('canvas 생성 실패')
   ctx.drawImage(img, 0, 0, width, height)
 
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('리사이즈 실패'))), 'image/webp', quality)
+  const webpBlob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/webp', quality)
   })
+  if (webpBlob) return webpBlob
+
+  const jpegBlob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality)
+  })
+  if (jpegBlob) return jpegBlob
+
+  throw new Error('리사이즈 실패')
 }
 
 export default function ImgPage() {
