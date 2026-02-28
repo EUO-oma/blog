@@ -417,6 +417,11 @@ export default function SchedulePage() {
     return raw.slice(0, 10)
   }
 
+  const todayDateKey = new Date().toISOString().slice(0, 10)
+  const todayCalendarItems = calendarSynced
+    .filter((item) => getDateKey(item) === todayDateKey)
+    .sort((a, b) => String(a.startAt || '').localeCompare(String(b.startAt || '')))
+
   const groupedCalendarSynced = calendarSynced
     .map((item) => ({ item, key: getDateKey(item) }))
     .filter((x) => !!x.key)
@@ -557,6 +562,71 @@ export default function SchedulePage() {
           {syncMeta.hasFailed && syncMeta.lastError ? (
             <p className="text-xs text-red-600 dark:text-red-300 mb-2">최근 오류: {syncMeta.lastError}</p>
           ) : null}
+
+          <section className="mb-4 rounded-lg border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-900/20 p-2.5">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-indigo-800 dark:text-indigo-200">오늘 일정</h3>
+              <span className="text-xs text-indigo-700 dark:text-indigo-300">{todayCalendarItems.length}건</span>
+            </div>
+            {todayCalendarItems.length === 0 ? (
+              <p className="text-sm text-gray-500">동기화된 오늘 일정이 없습니다.</p>
+            ) : (
+              <div className="space-y-2">
+                {todayCalendarItems.slice(0, 5).map((item) => {
+                  const time = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
+                  return (
+                    <div key={`today-${item.id}`} className="flex items-center justify-between rounded border border-indigo-100 dark:border-indigo-900/40 bg-white/80 dark:bg-gray-900/30 px-2.5 py-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500">{time}{item.location ? ` · ${item.location}` : ''}</p>
+                      </div>
+                      <div className="ml-2 shrink-0 flex gap-1">
+                        <button
+                          onClick={async () => {
+                            const txt = `${item.title}\n${item.startAt || ''}${item.location ? `\n${item.location}` : ''}`
+                            try {
+                              await navigator.clipboard.writeText(txt)
+                              setSyncMsg('일정 복사 완료')
+                            } catch {
+                              setSyncMsg('일정 복사 실패')
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                          title="일정 복사"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                        <a
+                          href={item.editUrl || `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(`${item.title} ${item.startAt || ''}`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 p-1"
+                          title="캘린더에서 열기"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </a>
+                        {canDeleteCalendar ? (
+                          <button
+                            onClick={() => deleteSyncedFromCalendar(item)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                            title="삭제"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
 
           <div className="space-y-1">
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
