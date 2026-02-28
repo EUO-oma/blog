@@ -80,12 +80,12 @@ export default function HomePage() {
         const code = Number(data?.current?.weather_code)
         const label = code <= 1 ? '맑음' : code <= 3 ? '구름 조금' : code <= 67 ? '비 가능성' : code <= 77 ? '눈 가능성' : '변화 있음'
         if (typeof temp === 'number') {
-          setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨는 ${label} · ${temp}°C`)
+          setTodayWeather(`${month}월 ${day}일, 대전 날씨 ${label} · ${temp}°C`)
         } else {
-          setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨 정보를 확인 중이야.`)
+          setTodayWeather(`${month}월 ${day}일, 대전 날씨 정보를 확인 중이야.`)
         }
       } catch {
-        setTodayWeather(`오늘은 ${month}월 ${day}일, 대전 날씨 정보를 불러오지 못했어요.`)
+        setTodayWeather(`${month}월 ${day}일, 대전 날씨 정보를 불러오지 못했어요.`)
       }
     }
     loadWeather()
