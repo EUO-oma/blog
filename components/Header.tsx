@@ -16,6 +16,7 @@ const menuItems = [
   { href: '/phonebook', label: '폰북' },
   { href: '/favorites', label: '즐겨찾기' },
   { href: '/youtube', label: '유튜브' },
+  { href: '/music', label: 'Music' },
   { href: '/word', label: 'Word' },
   { href: '/img', label: 'IMG' },
   { href: '/secret-word', label: 'Secret Word', ownerOnly: true },
@@ -41,6 +42,8 @@ function MenuIcon({ href }: { href: string }) {
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.5 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" /></svg>
     case '/youtube':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12l-5 3V9l5 3zm6-3.5a3 3 0 00-2.1-2.1C17 6 12 6 12 6s-5 0-6.9.4A3 3 0 003 8.5 31 31 0 003 12a31 31 0 00.1 3.5A3 3 0 005.2 17.6C7 18 12 18 12 18s5 0 6.9-.4a3 3 0 002.1-2.1c.1-1.1.1-2.3.1-3.5s0-2.4-.1-3.5z" /></svg>
+    case '/music':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm12-2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
     case '/word':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 17A2.5 2.5 0 004 19.5V5a2 2 0 012-2h14v16H6.5z" /></svg>
     case '/img':
@@ -183,6 +186,17 @@ export default function Header() {
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12l-5 3V9l5 3zm6-3.5a3 3 0 00-2.1-2.1C17 6 12 6 12 6s-5 0-6.9.4A3 3 0 003 8.5 31 31 0 003 12a31 31 0 00.1 3.5A3 3 0 005.2 17.6C7 18 12 18 12 18s5 0 6.9-.4a3 3 0 002.1-2.1c.1-1.1.1-2.3.1-3.5s0-2.4-.1-3.5z" />
+                </svg>
+              </Link>
+
+              <Link
+                href="/music"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-600 dark:text-emerald-400"
+                aria-label="뮤직 바로가기"
+                title="뮤직"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm12-2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </Link>
             </div>

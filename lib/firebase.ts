@@ -114,4 +114,16 @@ export interface YouTubeVideo {
   updatedAt: Timestamp
 }
 
+export interface MusicItem {
+  id?: string
+  videoId: string
+  title: string
+  note?: string
+  sortOrder?: number
+  authorEmail: string
+  authorName: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export { Timestamp }
