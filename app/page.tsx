@@ -371,7 +371,7 @@ export default function HomePage() {
   const renderExpandedInline = (post: BlogPost) => {
     if (expandedPost?.id !== post.id) return null
     return (
-      <div className="md:col-span-2 rounded-xl border border-fuchsia-200 dark:border-fuchsia-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 animate-in fade-in duration-200">
+      <div className="md:col-span-2 rounded-xl border border-fuchsia-200 dark:border-fuchsia-800 bg-white dark:bg-gray-900 shadow-lg p-4 md:p-6 inline-expand-pop">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="w-full">
             <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function HomePage() {
             <textarea
               autoFocus
               ref={(el) => { if (el) autoResizeTextarea(el) }}
-              rows={8}
+              rows={1}
               value={editingContent}
               onChange={(e) => {
                 setEditingContent(e.target.value)
