@@ -17,7 +17,10 @@ export default function FilePage() {
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
   const [q, setQ] = useState('')
-  const [folderName, setFolderName] = useState('EUO_FILE_INBOX')
+  const [folderName, setFolderName] = useState('EUO_FILE_INBOX_SYNC_GDRIVE')
+  const [department, setDepartment] = useState('공통')
+  const [season, setSeason] = useState('2026Q1')
+  const [keywords, setKeywords] = useState('')
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const signerUrl = process.env.NEXT_PUBLIC_R2_SIGNER_URL || ''
@@ -50,6 +53,14 @@ export default function FilePage() {
     return items.filter((i) => `${i.title}`.toLowerCase().includes(k))
   }, [items, q])
 
+  const getDriveSubFolder = (contentType?: string) => {
+    const ct = String(contentType || '').toLowerCase()
+    const top = ct.startsWith('image/') || ct.startsWith('audio/') || ct.startsWith('video/') ? 'media' : ct.startsWith('application/') || ct.startsWith('text/') ? 'docs' : 'etc'
+    const dep = (department || '공통').trim()
+    const sea = (season || '기본').trim()
+    return `${folderName}/${top}/${dep}/${sea}`
+  }
+
   const upload = async (file: File) => {
     if (!owner) return flash('권한 없음')
     if (!signerUrl || !signerToken) return flash('R2 signer 환경변수를 먼저 설정해줘', 2200)
@@ -76,8 +87,11 @@ export default function FilePage() {
         objectKey: up.objectKey,
         contentType: file.type || 'application/octet-stream',
         size: file.size,
+        department,
+        season,
+        keywords,
         driveSyncStatus: 'idle',
-        driveFolderName: folderName,
+        driveFolderName: getDriveSubFolder(file.type),
         authorEmail: user?.email || OWNER,
         authorName: user?.displayName || user?.email || 'owner',
       })
@@ -96,8 +110,9 @@ export default function FilePage() {
     if (!gasDriveUrl || !gasToken) return flash('GAS Drive URL 변수 설정 필요', 2300)
 
     try {
-      await updateFileItem(item.id, { driveSyncStatus: 'pending', driveFolderName: folderName })
-      setItems((prev) => prev.map((v) => (v.id === item.id ? { ...v, driveSyncStatus: 'pending' } : v)))
+      const driveFolder = getDriveSubFolder(item.contentType)
+      await updateFileItem(item.id, { driveSyncStatus: 'pending', driveFolderName: driveFolder, department, season, keywords })
+      setItems((prev) => prev.map((v) => (v.id === item.id ? { ...v, driveSyncStatus: 'pending', driveFolderName: driveFolder } : v)))
 
       const res = await fetch(gasDriveUrl, {
         method: 'POST',
@@ -107,7 +122,7 @@ export default function FilePage() {
           token: gasToken,
           fileUrl: item.fileUrl,
           filename: item.title,
-          folderName,
+          folderName: driveFolder,
           contentType: item.contentType || 'application/octet-stream',
         }),
       })
@@ -119,7 +134,7 @@ export default function FilePage() {
         driveFileId: data.fileId,
         lastSyncedAt: new Date().toISOString(),
         lastError: '',
-        driveFolderName: folderName,
+        driveFolderName: driveFolder,
       })
       flash('Drive 전송 완료')
       await load()
@@ -165,9 +180,23 @@ export default function FilePage() {
       </div>
 
       {owner && (
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-600 dark:text-gray-300">Drive 폴더명:</span>
-          <input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+        <div className="grid sm:grid-cols-4 gap-2 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600 dark:text-gray-300">루트:</span>
+            <input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600 dark:text-gray-300">부서:</span>
+            <input value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600 dark:text-gray-300">시즌:</span>
+            <input value={season} onChange={(e) => setSeason(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600 dark:text-gray-300">키워드:</span>
+            <input value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="회의록,계약" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+          </div>
         </div>
       )}
 
@@ -179,7 +208,10 @@ export default function FilePage() {
         <div className="space-y-2">
           {filtered.map((item) => (
             <div key={item.id} className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 flex items-center gap-2">
-              <a href={item.fileUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0 truncate font-medium hover:underline">{item.title}</a>
+              <div className="flex-1 min-w-0">
+                <a href={item.fileUrl} target="_blank" rel="noreferrer" className="block truncate font-medium hover:underline">{item.title}</a>
+                <p className="text-xs text-gray-500 truncate">{item.department || '공통'} · {item.season || '기본'} · {item.keywords || '-'} </p>
+              </div>
               {item.size ? <span className="text-xs text-gray-500">{Math.ceil(item.size / 1024)} KB</span> : null}
               <span className={`text-xs px-2 py-0.5 rounded ${item.driveSyncStatus === 'success' ? 'bg-green-100 text-green-700' : item.driveSyncStatus === 'failed' ? 'bg-red-100 text-red-700' : item.driveSyncStatus === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>{item.driveSyncStatus || 'idle'}</span>
               <button onClick={async () => { await navigator.clipboard.writeText(item.fileUrl); flash('링크 복사 완료') }} className="text-blue-600 hover:text-blue-800 p-1" title="복사"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>

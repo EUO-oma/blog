@@ -136,6 +136,9 @@ export interface FileItem {
   objectKey?: string
   contentType?: string
   size?: number
+  department?: string
+  season?: string
+  keywords?: string
   driveSyncStatus?: 'idle' | 'pending' | 'success' | 'failed'
   driveFileId?: string
   driveFolderName?: string
