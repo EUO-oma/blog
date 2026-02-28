@@ -87,13 +87,22 @@ export default function CommunityPage() {
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={"첫 줄 = 제목\n둘째 줄부터 = 본문\n\n텔레그램 채팅처럼 편하게 입력해줘"}
+            placeholder={"첫 줄은 자동으로 제목으로 저장됩니다.\n둘째 줄부터 본문으로 저장됩니다.\n\n텔레그램 채팅처럼 편하게 입력해줘"}
             rows={6}
             className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
           />
-          <button onClick={submit} className="text-indigo-600 hover:text-indigo-900 p-1" title="등록">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          </button>
+          <div className="flex justify-end">
+            <button
+              onClick={submit}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition shadow-sm"
+              title="전송"
+              aria-label="전송"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21.426 11.095 4.23 3.488a1 1 0 0 0-1.37 1.16l1.7 5.95a1 1 0 0 0 .74.7l7.13 1.54-7.13 1.54a1 1 0 0 0-.74.7l-1.7 5.95a1 1 0 0 0 1.37 1.16l17.196-7.607a1 1 0 0 0 0-1.828z" />
+              </svg>
+            </button>
+          </div>
         </section>
       )}
 
