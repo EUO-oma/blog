@@ -510,7 +510,7 @@ export default function HomePage() {
             />
           ) : (
             <div
-              className={`prose dark:prose-invert max-w-none ${isAuthor(post) ? 'cursor-text' : ''}`}
+              className={`prose dark:prose-invert max-w-none whitespace-pre-wrap ${isAuthor(post) ? 'cursor-text' : ''}`}
               onTouchStart={() => startLongPressCopy('content', post)}
               onTouchEnd={endLongPressCopy}
               onTouchCancel={endLongPressCopy}
@@ -729,7 +729,7 @@ export default function HomePage() {
                       <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       </button>
-                      <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(featuredPost.content || '', 140)}</p>
+                      <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(featuredPost.content || '', 140)}</p>
                     </div>
                   </article>
                 )}
@@ -818,7 +818,7 @@ export default function HomePage() {
                         <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
-                        <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(post.content || '', 100)}</p>
+                        <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(post.content || '', 100)}</p>
                       </div>
                     </article>
                     )}
@@ -895,7 +895,7 @@ export default function HomePage() {
                     <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                     </button>
-                    <p className="text-base text-gray-700 dark:text-gray-200">{getContentPreview(post.content || '', 100)}</p>
+                    <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(post.content || '', 100)}</p>
                   </div>
                   {post.tags.length > 0 && (
                     <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-500">
