@@ -16,7 +16,8 @@ def summarize_extractive(text: str, sentence_count: int = 3) -> str:
     if not clean:
         return ""
 
-    sentences = [s.strip() for s in re.split(r"(?<=[.!?。！？]|다\.|요\.)\s+", clean) if s.strip()]
+    # Python re: variable-width lookbehind 미지원 -> 단순 문장 경계 분리
+    sentences = [s.strip() for s in re.split(r"[.!?。！？]+\s+", clean) if s.strip()]
     if len(sentences) <= sentence_count:
         return " ".join(sentences)
 
