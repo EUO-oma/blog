@@ -139,8 +139,40 @@ export default function FilePage() {
       flash('Drive 전송 완료')
       await load()
     } catch (e: any) {
-      await updateFileItem(item.id, { driveSyncStatus: 'failed', lastError: e?.message || String(e), driveFolderName: folderName })
-      flash(`Drive 전송 실패: ${e?.message || e}`, 2600)
+      const errMsg = e?.message || String(e)
+
+      // Safari/브라우저 환경에서 GAS CORS/redirect 이슈로 Load failed가 날 수 있어 best-effort 재시도
+      if (/load failed|failed to fetch|network/i.test(String(errMsg || ''))) {
+        try {
+          await fetch(gasDriveUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'saveR2ToDrive',
+              token: gasToken,
+              fileUrl: item.fileUrl,
+              filename: item.title,
+              folderName: getDriveSubFolder(item.contentType),
+              contentType: item.contentType || 'application/octet-stream',
+            }),
+          })
+
+          await updateFileItem(item.id, {
+            driveSyncStatus: 'pending',
+            lastError: 'browser_cors_fallback',
+            driveFolderName: getDriveSubFolder(item.contentType),
+          })
+          flash('Drive 전송 요청은 보냈어. 10~30초 뒤 상태 확인해줘.', 2600)
+          await load()
+          return
+        } catch (_) {
+          // fallback도 실패하면 아래 failed 처리
+        }
+      }
+
+      await updateFileItem(item.id, { driveSyncStatus: 'failed', lastError: errMsg, driveFolderName: folderName })
+      flash(`Drive 전송 실패: ${errMsg}`, 2600)
       await load()
     }
   }
