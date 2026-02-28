@@ -558,10 +558,10 @@ export default function SchedulePage() {
             <p className="text-xs text-red-600 dark:text-red-300 mb-2">최근 오류: {syncMeta.lastError}</p>
           ) : null}
 
-          <div className="space-y-3">
+          <div className="space-y-1">
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
-              <div key={dateKey} className="rounded-xl bg-white dark:bg-gray-900/40 shadow-sm ring-1 ring-indigo-200/60 dark:ring-indigo-800/60 overflow-hidden">
-                <div className="px-3 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-200 border-b border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between bg-indigo-50/70 dark:bg-indigo-900/20">
+              <div key={dateKey} className="pt-2 border-t border-indigo-200/70 dark:border-indigo-800/50">
+                <div className="px-1 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-200 flex items-center justify-between">
                   <span>{new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}</span>
                   <span className="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{items.length}건</span>
                 </div>
@@ -569,7 +569,7 @@ export default function SchedulePage() {
                   {items.map((item) => {
                     const when = item.allDay ? '종일' : (item.startAt?.slice(11, 16) || '-')
                     return (
-                      <div key={item.id} className="px-3 py-2.5 text-sm flex items-center justify-between gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors">
+                      <div key={item.id} className="px-1 py-2 text-sm flex items-center justify-between gap-2 hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 transition-colors">
                         <Link
                           href={`/calendar-sync?id=${encodeURIComponent(item.id)}`}
                           className="truncate flex-1 rounded px-1.5 py-1 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/30"
