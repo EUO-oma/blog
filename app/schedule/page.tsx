@@ -417,7 +417,25 @@ export default function SchedulePage() {
     return raw.slice(0, 10)
   }
 
-  const todayDateKey = new Date().toISOString().slice(0, 10)
+  const toLocalDateKey = (d: Date) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const todayDateKey = toLocalDateKey(new Date())
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowDateKey = toLocalDateKey(tomorrow)
+
+  const formatCalendarDateLabel = (dateKey: string) => {
+    const base = new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })
+    if (dateKey === todayDateKey) return `오늘(${base})`
+    if (dateKey === tomorrowDateKey) return `내일(${base})`
+    return base
+  }
+
   const todayCalendarItems = calendarSynced
     .filter((item) => getDateKey(item) === todayDateKey)
     .sort((a, b) => String(a.startAt || '').localeCompare(String(b.startAt || '')))
@@ -632,7 +650,7 @@ export default function SchedulePage() {
             {Object.entries(groupedCalendarSynced).map(([dateKey, items]) => (
               <div key={dateKey} className="pt-2 border-t border-indigo-200/70 dark:border-indigo-800/50">
                 <div className="px-1 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-200 flex items-center justify-between">
-                  <span>{new Date(dateKey).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' })}</span>
+                  <span>{formatCalendarDateLabel(dateKey)}</span>
                   <span className="text-[11px] px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{items.length}건</span>
                 </div>
                 <div className="divide-y divide-indigo-100 dark:divide-indigo-900/40">
