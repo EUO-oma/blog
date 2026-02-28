@@ -426,8 +426,6 @@ export default function ImgPage() {
                       </button>
                     )}
 
-                    <span className="w-2" />
-
                     {isOwner && (
                       <button onClick={() => remove(it)} className="text-red-600 hover:text-red-800 p-1" title="삭제">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
