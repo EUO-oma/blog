@@ -19,6 +19,7 @@ const menuItems = [
   { href: '/music', label: 'Music' },
   { href: '/file', label: 'File' },
   { href: '/community', label: 'Community' },
+  { href: '/anon', label: 'Anon' },
   { href: '/word', label: 'Word' },
   { href: '/people', label: 'People', ownerOnly: true },
   { href: '/admin', label: 'Admin', ownerOnly: true },
@@ -52,6 +53,8 @@ function MenuIcon({ href }: { href: string }) {
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3h8l4 4v14H7zM15 3v4h4" /></svg>
     case '/community':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5V9l-5-5H7a2 2 0 00-2 2v14h12zM9 13h6M9 17h6" /></svg>
+    case '/anon':
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h8M8 14h5"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
     case '/admin':
       return <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3V7a3 3 0 10-6 0v1c0 1.657 1.343 3 3 3z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 20v-1a7 7 0 0114 0v1"/></svg>
     case '/word':

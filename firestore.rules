@@ -131,6 +131,20 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner();
     }
 
+    // anon_posts: 공개 read/create, 삭제는 owner만 허용
+    match /anon_posts/{postId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['content', 'authorKey', 'createdAt'])
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 2000
+        && request.resource.data.authorKey is string
+        && request.resource.data.authorKey.size() > 0
+        && request.resource.data.authorKey.size() <= 64;
+      allow update: if false;
+      allow delete: if isOwner();
+    }
+
     // 명시되지 않은 기타 컬렉션은 차단
     match /{document=**} {
       allow read, write: if false;
