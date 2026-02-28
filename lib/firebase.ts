@@ -107,6 +107,7 @@ export interface YouTubeVideo {
   duration?: string
   views?: string
   uploadDate?: string
+  sortOrder?: number
   authorEmail: string
   authorName: string
   createdAt: Timestamp
