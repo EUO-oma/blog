@@ -17,6 +17,8 @@ export default function YouTubePage() {
   const [editingVideo, setEditingVideo] = useState<YouTubeVideo | null>(null)
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [editingDescId, setEditingDescId] = useState<string | null>(null)
+  const [editingDesc, setEditingDesc] = useState('')
 
   useEffect(() => {
     loadVideos()
@@ -83,6 +85,21 @@ export default function YouTubePage() {
       await updateYouTubeVideo(video.id, { title: next })
     } catch (e) {
       console.error('youtube inline title update failed', e)
+      await loadVideos()
+    }
+  }
+
+  const saveInlineDesc = async (video: YouTubeVideo & { sortOrder?: number }) => {
+    if (!video.id) return
+    const next = editingDesc.trim()
+    setEditingDescId(null)
+    if (next === (video.description || '')) return
+
+    setVideos((prev) => prev.map((v) => (v.id === video.id ? { ...v, description: next } : v)))
+    try {
+      await updateYouTubeVideo(video.id, { description: next })
+    } catch (e) {
+      console.error('youtube inline description update failed', e)
       await loadVideos()
     }
   }
@@ -211,7 +228,36 @@ export default function YouTubePage() {
                     {video.title}
                   </button>
                 )}
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">{video.description}</p>
+                {editingDescId === video.id ? (
+                  <textarea
+                    autoFocus
+                    value={editingDesc}
+                    onChange={(e) => setEditingDesc(e.target.value)}
+                    onBlur={() => saveInlineDesc(video)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        saveInlineDesc(video)
+                      }
+                      if (e.key === 'Escape') setEditingDescId(null)
+                    }}
+                    rows={2}
+                    className="w-full text-sm text-gray-600 dark:text-gray-400 mb-3 bg-transparent outline-none border-b border-indigo-300 resize-none"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!(user && video.authorEmail === user.email)) return
+                      setEditingDescId(video.id || null)
+                      setEditingDesc(video.description || '')
+                    }}
+                    className="w-full text-left text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3"
+                    title={user && video.authorEmail === user.email ? '본문 수정' : undefined}
+                  >
+                    {video.description}
+                  </button>
+                )}
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                   <span>{video.views} views</span>
                   <span>{video.uploadDate}</span>
