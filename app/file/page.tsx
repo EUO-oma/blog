@@ -214,19 +214,19 @@ export default function FilePage() {
       {owner && (
         <div className="grid sm:grid-cols-4 gap-2 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300">루트:</span>
+            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">루트:</span>
             <input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300">부서:</span>
+            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">부서:</span>
             <input value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300">시즌:</span>
+            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">시즌:</span>
             <input value={season} onChange={(e) => setSeason(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300">키워드:</span>
+            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">키워드:</span>
             <input value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="회의록,계약" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
           </div>
         </div>
