@@ -32,6 +32,8 @@ export default function ImgPage() {
   const [q, setQ] = useState('')
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
 
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -120,6 +122,22 @@ export default function ImgPage() {
     }
   }
 
+  const saveTitleEdit = async (item: ImageItem) => {
+    if (!isOwner || !item.id) return
+    const nextTitle = editingTitle.trim() || item.title
+
+    setItems((prev) => prev.map((v) => (v.id === item.id ? { ...v, title: nextTitle } : v)))
+    setEditingTitleId(null)
+
+    try {
+      await updateImage(item.id, { title: nextTitle })
+      flashMsg('제목 수정 완료', 1200)
+    } catch (e: any) {
+      flashMsg(`제목 수정 실패: ${e?.message || e}`, 2200)
+      await load()
+    }
+  }
+
   const remove = async (item: ImageItem) => {
     if (!isOwner || !item.id) return
 
@@ -188,12 +206,38 @@ export default function ImgPage() {
                 <img src={it.imageUrl} alt={it.title} className="w-full h-full object-cover" loading="lazy" />
               </div>
               <div className="p-3 space-y-2">
-                <input
-                  defaultValue={it.title}
-                  onBlur={(e) => it.id && isOwner && updateImage(it.id, { title: e.target.value.trim() })}
-                  readOnly={!isOwner}
-                  className="w-full bg-transparent outline-none font-semibold"
-                />
+                {isOwner && editingTitleId === it.id ? (
+                  <input
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onBlur={() => saveTitleEdit(it)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        saveTitleEdit(it)
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingTitleId(null)
+                        setEditingTitle('')
+                      }
+                    }}
+                    autoFocus
+                    className="w-full bg-transparent outline-none font-semibold"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isOwner) return
+                      setEditingTitleId(it.id || null)
+                      setEditingTitle(it.title || '')
+                    }}
+                    className="w-full text-left bg-transparent outline-none font-semibold"
+                    title="제목 수정"
+                  >
+                    {it.title}
+                  </button>
+                )}
                 <input
                   defaultValue={it.note || ''}
                   onBlur={(e) => it.id && isOwner && updateImage(it.id, { note: e.target.value.trim() })}
@@ -214,7 +258,7 @@ export default function ImgPage() {
                     title="URL 복사"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-8 8h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </button>
                   {isOwner && (
