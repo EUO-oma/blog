@@ -25,7 +25,7 @@ export default function FilePage() {
 
   const signerUrl = process.env.NEXT_PUBLIC_R2_SIGNER_URL || ''
   const signerToken = process.env.NEXT_PUBLIC_R2_SIGNER_TOKEN || ''
-  const gasDriveUrl = process.env.NEXT_PUBLIC_GAS_DRIVE_WEBAPP_URL || ''
+  const gasDriveUrl = process.env.NEXT_PUBLIC_GAS_DRIVE_WEBAPP_URL || process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
 
   const flash = (text: string, ms = 1500) => {
