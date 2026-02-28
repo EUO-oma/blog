@@ -5,6 +5,11 @@ export interface PeopleItem {
   id?: string
   person: string
   related: string
+  region?: string
+  children?: string
+  role?: string
+  likes?: string
+  dislikes?: string
   note?: string
   learned?: boolean
   createdAt: Timestamp
@@ -19,11 +24,16 @@ export async function getPeople(): Promise<PeopleItem[]> {
   return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as PeopleItem[]
 }
 
-export async function createPeople(input: { person: string; related: string; note?: string }) {
+export async function createPeople(input: { person: string; related: string; region?: string; children?: string; role?: string; likes?: string; dislikes?: string; note?: string }) {
   const now = Timestamp.now()
   await addDoc(collection(db, COL), {
     person: input.person,
     related: input.related,
+    region: input.region || '',
+    children: input.children || '',
+    role: input.role || '',
+    likes: input.likes || '',
+    dislikes: input.dislikes || '',
     note: input.note || '',
     learned: false,
     createdAt: now,

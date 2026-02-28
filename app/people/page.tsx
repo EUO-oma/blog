@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { createPeople, deletePeople, getPeople, updatePeople, type PeopleItem } from '@/lib/firebase-people'
 
-type SlideStage = 'person' | 'related' | 'note'
+type SlideStage = 'person' | 'related' | 'region' | 'role' | 'likes' | 'dislikes' | 'note'
 const OWNER_EMAIL = 'icandoit13579@gmail.com'
 
 export default function PeoplePage() {
@@ -16,7 +16,7 @@ export default function PeoplePage() {
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
-  const [form, setForm] = useState({ person: '', related: '', note: '' })
+  const [form, setForm] = useState({ person: '', related: '', region: '', children: '', role: '', likes: '', dislikes: '', note: '' })
   const [msg, setMsg] = useState('')
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -57,8 +57,17 @@ export default function PeoplePage() {
     if (!isOwner) return
     if (!form.person.trim() || !form.related.trim()) return flashMsg('사람/관련 항목은 필수야.')
     try {
-      await createPeople({ person: form.person.trim(), related: form.related.trim(), note: form.note.trim() })
-      setForm({ person: '', related: '', note: '' })
+      await createPeople({
+        person: form.person.trim(),
+        related: form.related.trim(),
+        region: form.region.trim(),
+        children: form.children.trim(),
+        role: form.role.trim(),
+        likes: form.likes.trim(),
+        dislikes: form.dislikes.trim(),
+        note: form.note.trim(),
+      })
+      setForm({ person: '', related: '', region: '', children: '', role: '', likes: '', dislikes: '', note: '' })
       setShowAddForm(false)
       flashMsg('등록 완료')
       await load()
@@ -70,7 +79,7 @@ export default function PeoplePage() {
   const filtered = useMemo(() => {
     const k = q.trim().toLowerCase()
     if (!k) return items
-    return items.filter((i) => `${i.person} ${i.related} ${i.note || ''}`.toLowerCase().includes(k))
+    return items.filter((i) => `${i.person} ${i.related} ${i.region || ''} ${i.children || ''} ${i.role || ''} ${i.likes || ''} ${i.dislikes || ''} ${i.note || ''}`.toLowerCase().includes(k))
   }, [items, q])
 
   const activeItems = useMemo(() => filtered.filter((i) => !i.learned), [filtered])
@@ -78,21 +87,31 @@ export default function PeoplePage() {
 
   useEffect(() => {
     if (!isSlideshowOpen || activeItems.length === 0) return
+    const order: SlideStage[] = ['person', 'related', 'region', 'role', 'likes', 'dislikes', 'note']
+    const current = activeItems[slideIndex]
+    const hasValue = (stage: SlideStage) => {
+      if (!current) return false
+      if (stage === 'person') return !!current.person?.trim()
+      if (stage === 'related') return !!current.related?.trim()
+      if (stage === 'region') return !!current.region?.trim()
+      if (stage === 'role') return !!current.role?.trim()
+      if (stage === 'likes') return !!current.likes?.trim()
+      if (stage === 'dislikes') return !!current.dislikes?.trim()
+      return !!current.note?.trim()
+    }
+
     const t = setTimeout(() => {
-      if (slideStage === 'person') {
-        setSlideStage('related')
-      } else if (slideStage === 'related') {
-        if (activeItems[slideIndex]?.note?.trim()) {
-          setSlideStage('note')
-        } else {
-          setSlideStage('person')
-          setSlideIndex((prev) => (prev + 1) % activeItems.length)
-        }
+      const idx = order.indexOf(slideStage)
+      let nextIdx = idx + 1
+      while (nextIdx < order.length && !hasValue(order[nextIdx])) nextIdx += 1
+
+      if (nextIdx < order.length) {
+        setSlideStage(order[nextIdx])
       } else {
         setSlideStage('person')
         setSlideIndex((prev) => (prev + 1) % activeItems.length)
       }
-    }, slideStage === 'note' ? 1000 : 1800)
+    }, slideStage === 'note' ? 1000 : 1600)
 
     return () => clearTimeout(t)
   }, [isSlideshowOpen, slideIndex, slideStage, activeItems])
@@ -134,9 +153,14 @@ export default function PeoplePage() {
 
       {showAddForm && (
         <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 space-y-2">
-          <div className="grid md:grid-cols-3 gap-2">
+          <div className="grid md:grid-cols-2 gap-2">
             <input value={form.person} onChange={(e) => setForm((p) => ({ ...p, person: e.target.value }))} placeholder="사람 이름" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-            <input value={form.related} onChange={(e) => setForm((p) => ({ ...p, related: e.target.value }))} placeholder="관련 항목" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.related} onChange={(e) => setForm((p) => ({ ...p, related: e.target.value }))} placeholder="특징(핵심)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.region} onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))} placeholder="지역" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.children} onChange={(e) => setForm((p) => ({ ...p, children: e.target.value }))} placeholder="자녀" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} placeholder="직책" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.likes} onChange={(e) => setForm((p) => ({ ...p, likes: e.target.value }))} placeholder="좋아하는 것" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            <input value={form.dislikes} onChange={(e) => setForm((p) => ({ ...p, dislikes: e.target.value }))} placeholder="싫어하는 것" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
             <input value={form.note} onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))} placeholder="메모(선택)" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
           </div>
           <button onClick={add} className="text-emerald-600 hover:text-emerald-900 p-1" title="등록">
@@ -145,7 +169,7 @@ export default function PeoplePage() {
         </section>
       )}
 
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="사람/관련 항목 검색" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="이름/특징/지역/직책/호불호 검색" className="px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
 
       {loading ? (
         <div className="py-6 flex justify-center"><LoaderSwitcher label="People 불러오는 중..." /></div>
@@ -154,10 +178,15 @@ export default function PeoplePage() {
           <section className="space-y-1">
             {activeItems.map((p) => (
               <article key={p.id} className="py-2 border-b border-gray-200/70 dark:border-gray-700/60 flex items-start gap-2">
-                <div className="flex-1 grid md:grid-cols-3 gap-2">
+                <div className="flex-1 grid md:grid-cols-2 gap-2">
                   <input defaultValue={p.person} onBlur={(e) => p.id && updatePeople(p.id, { person: e.target.value })} className="bg-transparent outline-none font-semibold" />
                   <input defaultValue={p.related} onBlur={(e) => p.id && updatePeople(p.id, { related: e.target.value })} className="bg-transparent outline-none" />
-                  <input defaultValue={p.note || ''} onBlur={(e) => p.id && updatePeople(p.id, { note: e.target.value })} className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.region || ''} onBlur={(e) => p.id && updatePeople(p.id, { region: e.target.value })} placeholder="지역" className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.children || ''} onBlur={(e) => p.id && updatePeople(p.id, { children: e.target.value })} placeholder="자녀" className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.role || ''} onBlur={(e) => p.id && updatePeople(p.id, { role: e.target.value })} placeholder="직책" className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.likes || ''} onBlur={(e) => p.id && updatePeople(p.id, { likes: e.target.value })} placeholder="좋아하는 것" className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.dislikes || ''} onBlur={(e) => p.id && updatePeople(p.id, { dislikes: e.target.value })} placeholder="싫어하는 것" className="bg-transparent outline-none text-sm text-gray-500" />
+                  <input defaultValue={p.note || ''} onBlur={(e) => p.id && updatePeople(p.id, { note: e.target.value })} placeholder="메모" className="bg-transparent outline-none text-sm text-gray-500" />
                 </div>
                 <button onClick={async () => { if (!p.id) return; await updatePeople(p.id, { learned: true }); await load() }} className="text-emerald-600 p-1" title="완료">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -175,9 +204,14 @@ export default function PeoplePage() {
             <div className="space-y-1">
               {learnedItems.map((p) => (
                 <article key={p.id} className="py-2 border-b border-gray-200/70 dark:border-gray-700/60 flex items-start gap-2 opacity-80">
-                  <div className="flex-1 grid md:grid-cols-3 gap-2">
+                  <div className="flex-1 grid md:grid-cols-2 gap-2">
                     <input defaultValue={p.person} onBlur={(e) => p.id && updatePeople(p.id, { person: e.target.value })} className="bg-transparent outline-none line-through text-gray-500" />
                     <input defaultValue={p.related} onBlur={(e) => p.id && updatePeople(p.id, { related: e.target.value })} className="bg-transparent outline-none line-through text-gray-500" />
+                    <input defaultValue={p.region || ''} onBlur={(e) => p.id && updatePeople(p.id, { region: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
+                    <input defaultValue={p.children || ''} onBlur={(e) => p.id && updatePeople(p.id, { children: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
+                    <input defaultValue={p.role || ''} onBlur={(e) => p.id && updatePeople(p.id, { role: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
+                    <input defaultValue={p.likes || ''} onBlur={(e) => p.id && updatePeople(p.id, { likes: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
+                    <input defaultValue={p.dislikes || ''} onBlur={(e) => p.id && updatePeople(p.id, { dislikes: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
                     <input defaultValue={p.note || ''} onBlur={(e) => p.id && updatePeople(p.id, { note: e.target.value })} className="bg-transparent outline-none line-through text-gray-500 text-sm" />
                   </div>
                   <button onClick={async () => { if (!p.id) return; await updatePeople(p.id, { learned: false }); await load() }} className="text-gray-500 p-1" title="되돌리기">
@@ -199,9 +233,13 @@ export default function PeoplePage() {
             <div className="text-4xl sm:text-6xl font-semibold whitespace-pre-wrap break-words transition-opacity duration-300">
               {slideStage === 'person' && activeItems[slideIndex]?.person}
               {slideStage === 'related' && activeItems[slideIndex]?.related}
+              {slideStage === 'region' && (activeItems[slideIndex]?.region || '')}
+              {slideStage === 'role' && (activeItems[slideIndex]?.role || '')}
+              {slideStage === 'likes' && (activeItems[slideIndex]?.likes || '')}
+              {slideStage === 'dislikes' && (activeItems[slideIndex]?.dislikes || '')}
               {slideStage === 'note' && (activeItems[slideIndex]?.note || '')}
             </div>
-            <p className="mt-3 text-sm text-white/60">{slideStage === 'person' ? '사람' : slideStage === 'related' ? '관련 항목' : '메모'}</p>
+            <p className="mt-3 text-sm text-white/60">{slideStage === 'person' ? '사람' : slideStage === 'related' ? '특징' : slideStage === 'region' ? '지역' : slideStage === 'role' ? '직책' : slideStage === 'likes' ? '좋아하는 것' : slideStage === 'dislikes' ? '싫어하는 것' : '메모'}</p>
           </div>
         </div>
       )}
