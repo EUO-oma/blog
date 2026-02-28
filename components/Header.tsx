@@ -70,7 +70,6 @@ export default function Header() {
   const isOwner = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [drawerLeft, setDrawerLeft] = useState(0)
 
   useEffect(() => {
     const handleOpenLoginModal = () => {
@@ -85,22 +84,10 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
-    const updateDrawerLeft = () => {
-      if (typeof window === 'undefined') return
-      const vw = window.innerWidth
-      if (vw < 768) {
-        setDrawerLeft(0)
-        return
-      }
-
-      const contentStart = Math.max(0, (vw - 1024) / 2 + 16) // max-w-5xl + container px-4
-      setDrawerLeft(contentStart)
-    }
-
-    updateDrawerLeft()
-    window.addEventListener('resize', updateDrawerLeft)
-    return () => window.removeEventListener('resize', updateDrawerLeft)
-  }, [])
+    if (typeof document === 'undefined') return
+    document.body.classList.toggle('drawer-open', menuOpen)
+    return () => document.body.classList.remove('drawer-open')
+  }, [menuOpen])
 
   const authButton = (
     <button
@@ -251,10 +238,9 @@ export default function Header() {
       {/* Drawer menu */}
       {menuOpen && (
         <div className="fixed inset-0 z-[60]">
-          <button className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} aria-label="메뉴 닫기 배경" />
+          <button className="absolute inset-0 bg-transparent" onClick={() => setMenuOpen(false)} aria-label="메뉴 닫기 배경" />
           <aside
-            className="absolute top-0 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shadow-xl"
-            style={{ left: drawerLeft }}
+            className="absolute left-0 top-0 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">메뉴</h2>

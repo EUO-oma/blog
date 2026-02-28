@@ -43,3 +43,13 @@ body {
     transform: translateY(0) scale(1);
   }
 }
+
+body.drawer-open .site-content {
+  transform: translateX(18rem);
+}
+
+@media (max-width: 768px) {
+  body.drawer-open .site-content {
+    transform: translateX(14rem);
+  }
+}
