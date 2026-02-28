@@ -140,9 +140,13 @@ export default function YouTubePage() {
               setEditingVideo(null)
               setShowFormModal(true)
             }}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-2"
+            title="새 비디오 추가"
+            aria-label="새 비디오 추가"
           >
-            + 새 비디오 추가
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
           </button>
         )}
       </div>
