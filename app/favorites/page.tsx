@@ -306,16 +306,6 @@ export default function FavoritesPage() {
                               {it.title}
                             </h2>
                           )}
-                          <a
-                            href={it.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            draggable={false}
-                            onPointerDown={(e) => isDragging && e.preventDefault()}
-                            className="text-sm text-indigo-600 break-all"
-                          >
-                            {it.url}
-                          </a>
                           {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
                         </div>
                       </div>
