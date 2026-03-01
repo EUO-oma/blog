@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import LoaderSwitcher from '@/components/LoaderSwitcher'
 import { createFileItem, deleteFileItem, getFiles, updateFileItem } from '@/lib/firebase-files'
-import { FileItem } from '@/lib/firebase'
+import { auth, FileItem } from '@/lib/firebase'
 
 const OWNER = 'icandoit13579@gmail.com'
 
@@ -29,7 +29,6 @@ export default function FilePage() {
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const signerUrl = process.env.NEXT_PUBLIC_R2_SIGNER_URL || ''
-  const signerToken = process.env.NEXT_PUBLIC_R2_SIGNER_TOKEN || ''
   const gasDriveUrl = process.env.NEXT_PUBLIC_GAS_DRIVE_WEBAPP_URL || process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
 
@@ -68,14 +67,17 @@ export default function FilePage() {
 
   const upload = async (file: File) => {
     if (!owner) return flash('권한 없음')
-    if (!signerUrl || !signerToken) return flash('R2 signer 환경변수를 먼저 설정해줘', 2200)
+    if (!signerUrl) return flash('R2 signer URL을 먼저 설정해줘', 2200)
 
     try {
       setUploading(true)
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) throw new Error('로그인 토큰이 없어 업로드할 수 없음')
+
       const res = await fetch(`${signerUrl.replace(/\/$/, '')}/upload`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${signerToken}`,
+          Authorization: `Bearer ${idToken}`,
           'x-filename': encodeURIComponent(file.name),
           'x-content-type': file.type || 'application/octet-stream',
           'x-size': String(file.size),
@@ -239,10 +241,13 @@ export default function FilePage() {
     if (!confirm('삭제할까?')) return
 
     try {
-      if (item.sourceType === 'r2' && item.objectKey && signerUrl && signerToken) {
+      if (item.sourceType === 'r2' && item.objectKey && signerUrl) {
+        const idToken = await auth.currentUser?.getIdToken()
+        if (!idToken) throw new Error('로그인 토큰이 없어 삭제할 수 없음')
+
         await fetch(`${signerUrl.replace(/\/$/, '')}/delete`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${signerToken}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
           body: JSON.stringify({ objectKey: item.objectKey }),
         }).catch(() => null)
       }

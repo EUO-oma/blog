@@ -9,7 +9,8 @@ export default {
       })
     }
 
-    if (!isAuthorized(request, env)) {
+    const authorized = await isAuthorized(request, env)
+    if (!authorized) {
       return json({ error: 'unauthorized' }, 401)
     }
 
@@ -57,9 +58,33 @@ export default {
   },
 }
 
-function isAuthorized(request, env) {
+async function isAuthorized(request, env) {
   const auth = request.headers.get('authorization') || ''
-  return auth === `Bearer ${env.SIGNER_TOKEN}`
+  const token = auth.replace(/^Bearer\s+/i, '').trim()
+  if (!token) return false
+
+  // Backward compatibility: existing static token still accepted if set
+  if (env.SIGNER_TOKEN && token === String(env.SIGNER_TOKEN)) return true
+
+  // Preferred: verify Firebase ID token via Identity Toolkit lookup
+  try {
+    const webApiKey = String(env.FIREBASE_WEB_API_KEY || '')
+    const ownerEmail = String(env.OWNER_EMAIL || '').toLowerCase()
+    if (!webApiKey || !ownerEmail) return false
+
+    const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(webApiKey)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ idToken: token }),
+    })
+
+    if (!res.ok) return false
+    const data = await res.json().catch(() => null)
+    const email = String(data?.users?.[0]?.email || '').toLowerCase()
+    return !!email && email === ownerEmail
+  } catch {
+    return false
+  }
 }
 
 function getExt(filename) {
