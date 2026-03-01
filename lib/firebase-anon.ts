@@ -6,6 +6,8 @@ export interface AnonPost {
   content: string
   authorKey: string
   createdAt: Timestamp
+  spamStatus?: 'clean' | 'spam'
+  spamReason?: string
 }
 
 const COL = 'anon_posts'
@@ -13,7 +15,9 @@ const COL = 'anon_posts'
 export async function getAnonPosts(): Promise<AnonPost[]> {
   const q = query(collection(db, COL), orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as AnonPost[]
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as any) }))
+    .filter((x) => x.spamStatus !== 'spam') as AnonPost[]
 }
 
 export async function createAnonPost(input: { content: string; authorKey: string }) {
