@@ -21,9 +21,11 @@ export default function FilePage() {
   const [department, setDepartment] = useState('공통')
   const [season, setSeason] = useState('2026Q1')
   const [keywords, setKeywords] = useState('')
-  const [uploadChannel, setUploadChannel] = useState<'r2' | 'gdrive'>('r2')
+  const [uploadChannel, setUploadChannel] = useState<'r2' | 'gdrive' | 'github'>('r2')
   const [driveTitle, setDriveTitle] = useState('')
   const [driveUrl, setDriveUrl] = useState('')
+  const [githubTitle, setGithubTitle] = useState('')
+  const [githubUrl, setGithubUrl] = useState('')
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const signerUrl = process.env.NEXT_PUBLIC_R2_SIGNER_URL || ''
@@ -207,6 +209,31 @@ export default function FilePage() {
     }
   }
 
+  const registerGithubLink = async () => {
+    if (!owner) return flash('권한 없음')
+    if (!githubTitle.trim() || !githubUrl.trim()) return flash('GitHub 제목/링크를 입력해줘')
+    try {
+      await createFileItem({
+        title: githubTitle.trim(),
+        fileUrl: githubUrl.trim(),
+        sourceType: 'github',
+        contentType: 'application/octet-stream',
+        department,
+        season,
+        keywords,
+        driveSyncStatus: 'idle',
+        authorEmail: user?.email || OWNER,
+        authorName: user?.displayName || user?.email || 'owner',
+      })
+      setGithubTitle('')
+      setGithubUrl('')
+      flash('GitHub 링크 등록 완료')
+      await load()
+    } catch (e: any) {
+      flash(`등록 실패: ${e?.message || e}`, 2200)
+    }
+  }
+
   const remove = async (item: FileItem) => {
     if (!owner || !item.id) return
     if (!confirm('삭제할까?')) return
@@ -246,13 +273,18 @@ export default function FilePage() {
             <select value={uploadChannel} onChange={(e) => setUploadChannel(e.target.value as any)} className="text-xs px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700">
               <option value="r2">R2 업로드</option>
               <option value="gdrive">Google Drive 링크등록</option>
+              <option value="github">GitHub 링크등록</option>
             </select>
             {uploadChannel === 'r2' ? (
               <button onClick={() => fileRef.current?.click()} disabled={uploading} className="text-indigo-600 hover:text-indigo-900 p-1 disabled:opacity-40" title="파일 업로드">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               </button>
-            ) : (
+            ) : uploadChannel === 'gdrive' ? (
               <button onClick={registerDriveLink} className="text-emerald-600 hover:text-emerald-900 p-1" title="Drive 링크 등록">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </button>
+            ) : (
+              <button onClick={registerGithubLink} className="text-emerald-600 hover:text-emerald-900 p-1" title="GitHub 링크 등록">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </button>
             )}
@@ -285,6 +317,13 @@ export default function FilePage() {
             <div className="grid sm:grid-cols-2 gap-2 text-sm">
               <input value={driveTitle} onChange={(e) => setDriveTitle(e.target.value)} placeholder="Drive 파일 제목" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
               <input value={driveUrl} onChange={(e) => setDriveUrl(e.target.value)} placeholder="https://drive.google.com/..." className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+          )}
+
+          {uploadChannel === 'github' && (
+            <div className="grid sm:grid-cols-2 gap-2 text-sm">
+              <input value={githubTitle} onChange={(e) => setGithubTitle(e.target.value)} placeholder="GitHub 파일 제목" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} placeholder="https://github.com/... 또는 release asset URL" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
             </div>
           )}
         </>
