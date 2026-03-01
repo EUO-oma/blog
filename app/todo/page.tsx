@@ -382,9 +382,9 @@ export default function TodoPage() {
         </button>
       </div>
 
-      <section className="p-1 bg-transparent">
+      <section className="p-1 bg-transparent pl-[10px]">
         <form
-          className="flex items-center gap-1 min-h-[40px]"
+          className="flex items-center gap-1 min-h-[40px] pr-[10px]"
           onSubmit={(e) => {
             e.preventDefault()
             addTodo()
@@ -403,11 +403,11 @@ export default function TodoPage() {
           <button
             type="submit"
             disabled={adding}
-            className="p-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 mr-[10px]"
             title="등록하기"
             aria-label="등록하기"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 2 11 13" />
               <path d="m22 2-7 20-4-9-9-4Z" />
             </svg>
