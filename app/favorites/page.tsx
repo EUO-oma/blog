@@ -258,9 +258,21 @@ export default function FavoritesPage() {
               {items.map((it, index) => (
                 <SortableFavoriteRow key={it.id} item={it} isPressing={pressingId === it.id}>
                   {({ attributes, listeners, setActivatorNodeRef, isDragging }) => (
-                    <div className="flex flex-col gap-3">
+                    <div
+                      className="flex flex-col gap-3 cursor-pointer"
+                      onClick={() => window.open(it.url, '_blank', 'noopener,noreferrer')}
+                      title="빈 영역 클릭 시 링크 열기"
+                    >
                       <div className="flex flex-wrap justify-between items-start gap-3">
-                      <div className="flex items-start gap-2">
+                      <div
+                        className="flex items-start gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (isOwner && editingTitleId !== it.id && inlineEditId !== it.id) {
+                            startInlineTitleEdit(it)
+                          }
+                        }}
+                      >
                         {isOwner ? (
                           <button
                             type="button"
@@ -309,7 +321,7 @@ export default function FavoritesPage() {
                           {it.note ? <p className="text-xs text-gray-500 mt-1">{it.note}</p> : null}
                         </div>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => copyFavorite(it)}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
@@ -366,7 +378,7 @@ export default function FavoritesPage() {
                       </div>
 
                       {isOwner && inlineEditId === it.id && (
-                        <div className="rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 p-3 bg-white/70 dark:bg-gray-900/40">
+                        <div className="rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 p-3 bg-white/70 dark:bg-gray-900/40" onClick={(e) => e.stopPropagation()}>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <input
                               value={inlineForm.title}
