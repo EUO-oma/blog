@@ -23,11 +23,13 @@ function SortableTodoRow({
   children,
   completing,
   isPressing,
+  stale,
 }: {
   item: TodoItem
   children: (bind: { attributes: any; listeners: any; setActivatorNodeRef: (el: HTMLElement | null) => void; isDragging: boolean }) => ReactNode
   completing: boolean
   isPressing: boolean
+  stale: boolean
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id || '',
@@ -39,14 +41,16 @@ function SortableTodoRow({
     <article
       ref={setNodeRef}
       style={style}
-      className={`p-1 border-b border-gray-200/70 dark:border-gray-700/60 transition-all duration-100 bg-transparent ${
+      className={`p-1 border-b transition-all duration-100 ${
         completing
-          ? 'opacity-0 -translate-y-1 scale-[0.98]'
+          ? 'opacity-0 -translate-y-1 scale-[0.98] border-gray-200/70 dark:border-gray-700/60 bg-transparent'
           : isDragging
           ? 'opacity-80 scale-[0.97] border-indigo-300 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-900/10'
           : isPressing
           ? 'scale-[0.98] border-indigo-200 dark:border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/10'
-          : ''
+          : stale
+          ? 'border-amber-300/80 dark:border-amber-700/70 bg-amber-50/40 dark:bg-amber-900/15'
+          : 'border-gray-200/70 dark:border-gray-700/60 bg-transparent'
       }`}
     >
       {children({ attributes, listeners, setActivatorNodeRef, isDragging })}
@@ -210,6 +214,13 @@ export default function TodoPage() {
 
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
+
+  const isOlderThan2Days = (item: TodoItem) => {
+    const createdAt = item.createdAt as any
+    const createdMs = createdAt?.toMillis?.() ?? createdAt?.toDate?.()?.getTime?.() ?? null
+    if (!createdMs) return false
+    return Date.now() - createdMs >= 2 * 24 * 60 * 60 * 1000
+  }
   const slideshowItems = useMemo(() => (activeItems.length > 0 ? activeItems : completedItems), [activeItems, completedItems])
 
   useEffect(() => {
@@ -325,7 +336,7 @@ export default function TodoPage() {
             >
               <SortableContext items={activeItems.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
                 {activeItems.map((item) => (
-                  <SortableTodoRow key={item.id} item={item} completing={completingIds.includes(item.id || '')} isPressing={pressingId === item.id}>
+                  <SortableTodoRow key={item.id} item={item} stale={isOlderThan2Days(item)} completing={completingIds.includes(item.id || '')} isPressing={pressingId === item.id}>
                     {({ attributes, listeners, setActivatorNodeRef }) => (
                 <div className="flex items-center gap-1 min-h-[40px]">
                   <button
@@ -386,6 +397,7 @@ export default function TodoPage() {
                       </svg>
                     </button>
                   </div>
+                  {isOlderThan2Days(item) ? <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">2일+</span> : null}
                   {/* 삭제 버튼 제거: 비움/완료 자동정리 흐름 사용 */}
                 </div>
                     )}
