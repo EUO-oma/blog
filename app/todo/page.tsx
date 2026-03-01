@@ -350,7 +350,22 @@ export default function TodoPage() {
   return (
     <main className="w-full max-w-none mx-0 px-0 space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
+          <button
+            onClick={async () => {
+              await load()
+              flashMsg('동기화 완료')
+            }}
+            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1"
+            title="새로고침 동기화"
+            aria-label="새로고침 동기화"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8A8 8 0 006.4 5.6L4 8m0 8a8 8 0 0013.6 2.4L20 16" />
+            </svg>
+          </button>
+        </div>
         <button
           onClick={() => {
             if (slideshowItems.length === 0) {
