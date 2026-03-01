@@ -136,6 +136,7 @@ export interface FileItem {
   id?: string
   title: string
   fileUrl: string
+  sourceType?: 'r2' | 'gdrive' | 'onedrive' | 'supabase' | 'url'
   objectKey?: string
   contentType?: string
   size?: number

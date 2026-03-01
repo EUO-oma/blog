@@ -21,6 +21,9 @@ export default function FilePage() {
   const [department, setDepartment] = useState('공통')
   const [season, setSeason] = useState('2026Q1')
   const [keywords, setKeywords] = useState('')
+  const [uploadChannel, setUploadChannel] = useState<'r2' | 'gdrive'>('r2')
+  const [driveTitle, setDriveTitle] = useState('')
+  const [driveUrl, setDriveUrl] = useState('')
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const signerUrl = process.env.NEXT_PUBLIC_R2_SIGNER_URL || ''
@@ -84,6 +87,7 @@ export default function FilePage() {
       await createFileItem({
         title: file.name,
         fileUrl: up.publicUrl,
+        sourceType: 'r2',
         objectKey: up.objectKey,
         contentType: file.type || 'application/octet-stream',
         size: file.size,
@@ -177,12 +181,38 @@ export default function FilePage() {
     }
   }
 
+  const registerDriveLink = async () => {
+    if (!owner) return flash('권한 없음')
+    if (!driveTitle.trim() || !driveUrl.trim()) return flash('Drive 제목/링크를 입력해줘')
+    try {
+      await createFileItem({
+        title: driveTitle.trim(),
+        fileUrl: driveUrl.trim(),
+        sourceType: 'gdrive',
+        contentType: 'application/vnd.google-apps.file',
+        department,
+        season,
+        keywords,
+        driveSyncStatus: 'success',
+        driveFolderName: getDriveSubFolder('application/vnd.google-apps.file'),
+        authorEmail: user?.email || OWNER,
+        authorName: user?.displayName || user?.email || 'owner',
+      })
+      setDriveTitle('')
+      setDriveUrl('')
+      flash('Google Drive 링크 등록 완료')
+      await load()
+    } catch (e: any) {
+      flash(`등록 실패: ${e?.message || e}`, 2200)
+    }
+  }
+
   const remove = async (item: FileItem) => {
     if (!owner || !item.id) return
     if (!confirm('삭제할까?')) return
 
     try {
-      if (item.objectKey && signerUrl && signerToken) {
+      if (item.sourceType === 'r2' && item.objectKey && signerUrl && signerToken) {
         await fetch(`${signerUrl.replace(/\/$/, '')}/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${signerToken}` },
@@ -197,6 +227,15 @@ export default function FilePage() {
     }
   }
 
+  if (!owner) {
+    return (
+      <main className="max-w-5xl mx-auto space-y-3">
+        <h1 className="text-3xl font-bold">File</h1>
+        <p className="text-sm text-red-500">관리자만 접근 가능한 게시판입니다.</p>
+      </main>
+    )
+  }
+
   return (
     <main className="max-w-5xl mx-auto space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -204,32 +243,51 @@ export default function FilePage() {
         {owner && (
           <>
             <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f) }} />
-            <button onClick={() => fileRef.current?.click()} disabled={uploading} className="text-indigo-600 hover:text-indigo-900 p-1 disabled:opacity-40" title="파일 업로드">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            </button>
+            <select value={uploadChannel} onChange={(e) => setUploadChannel(e.target.value as any)} className="text-xs px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700">
+              <option value="r2">R2 업로드</option>
+              <option value="gdrive">Google Drive 링크등록</option>
+            </select>
+            {uploadChannel === 'r2' ? (
+              <button onClick={() => fileRef.current?.click()} disabled={uploading} className="text-indigo-600 hover:text-indigo-900 p-1 disabled:opacity-40" title="파일 업로드">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              </button>
+            ) : (
+              <button onClick={registerDriveLink} className="text-emerald-600 hover:text-emerald-900 p-1" title="Drive 링크 등록">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </button>
+            )}
           </>
         )}
       </div>
 
       {owner && (
-        <div className="grid sm:grid-cols-4 gap-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">루트:</span>
-            <input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+        <>
+          <div className="grid sm:grid-cols-4 gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">루트:</span>
+              <input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">부서:</span>
+              <input value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">시즌:</span>
+              <input value={season} onChange={(e) => setSeason(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">키워드:</span>
+              <input value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="회의록,계약" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">부서:</span>
-            <input value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">시즌:</span>
-            <input value={season} onChange={(e) => setSeason(e.target.value)} className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap shrink-0">키워드:</span>
-            <input value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="회의록,계약" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
-          </div>
-        </div>
+
+          {uploadChannel === 'gdrive' && (
+            <div className="grid sm:grid-cols-2 gap-2 text-sm">
+              <input value={driveTitle} onChange={(e) => setDriveTitle(e.target.value)} placeholder="Drive 파일 제목" className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+              <input value={driveUrl} onChange={(e) => setDriveUrl(e.target.value)} placeholder="https://drive.google.com/..." className="w-full px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+          )}
+        </>
       )}
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="파일 검색" className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700" />
@@ -245,9 +303,10 @@ export default function FilePage() {
                 <p className="text-xs text-gray-500 truncate">{item.department || '공통'} · {item.season || '기본'} · {item.keywords || '-'} </p>
               </div>
               {item.size ? <span className="text-xs text-gray-500">{Math.ceil(item.size / 1024)} KB</span> : null}
+              <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">{item.sourceType || 'r2'}</span>
               <span className={`text-xs px-2 py-0.5 rounded ${item.driveSyncStatus === 'success' ? 'bg-green-100 text-green-700' : item.driveSyncStatus === 'failed' ? 'bg-red-100 text-red-700' : item.driveSyncStatus === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>{item.driveSyncStatus || 'idle'}</span>
               <button onClick={async () => { await navigator.clipboard.writeText(item.fileUrl); flash('링크 복사 완료') }} className="text-blue-600 hover:text-blue-800 p-1" title="복사"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
-              {owner && <button onClick={() => syncToDrive(item)} className="text-emerald-600 hover:text-emerald-800 p-1" title="Drive 전송"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10l5-6 5 6m-5-6v16" /></svg></button>}
+              {owner && item.sourceType === 'r2' && <button onClick={() => syncToDrive(item)} className="text-emerald-600 hover:text-emerald-800 p-1" title="Drive 전송"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10l5-6 5 6m-5-6v16" /></svg></button>}
               {owner && <button onClick={() => remove(item)} className="text-red-600 hover:text-red-800 p-1" title="삭제"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>}
             </div>
           ))}
