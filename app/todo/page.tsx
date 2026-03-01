@@ -432,11 +432,22 @@ export default function TodoPage() {
                     onClick={async () => {
                       if (!item.id) return
                       setCompletingIds((prev) => [...prev, item.id!])
+
+                      // 먼저 화면에서 숨김(체감 우선)
+                      const prevItems = items
+                      setItems((prev) => prev.map((x) => (x.id === item.id ? { ...x, completed: true, completedAt: new Date() as any } : x)))
+
                       setTimeout(async () => {
-                        await setTodoCompleted(item.id!, true)
-                        setCompletingIds((prev) => prev.filter((id) => id !== item.id))
-                        await load()
-                      }, 220)
+                        try {
+                          await setTodoCompleted(item.id!, true)
+                        } catch {
+                          // 실패 시 롤백
+                          setItems(prevItems)
+                          flashMsg('완료 처리 실패, 다시 시도해줘.', 1800)
+                        } finally {
+                          setCompletingIds((prev) => prev.filter((id) => id !== item.id))
+                        }
+                      }, 180)
                     }}
                     className="self-center text-emerald-500 hover:text-emerald-700 p-1"
                     title="완료 처리"
