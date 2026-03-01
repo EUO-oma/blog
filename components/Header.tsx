@@ -76,6 +76,7 @@ export default function Header() {
   const isOwner = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isTodoOnlyHost, setIsTodoOnlyHost] = useState(false)
 
   useEffect(() => {
     const handleOpenLoginModal = () => {
@@ -94,6 +95,12 @@ export default function Header() {
     document.body.classList.toggle('drawer-open', menuOpen)
     return () => document.body.classList.remove('drawer-open')
   }, [menuOpen])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const host = window.location.host || ''
+    setIsTodoOnlyHost(host.includes('todolist-page.web.app'))
+  }, [])
 
   const authButton = (
     <button
@@ -137,6 +144,7 @@ export default function Header() {
             </button>
 
             <div className="min-w-0 flex-1">
+              {!isTodoOnlyHost && (
               <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap touch-pan-x pr-1">
                 <Link
                   href="/"
@@ -219,6 +227,7 @@ export default function Header() {
                 </svg>
               </Link>
               </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
