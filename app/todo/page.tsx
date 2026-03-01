@@ -18,6 +18,8 @@ import {
   reorderTodos,
 } from '@/lib/firebase-todos'
 
+const OWNER_EMAIL = 'icandoit13579@gmail.com'
+
 function SortableTodoRow({
   item,
   children,
@@ -75,6 +77,7 @@ export default function TodoPage() {
   const [isPaused, setIsPaused] = useState(false)
   const [slideMs, setSlideMs] = useState(2800)
   const [sortMode, setSortMode] = useState<'latest' | 'oldest' | 'alpha' | 'starred'>('latest')
+  const isOwner = user?.email?.toLowerCase() === OWNER_EMAIL
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const tapTrackerRef = useRef<Record<string, { count: number; timer: ReturnType<typeof setTimeout> | null }>>({})
 
@@ -558,6 +561,16 @@ export default function TodoPage() {
             </div>
           </section>
         </>
+      )}
+
+      {isOwner && (
+        <section className="mt-6 pt-3 border-t border-gray-200 dark:border-gray-700 text-[11px] text-gray-500 space-y-1">
+          <p><b>TodoList DB 안내(관리자 전용)</b></p>
+          <p>- DB 엔진: Firebase Firestore</p>
+          <p>- 컬렉션: <code>todos</code></p>
+          <p>- 앱 경로: <code>lib/firebase-todos.ts</code> → create/get/update/reorder API 사용</p>
+          <p>- 정렬 저장: <code>sortOrder</code> 필드</p>
+        </section>
       )}
 
       {isSlideshowOpen && slideshowItems.length > 0 ? (
