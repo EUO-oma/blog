@@ -35,6 +35,7 @@ export default function HomePage() {
   const [editingExcerpt, setEditingExcerpt] = useState('')
   const [editingContentPostId, setEditingContentPostId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
+  const [expandedPreviewMap, setExpandedPreviewMap] = useState<Record<string, boolean>>({})
   const gasWebAppUrl = process.env.NEXT_PUBLIC_GAS_WEBAPP_URL || ''
   const gasApiToken = process.env.NEXT_PUBLIC_GAS_SYNC_TOKEN || ''
   const canDeleteCalendar = user?.email?.toLowerCase() === 'icandoit13579@gmail.com'
@@ -358,14 +359,11 @@ export default function HomePage() {
     setExpandedPost(post)
   }
 
-  const getContentPreview = (content: string, limit = 100) =>
-    content
-      .replace(/[#>*`\-\[\]()!]/g, ' ')
-      .replace(/\r\n/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-      .slice(0, limit)
+  const isPreviewExpanded = (id?: string) => !!(id && expandedPreviewMap[id])
+  const togglePreview = (id?: string) => {
+    if (!id) return
+    setExpandedPreviewMap((prev) => ({ ...prev, [id]: !prev[id] }))
+  }
 
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -731,7 +729,15 @@ export default function HomePage() {
                       <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(featuredPost) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       </button>
-                      <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(featuredPost.content || '', 140)}</p>
+                      <div className={`text-base text-gray-700 dark:text-gray-200 whitespace-pre-line overflow-hidden ${isPreviewExpanded(featuredPost.id) ? '' : 'max-h-20'}`}>
+                        <ReactMarkdown>{featuredPost.content || ''}</ReactMarkdown>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); togglePreview(featuredPost.id) }}
+                        className="text-xs text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        {isPreviewExpanded(featuredPost.id) ? '접기' : '더보기'}
+                      </button>
                     </div>
                   </article>
                 )}
@@ -820,7 +826,15 @@ export default function HomePage() {
                         <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
-                        <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(post.content || '', 100)}</p>
+                        <div className={`text-base text-gray-700 dark:text-gray-200 whitespace-pre-line overflow-hidden ${isPreviewExpanded(post.id) ? '' : 'max-h-20'}`}>
+                          <ReactMarkdown>{post.content || ''}</ReactMarkdown>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); togglePreview(post.id) }}
+                          className="text-xs text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        >
+                          {isPreviewExpanded(post.id) ? '접기' : '더보기'}
+                        </button>
                       </div>
                     </article>
                     )}
@@ -897,7 +911,15 @@ export default function HomePage() {
                     <button onClick={(e) => { e.stopPropagation(); copyContentToClipboard(post) }} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 mt-0.5" title="본문 복사">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                     </button>
-                    <p className="text-base text-gray-700 dark:text-gray-200 whitespace-pre-line">{getContentPreview(post.content || '', 100)}</p>
+                    <div className={`text-base text-gray-700 dark:text-gray-200 whitespace-pre-line overflow-hidden ${isPreviewExpanded(post.id) ? '' : 'max-h-20'}`}>
+                      <ReactMarkdown>{post.content || ''}</ReactMarkdown>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); togglePreview(post.id) }}
+                      className="text-xs text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      {isPreviewExpanded(post.id) ? '접기' : '더보기'}
+                    </button>
                   </div>
                   {post.tags.length > 0 && (
                     <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-500">
