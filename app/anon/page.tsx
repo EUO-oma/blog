@@ -29,6 +29,7 @@ export default function AnonPage() {
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
   const [authorKey, setAuthorKey] = useState('')
+  const [showEmojiPanel, setShowEmojiPanel] = useState(false)
 
   const flash = (t: string) => {
     setMsg(t)
@@ -68,6 +69,12 @@ export default function AnonPage() {
     }
   }
 
+  const emojiList = ['😀', '😅', '😂', '🥲', '😍', '😎', '🤔', '🙏', '👍', '🔥', '❤️', '🎉', '✅', '❗']
+
+  const addEmoji = (emoji: string) => {
+    setDraft((prev) => `${prev}${emoji}`)
+  }
+
   const myBadge = useMemo(() => (authorKey ? authorKey.replace('anon-', '익명-') : '익명-준비중'), [authorKey])
 
   return (
@@ -85,6 +92,47 @@ export default function AnonPage() {
           rows={4}
           className="w-full px-3 py-2 rounded border dark:bg-gray-900 dark:border-gray-700"
         />
+
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowEmojiPanel((v) => !v)}
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 p-1"
+              title="이모지"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            <span className="text-xs text-gray-500">텔레그램처럼 전송 버튼으로 등록</span>
+          </div>
+
+          <button
+            onClick={onSubmit}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition shadow-sm"
+            title="전송"
+            aria-label="전송"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21.426 11.095 4.23 3.488a1 1 0 0 0-1.37 1.16l1.7 5.95a1 1 0 0 0 .74.7l7.13 1.54-7.13 1.54a1 1 0 0 0-.74.7l-1.7 5.95a1 1 0 0 0 1.37 1.16l17.196-7.607a1 1 0 0 0 0-1.828z" />
+            </svg>
+          </button>
+        </div>
+
+        {showEmojiPanel && (
+          <div className="flex flex-wrap gap-1 rounded border border-gray-200 dark:border-gray-700 p-2 bg-white/70 dark:bg-gray-900/40">
+            {emojiList.map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => addEmoji(emoji)}
+                className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+                title={`이모지 ${emoji}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {loading ? (
