@@ -361,7 +361,9 @@ export default function HomePage() {
   const getContentPreview = (content: string, limit = 100) =>
     content
       .replace(/[#>*`\-\[\]()!]/g, ' ')
-      .replace(/\s+/g, ' ')
+      .replace(/\r\n/g, '\n')
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
       .trim()
       .slice(0, limit)
 
