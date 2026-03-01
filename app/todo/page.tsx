@@ -322,7 +322,30 @@ export default function TodoPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })
   )
 
+  const applyActiveReorder = async (nextActive: TodoItem[]) => {
+    setItems([...nextActive, ...completedItems])
+
+    if (isTodoOnlyHost) return
+
+    try {
+      await reorderTodos(nextActive)
+      flashMsg('순서 저장 완료')
+    } catch {
+      flashMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.', 2200)
+      await load()
+    }
+  }
+
+  const moveUp = async (itemId?: string) => {
+    if (!itemId) return
+    const from = sortedActiveItems.findIndex((i) => i.id === itemId)
+    if (from <= 0) return
+    const nextActive = arrayMove(sortedActiveItems, from, from - 1)
+    await applyActiveReorder(nextActive)
+  }
+
   const onDragEnd = async (event: any) => {
+    if (isTodoOnlyHost) return
     setPressingId(null)
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -337,20 +360,7 @@ export default function TodoPage() {
     if (from < 0 || to < 0) return
 
     const nextActive = arrayMove(sortedActiveItems, from, to)
-    setItems([...nextActive, ...completedItems])
-
-    if (isTodoOnlyHost) {
-      flashMsg('전용 페이지에서는 순서를 저장하지 않아요.')
-      return
-    }
-
-    try {
-      await reorderTodos(nextActive)
-      flashMsg('순서 저장 완료')
-    } catch {
-      flashMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.', 2200)
-      await load()
-    }
+    await applyActiveReorder(nextActive)
   }
 
   if (!user) return <GuestPlaceholder title="Login to use Todo" desc="Your tasks appear after sign-in." hint="U need login" buttonLabel="Login" emoji="☑️" />
@@ -456,17 +466,30 @@ export default function TodoPage() {
                 const staleLevel = getStaleLevel(item)
                 return (
                 <div className="flex items-center gap-1 min-h-[40px]">
-                  <button
-                    type="button"
-                    ref={setActivatorNodeRef as any}
-                    {...(sortMode === 'latest' ? attributes : {})}
-                    {...(sortMode === 'latest' ? listeners : {})}
-                    onPointerDown={() => sortMode === 'latest' && setPressingId(item.id || null)}
-                    onPointerUp={() => setPressingId(null)}
-                    onPointerCancel={() => setPressingId(null)}
-                    className={`text-2xl leading-none p-2 self-center touch-none ${sortMode === 'latest' ? 'text-gray-400 cursor-grab active:cursor-grabbing' : 'text-gray-300 cursor-not-allowed'}`}
-                    title={sortMode === 'latest' ? '드래그해서 순서 변경' : '드래그는 최신순에서만 가능'}
-                  >☰</button>
+                  {isTodoOnlyHost ? (
+                    <button
+                      type="button"
+                      onClick={() => moveUp(item.id)}
+                      className="text-gray-600 hover:text-gray-900 p-2 self-center"
+                      title="위로 올리기"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      ref={setActivatorNodeRef as any}
+                      {...(sortMode === 'latest' ? attributes : {})}
+                      {...(sortMode === 'latest' ? listeners : {})}
+                      onPointerDown={() => sortMode === 'latest' && setPressingId(item.id || null)}
+                      onPointerUp={() => setPressingId(null)}
+                      onPointerCancel={() => setPressingId(null)}
+                      className={`text-2xl leading-none p-2 self-center touch-none ${sortMode === 'latest' ? 'text-gray-400 cursor-grab active:cursor-grabbing' : 'text-gray-300 cursor-not-allowed'}`}
+                      title={sortMode === 'latest' ? '드래그해서 순서 변경' : '드래그는 최신순에서만 가능'}
+                    >☰</button>
+                  )}
                   <button
                     onClick={async () => {
                       if (!item.id) return
