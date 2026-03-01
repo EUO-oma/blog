@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import DbUsageHint from '@/components/DbUsageHint';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             <main className="site-content flex-grow container mx-auto px-4 py-4 md:py-8 max-w-5xl transition-transform duration-300 ease-out">
               {children}
             </main>
+            <DbUsageHint />
             <Footer />
           </AuthProvider>
         </ThemeProvider>
