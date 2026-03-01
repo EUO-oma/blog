@@ -484,7 +484,7 @@ export default function TodoPage() {
                     title="완료 처리"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <rect x="5" y="5" width="14" height="14" rx="2" strokeWidth={2} />
                     </svg>
                   </button>
                   <textarea
@@ -494,7 +494,6 @@ export default function TodoPage() {
                     onInput={(e) => autoResizeTextarea(e.currentTarget)}
                     onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
-                    onTouchEnd={() => handleTapGesture(item)}
                     className="flex-1 bg-transparent outline-none resize-none overflow-hidden leading-6 py-2 self-center align-middle"
                   />
                   <div className="flex flex-col items-center justify-center gap-0.5 self-center">
@@ -554,7 +553,8 @@ export default function TodoPage() {
                       title="완료 해제"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0 2-2m-2 2 2 2m-2-2-2-2m9 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <rect x="5" y="5" width="14" height="14" rx="2" strokeWidth={2} />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
                       </svg>
                     </button>
                     <textarea
@@ -564,8 +564,7 @@ export default function TodoPage() {
                       onInput={(e) => autoResizeTextarea(e.currentTarget)}
                       onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
-                      onTouchEnd={() => handleTapGesture(item)}
-                      className="flex-1 bg-transparent outline-none resize-none overflow-hidden line-through text-gray-500 leading-6 py-2 self-center align-middle"
+                        className="flex-1 bg-transparent outline-none resize-none overflow-hidden line-through text-gray-500 leading-6 py-2 self-center align-middle"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
                     <button
