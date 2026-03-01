@@ -350,7 +350,7 @@ export default function TodoPage() {
   return (
     <main className="w-full max-w-none mx-0 px-0 space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 pl-[5px]">
+        <div className="flex items-center gap-2 pl-[10px]">
           <h1 className="text-2xl sm:text-3xl font-bold">Todo List</h1>
           <button
             onClick={async () => {
