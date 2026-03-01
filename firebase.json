@@ -10,12 +10,6 @@
       "**/node_modules/**"
     ],
     "cleanUrls": true,
-    "redirects": [
-      {
-        "source": "/",
-        "destination": "/schedule/",
-        "type": 302
-      }
-    ]
+    "redirects": []
   }
 }
