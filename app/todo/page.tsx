@@ -116,6 +116,19 @@ export default function TodoPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = window.localStorage.getItem('todo_sort_mode')
+    if (saved === 'latest' || saved === 'oldest' || saved === 'alpha' || saved === 'starred') {
+      setSortMode(saved)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('todo_sort_mode', sortMode)
+  }, [sortMode])
+
   const addTodo = async () => {
     if (adding) return
     if (!user?.email) return flashMsg('로그인 후 사용 가능해요.')
