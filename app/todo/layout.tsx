@@ -1,7 +1,8 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'euo-todo',
+  title: 'TodoList',
+  manifest: '/todo.webmanifest',
   icons: {
     icon: '/page-icons/todo.svg',
     apple: '/page-icons/todo.svg',

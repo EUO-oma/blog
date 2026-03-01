@@ -1,0 +1,18 @@
+{
+  "name": "TodoList",
+  "short_name": "TodoList",
+  "description": "빠르고 심플한 개인 Todo",
+  "start_url": "/todo/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ecfdf5",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/page-icons/todo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
