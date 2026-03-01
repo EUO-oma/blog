@@ -74,6 +74,7 @@ export default function TodoPage() {
   const [isSlideVisible, setIsSlideVisible] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
   const [slideMs, setSlideMs] = useState(2800)
+  const [sortMode, setSortMode] = useState<'latest' | 'oldest' | 'alpha' | 'starred'>('latest')
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const tapTrackerRef = useRef<Record<string, { count: number; timer: ReturnType<typeof setTimeout> | null }>>({})
 
@@ -250,12 +251,29 @@ export default function TodoPage() {
     window.addEventListener('touchcancel', clear, { once: true })
   }
 
+  const getCreatedMs = (item: TodoItem) => {
+    const createdAt = item.createdAt as any
+    return createdAt?.toMillis?.() ?? createdAt?.toDate?.()?.getTime?.() ?? 0
+  }
+
   const activeItems = useMemo(() => items.filter((i) => !i.completed), [items])
   const completedItems = useMemo(() => items.filter((i) => i.completed), [items])
 
+  const sortedActiveItems = useMemo(() => {
+    const arr = [...activeItems]
+    if (sortMode === 'latest') return arr.sort((a, b) => getCreatedMs(b) - getCreatedMs(a))
+    if (sortMode === 'oldest') return arr.sort((a, b) => getCreatedMs(a) - getCreatedMs(b))
+    if (sortMode === 'alpha') return arr.sort((a, b) => (a.content || '').localeCompare(b.content || '', 'ko'))
+    return arr.sort((a, b) => {
+      const sa = a.starred ? 1 : 0
+      const sb = b.starred ? 1 : 0
+      if (sa !== sb) return sb - sa
+      return getCreatedMs(b) - getCreatedMs(a)
+    })
+  }, [activeItems, sortMode])
+
   const getStaleLevel = (item: TodoItem): 0 | 2 | 3 => {
-    const createdAt = item.createdAt as any
-    const createdMs = createdAt?.toMillis?.() ?? createdAt?.toDate?.()?.getTime?.() ?? null
+    const createdMs = getCreatedMs(item)
     if (!createdMs) return 0
     const ageDays = (Date.now() - createdMs) / (24 * 60 * 60 * 1000)
     if (ageDays >= 3) return 3
@@ -290,11 +308,16 @@ export default function TodoPage() {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const from = activeItems.findIndex((i) => i.id === active.id)
-    const to = activeItems.findIndex((i) => i.id === over.id)
+    if (sortMode !== 'latest') {
+      flashMsg('드래그 정렬은 최신순 모드에서만 사용해줘.')
+      return
+    }
+
+    const from = sortedActiveItems.findIndex((i) => i.id === active.id)
+    const to = sortedActiveItems.findIndex((i) => i.id === over.id)
     if (from < 0 || to < 0) return
 
-    const nextActive = arrayMove(activeItems, from, to)
+    const nextActive = arrayMove(sortedActiveItems, from, to)
     setItems([...nextActive, ...completedItems])
 
     try {
@@ -367,7 +390,19 @@ export default function TodoPage() {
       ) : (
         <>
           <section className="space-y-2">
-            <p className="text-xs text-gray-500">💡 항목을 길게 누르거나 드래그 핸들(☰)로 순서를 바꿀 수 있어.</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-500">💡 정렬: 최신순/등록순/가나다/별표우선 (기본: 최신순)</p>
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value as any)}
+                className="text-xs px-2 py-1 rounded border dark:bg-gray-900 dark:border-gray-700"
+              >
+                <option value="latest">최신순</option>
+                <option value="oldest">등록순</option>
+                <option value="alpha">가나다순</option>
+                <option value="starred">별표우선</option>
+              </select>
+            </div>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -375,8 +410,8 @@ export default function TodoPage() {
               onDragEnd={onDragEnd}
               onDragCancel={() => setPressingId(null)}
             >
-              <SortableContext items={activeItems.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
-                {activeItems.map((item) => (
+              <SortableContext items={sortedActiveItems.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
+                {sortedActiveItems.map((item) => (
                   <SortableTodoRow key={item.id} item={item} staleLevel={getStaleLevel(item)} completing={completingIds.includes(item.id || '')} isPressing={pressingId === item.id}>
                     {({ attributes, listeners, setActivatorNodeRef }) => {
                 const staleLevel = getStaleLevel(item)
@@ -385,13 +420,13 @@ export default function TodoPage() {
                   <button
                     type="button"
                     ref={setActivatorNodeRef as any}
-                    {...attributes}
-                    {...listeners}
-                    onPointerDown={() => setPressingId(item.id || null)}
+                    {...(sortMode === 'latest' ? attributes : {})}
+                    {...(sortMode === 'latest' ? listeners : {})}
+                    onPointerDown={() => sortMode === 'latest' && setPressingId(item.id || null)}
                     onPointerUp={() => setPressingId(null)}
                     onPointerCancel={() => setPressingId(null)}
-                    className="text-gray-400 cursor-grab active:cursor-grabbing text-2xl leading-none p-2 self-center touch-none"
-                    title="드래그해서 순서 변경"
+                    className={`text-2xl leading-none p-2 self-center touch-none ${sortMode === 'latest' ? 'text-gray-400 cursor-grab active:cursor-grabbing' : 'text-gray-300 cursor-not-allowed'}`}
+                    title={sortMode === 'latest' ? '드래그해서 순서 변경' : '드래그는 최신순에서만 가능'}
                   >☰</button>
                   <button
                     onClick={async () => {
