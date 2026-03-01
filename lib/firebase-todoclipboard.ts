@@ -9,7 +9,7 @@ import {
   updateTodo,
 } from './firebase-todos'
 
-const BUCKET = 'plan'
+const BUCKET = 'clipboard'
 
 export { deleteTodo, reorderTodos, setTodoCompleted, setTodoStarred, updateTodo }
 export type { TodoItem }

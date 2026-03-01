@@ -15,6 +15,7 @@ import { db } from './firebase'
 export interface TodoItem {
   id?: string
   content: string
+  bucket?: 'todo' | 'plan' | 'clipboard'
   completed: boolean
   starred: boolean
   authorEmail: string
@@ -28,16 +29,20 @@ export interface TodoItem {
 const COL = 'todos'
 const AUTO_DELETE_HOURS = 168
 
-export async function getTodos(authorEmail: string): Promise<TodoItem[]> {
+export async function getTodos(authorEmail: string, bucket: 'todo' | 'plan' | 'clipboard' = 'todo'): Promise<TodoItem[]> {
   const q = query(collection(db, COL), where('authorEmail', '==', authorEmail))
   const snap = await getDocs(q)
   const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as TodoItem[]
+  const rowsByBucket = rows.filter((item) => {
+    const b = (item.bucket || 'todo') as 'todo' | 'plan' | 'clipboard'
+    return b === bucket
+  })
 
   const now = Date.now()
   const expireMs = AUTO_DELETE_HOURS * 60 * 60 * 1000
 
   const deletions: Promise<void>[] = []
-  for (const item of rows) {
+  for (const item of rowsByBucket) {
     const completedAt = item.completedAt?.toMillis?.() ?? 0
     if (item.id && item.completed && !item.starred && completedAt > 0 && now - completedAt > expireMs) {
       deletions.push(deleteTodo(item.id))
@@ -45,7 +50,7 @@ export async function getTodos(authorEmail: string): Promise<TodoItem[]> {
   }
   if (deletions.length > 0) await Promise.allSettled(deletions)
 
-  return rows
+  return rowsByBucket
     .filter((item) => {
       const completedAt = item.completedAt?.toMillis?.() ?? 0
       return !(item.completed && !item.starred && completedAt > 0 && now - completedAt > expireMs)
@@ -60,14 +65,18 @@ export async function getTodos(authorEmail: string): Promise<TodoItem[]> {
     })
 }
 
-export async function createTodo(input: {
-  content: string
-  authorEmail: string
-  authorName: string
-}) {
+export async function createTodo(
+  input: {
+    content: string
+    authorEmail: string
+    authorName: string
+  },
+  bucket: 'todo' | 'plan' | 'clipboard' = 'todo'
+) {
   const now = Timestamp.now()
   const ref = await addDoc(collection(db, COL), {
     content: input.content,
+    bucket,
     completed: false,
     starred: false,
     authorEmail: input.authorEmail,
