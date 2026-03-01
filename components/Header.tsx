@@ -97,9 +97,12 @@ export default function Header() {
   }, [menuOpen])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || typeof document === 'undefined') return
     const host = window.location.host || ''
-    setIsTodoOnlyHost(host.includes('todolist-page.web.app'))
+    const todoHost = host.includes('todolist-page.web.app')
+    setIsTodoOnlyHost(todoHost)
+    document.body.classList.toggle('todo-only-host', todoHost)
+    return () => document.body.classList.remove('todo-only-host')
   }, [])
 
   const authButton = (

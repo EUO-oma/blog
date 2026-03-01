@@ -53,3 +53,10 @@ body.drawer-open .site-content {
     transform: translateX(14rem);
   }
 }
+
+body.todo-only-host .site-content {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
