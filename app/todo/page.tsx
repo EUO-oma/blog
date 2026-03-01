@@ -75,6 +75,7 @@ export default function TodoPage() {
   const [isPaused, setIsPaused] = useState(false)
   const [slideMs, setSlideMs] = useState(2800)
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const tapTrackerRef = useRef<Record<string, { count: number; timer: ReturnType<typeof setTimeout> | null }>>({})
 
   const load = async () => {
     if (!user?.email) {
@@ -105,6 +106,9 @@ export default function TodoPage() {
   useEffect(() => {
     return () => {
       if (msgTimerRef.current) clearTimeout(msgTimerRef.current)
+      Object.values(tapTrackerRef.current).forEach((v) => {
+        if (v?.timer) clearTimeout(v.timer)
+      })
     }
   }, [])
 
@@ -193,6 +197,38 @@ export default function TodoPage() {
   const autoResizeTextarea = (el: HTMLTextAreaElement) => {
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
+  }
+
+  const handleTapGesture = (item: TodoItem) => {
+    const id = item.id || ''
+    if (!id) return
+    const windowMs = 420
+    const current = tapTrackerRef.current[id] || { count: 0, timer: null }
+
+    current.count += 1
+    if (current.timer) clearTimeout(current.timer)
+
+    current.timer = setTimeout(async () => {
+      const finalCount = current.count
+      tapTrackerRef.current[id] = { count: 0, timer: null }
+
+      if (finalCount >= 3) {
+        try {
+          await setTodoStarred(id, !item.starred)
+          setItems((prev) => prev.map((x) => (x.id === id ? { ...x, starred: !x.starred } : x)))
+          flashMsg(item.starred ? '중요 해제(탭x3)' : '중요 표시(탭x3)')
+        } catch {
+          flashMsg('중요 표시 변경 실패', 1800)
+        }
+        return
+      }
+
+      if (finalCount === 2) {
+        await copyText(item.content)
+      }
+    }, windowMs)
+
+    tapTrackerRef.current[id] = current
   }
 
   const longPressCopy = (text: string) => {
@@ -381,6 +417,7 @@ export default function TodoPage() {
                     onInput={(e) => autoResizeTextarea(e.currentTarget)}
                     onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                     onBlur={(e) => saveOnBlur(item.id, e.target.value)}
+                    onTouchEnd={() => handleTapGesture(item)}
                     className="flex-1 bg-transparent outline-none resize-none overflow-hidden leading-6 py-2 self-center align-middle"
                   />
                   <div className="flex flex-col items-center justify-center gap-0.5 self-center">
@@ -450,6 +487,7 @@ export default function TodoPage() {
                       onInput={(e) => autoResizeTextarea(e.currentTarget)}
                       onFocus={(e) => autoResizeTextarea(e.currentTarget)}
                       onBlur={(e) => saveOnBlur(item.id, e.target.value)}
+                      onTouchEnd={() => handleTapGesture(item)}
                       className="flex-1 bg-transparent outline-none resize-none overflow-hidden line-through text-gray-500 leading-6 py-2 self-center align-middle"
                     />
                     {item.starred ? <span className="text-yellow-500">★</span> : null}
