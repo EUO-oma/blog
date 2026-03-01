@@ -269,30 +269,17 @@ export default function Header() {
               </button>
             </div>
 
-            <nav className="space-y-3">
-              <div className="space-y-1">
-                <p className="px-3 text-xs text-gray-500">{user ? '공용 메뉴' : '비로그인 메뉴'}</p>
-                {menuItems
-                  .filter((item) => !(item as any).ownerOnly)
-                  .filter((item) => user || !(item as any).loggedInOnly)
-                  .map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                    >
-                      <span className="text-gray-600 dark:text-gray-300"><MenuIcon href={item.href} /></span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
-              </div>
-
-              {isOwner && (
-                <div className="space-y-1 pt-2 border-t border-gray-200 dark:border-gray-800">
-                  <p className="px-3 text-xs text-gray-500">관리자 메뉴</p>
+            {isTodoOnlyHost ? (
+              <nav className="space-y-2">
+                <p className="px-3 text-xs text-gray-400">(메뉴 준비중)</p>
+              </nav>
+            ) : (
+              <nav className="space-y-3">
+                <div className="space-y-1">
+                  <p className="px-3 text-xs text-gray-500">{user ? '공용 메뉴' : '비로그인 메뉴'}</p>
                   {menuItems
-                    .filter((item) => (item as any).ownerOnly)
+                    .filter((item) => !(item as any).ownerOnly)
+                    .filter((item) => user || !(item as any).loggedInOnly)
                     .map((item) => (
                       <Link
                         key={item.href}
@@ -304,22 +291,41 @@ export default function Header() {
                         <span>{item.label}</span>
                       </Link>
                     ))}
-
-                  <Link
-                    href="/walter-board"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <span className="text-gray-600 dark:text-gray-300">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2 8 12.7 4 8.8 9.5 8z" />
-                      </svg>
-                    </span>
-                    <span>Walter Board</span>
-                  </Link>
                 </div>
-              )}
-            </nav>
+
+                {isOwner && (
+                  <div className="space-y-1 pt-2 border-t border-gray-200 dark:border-gray-800">
+                    <p className="px-3 text-xs text-gray-500">관리자 메뉴</p>
+                    {menuItems
+                      .filter((item) => (item as any).ownerOnly)
+                      .map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <span className="text-gray-600 dark:text-gray-300"><MenuIcon href={item.href} /></span>
+                          <span>{item.label}</span>
+                        </Link>
+                      ))}
+
+                    <Link
+                      href="/walter-board"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      <span className="text-gray-600 dark:text-gray-300">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2 8 12.7 4 8.8 9.5 8z" />
+                        </svg>
+                      </span>
+                      <span>Walter Board</span>
+                    </Link>
+                  </div>
+                )}
+              </nav>
+            )}
           </aside>
         </div>
       )}
