@@ -479,7 +479,7 @@ export default function SchedulePage() {
               </button>
             </>
           )}
-          {user && (
+          {canDeleteCalendar && (
             <>
               <button
                 onClick={() => {
@@ -765,7 +765,7 @@ export default function SchedulePage() {
                     </svg>
                   </button>
                   
-                  {user && schedule.authorEmail === user.email && (
+                  {canDeleteCalendar && (
                     <>
                       <button
                         onClick={() => handleEdit(schedule)}
@@ -908,7 +908,7 @@ export default function SchedulePage() {
                         </svg>
                       </button>
                       
-                      {user && schedule.authorEmail === user.email && (
+                      {canDeleteCalendar && (
                         <>
                           <button
                             onClick={() => handleEdit(schedule)}
