@@ -77,6 +77,7 @@ export default function TodoPage() {
   const [isPaused, setIsPaused] = useState(false)
   const [slideMs, setSlideMs] = useState(2800)
   const [sortMode, setSortMode] = useState<'latest' | 'oldest' | 'alpha' | 'starred'>('latest')
+  const [isTodoOnlyHost, setIsTodoOnlyHost] = useState(false)
   const isOwner = user?.email?.toLowerCase() === OWNER_EMAIL
   const msgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const tapTrackerRef = useRef<Record<string, { count: number; timer: ReturnType<typeof setTimeout> | null }>>({})
@@ -122,6 +123,8 @@ export default function TodoPage() {
     if (saved === 'latest' || saved === 'oldest' || saved === 'alpha' || saved === 'starred') {
       setSortMode(saved)
     }
+    const host = window.location.host || ''
+    setIsTodoOnlyHost(host.includes('todolist-page.web.app') || host.includes('todolist-page.firebaseapp.com'))
   }, [])
 
   useEffect(() => {
@@ -335,6 +338,11 @@ export default function TodoPage() {
 
     const nextActive = arrayMove(sortedActiveItems, from, to)
     setItems([...nextActive, ...completedItems])
+
+    if (isTodoOnlyHost) {
+      flashMsg('전용 페이지에서는 순서를 저장하지 않아요.')
+      return
+    }
 
     try {
       await reorderTodos(nextActive)
