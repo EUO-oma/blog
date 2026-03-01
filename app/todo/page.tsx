@@ -345,7 +345,7 @@ export default function TodoPage() {
     }
   }
 
-  if (!user) return <GuestPlaceholder title="Todo List는 로그인 후 사용 가능" desc="할 일은 개인 데이터라 로그인하면 내 Todo가 나타나요." emoji="☑️" />
+  if (!user) return <GuestPlaceholder title="Login to use Todo" desc="Your tasks appear after sign-in." hint="U need login" buttonLabel="Login" emoji="☑️" />
 
   return (
     <main className="w-full max-w-none mx-0 px-0 space-y-1">
