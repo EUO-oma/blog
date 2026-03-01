@@ -9,8 +9,8 @@ import LoginModal from './LoginModal'
 const menuItems = [
   { href: '/', label: '홈' },
   { href: '/posting', label: '포스팅' },
-  { href: '/todo', label: 'Todo', ownerOnly: true },
-  { href: '/schedule', label: '일정', ownerOnly: true },
+  { href: '/todo', label: 'Todo', ownerOnly: true, loggedInOnly: true },
+  { href: '/schedule', label: '일정', ownerOnly: true, loggedInOnly: true },
   { href: '/today', label: '오늘' },
   { href: '/notice', label: '공지' },
   { href: '/phonebook', label: '폰북' },
@@ -262,6 +262,7 @@ export default function Header() {
                 <p className="px-3 text-xs text-gray-500">{user ? '공용 메뉴' : '비로그인 메뉴'}</p>
                 {menuItems
                   .filter((item) => !(item as any).ownerOnly)
+                  .filter((item) => user || !(item as any).loggedInOnly)
                   .map((item) => (
                     <Link
                       key={item.href}
