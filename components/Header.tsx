@@ -271,7 +271,19 @@ export default function Header() {
 
             {isTodoOnlyHost ? (
               <nav className="space-y-2">
-                <p className="px-3 text-xs text-gray-400">(메뉴 준비중)</p>
+                <p className="px-3 text-xs text-gray-400">Todo 메뉴</p>
+                <Link
+                  href="/todoplan"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <span className="text-gray-600 dark:text-gray-300">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4" />
+                    </svg>
+                  </span>
+                  <span>TodoPlan</span>
+                </Link>
               </nav>
             ) : (
               <nav className="space-y-3">
