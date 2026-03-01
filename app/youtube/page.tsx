@@ -139,6 +139,30 @@ export default function YouTubePage() {
     }
   }
 
+  const syncVideoMeta = async (video: YouTubeVideo & { sortOrder?: number }) => {
+    try {
+      const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`)
+      if (!res.ok) throw new Error('oEmbed fetch failed')
+      const data = await res.json()
+
+      const nextTitle = (data?.title || video.title || '').trim()
+      const nextDesc = (video.description?.trim() ? video.description : (data?.author_name ? `채널: ${data.author_name}` : '')).trim()
+
+      if (!video.id) return
+      await updateYouTubeVideo(video.id, {
+        title: nextTitle,
+        description: nextDesc,
+      } as any)
+
+      setVideos((prev) => prev.map((v) => (v.id === video.id ? { ...v, title: nextTitle, description: nextDesc } : v)))
+      alert('원본 유튜브 정보 동기화 완료')
+    } catch (e) {
+      console.error('youtube metadata sync failed', e)
+      alert('원본 정보 동기화 실패')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -276,6 +300,9 @@ export default function YouTubePage() {
                     </button>
                     <button onClick={() => handleEdit(video)} className="text-indigo-600 hover:text-indigo-800 p-1" title="수정">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    <button onClick={() => syncVideoMeta(video)} className="text-emerald-600 hover:text-emerald-800 p-1" title="원본정보 동기화">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8A8 8 0 006.4 5.6L4 8m0 8a8 8 0 0013.6 2.4L20 16" /></svg>
                     </button>
                     <button onClick={() => video.id && handleDelete(video.id)} className="text-red-600 hover:text-red-800 p-1" title="삭제">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
