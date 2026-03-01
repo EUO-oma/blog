@@ -164,6 +164,26 @@ export default function FavoritesPage() {
     }
   }
 
+  const saveReordered = async (next: FavoriteSite[]) => {
+    setItems(next)
+    try {
+      await reorderFavoriteSites(next)
+      setMsg('순서 저장 완료')
+    } catch {
+      setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
+      await load()
+    }
+  }
+
+  const moveItem = async (id: string, dir: 'up' | 'down') => {
+    const from = items.findIndex((i) => i.id === id)
+    if (from < 0) return
+    const to = dir === 'up' ? from - 1 : from + 1
+    if (to < 0 || to >= items.length) return
+    const next = arrayMove(items, from, to)
+    await saveReordered(next)
+  }
+
   const onDragEnd = async (event: any) => {
     setPressingId(null)
     const { active, over } = event
@@ -174,15 +194,7 @@ export default function FavoritesPage() {
     if (from < 0 || to < 0) return
 
     const next = arrayMove(items, from, to)
-    setItems(next)
-
-    try {
-      await reorderFavoriteSites(next)
-      setMsg('순서 저장 완료')
-    } catch {
-      setMsg('순서 저장 실패, 새로고침 후 다시 시도해줘.')
-      await load()
-    }
+    await saveReordered(next)
   }
 
   return (
@@ -243,7 +255,7 @@ export default function FavoritesPage() {
             onDragCancel={() => setPressingId(null)}
           >
             <SortableContext items={items.map((i) => i.id || '')} strategy={verticalListSortingStrategy}>
-              {items.map((it) => (
+              {items.map((it, index) => (
                 <SortableFavoriteRow key={it.id} item={it} isPressing={pressingId === it.id}>
                   {({ attributes, listeners, setActivatorNodeRef, isDragging }) => (
                     <div className="flex flex-col gap-3">
@@ -317,6 +329,26 @@ export default function FavoritesPage() {
                         </button>
                         {isOwner ? (
                           <>
+                            <button
+                              onClick={() => it.id && moveItem(it.id, 'up')}
+                              disabled={index === 0}
+                              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 p-1 disabled:opacity-35"
+                              title="위로 이동"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => it.id && moveItem(it.id, 'down')}
+                              disabled={index === items.length - 1}
+                              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 p-1 disabled:opacity-35"
+                              title="아래로 이동"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
                             <button
                               onClick={() => {
                                 setInlineEditId(it.id || null)
