@@ -15,6 +15,8 @@ interface YouTubeFormProps {
 export default function YouTubeForm({ video, isOpen, onClose, onSuccess }: YouTubeFormProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [fetchingMeta, setFetchingMeta] = useState(false)
+  const [lastFetchedVideoId, setLastFetchedVideoId] = useState('')
   
   const [formData, setFormData] = useState({
     videoUrl: '',
@@ -48,18 +50,44 @@ export default function YouTubeForm({ video, isOpen, onClose, onSuccess }: YouTu
         views: '',
         uploadDate: new Date().toISOString().split('T')[0]
       })
+      setLastFetchedVideoId('')
     }
   }, [video])
 
   if (!isOpen) return null
 
+  const fetchVideoMeta = async (videoId: string) => {
+    if (!videoId || videoId === lastFetchedVideoId) return
+    setFetchingMeta(true)
+    try {
+      const watchUrl = `https://www.youtube.com/watch?v=${videoId}`
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`)
+      if (!res.ok) throw new Error('oEmbed fetch failed')
+      const data = await res.json()
+
+      setFormData((prev) => ({
+        ...prev,
+        title: prev.title?.trim() ? prev.title : (data?.title || ''),
+        description: prev.description?.trim() ? prev.description : (data?.author_name ? `채널: ${data.author_name}` : ''),
+      }))
+      setLastFetchedVideoId(videoId)
+    } catch (e) {
+      console.warn('youtube metadata fetch failed:', e)
+    } finally {
+      setFetchingMeta(false)
+    }
+  }
+
   const handleVideoUrlChange = (url: string) => {
-    setFormData({ ...formData, videoUrl: url })
-    
+    setFormData((prev) => ({ ...prev, videoUrl: url }))
+
     // URL에서 비디오 ID 추출
     const videoId = extractVideoId(url)
     if (videoId) {
-      setFormData(prev => ({ ...prev, videoId }))
+      setFormData((prev) => ({ ...prev, videoId }))
+      if (!video?.id) {
+        void fetchVideoMeta(videoId)
+      }
     }
   }
 
@@ -147,9 +175,18 @@ export default function YouTubeForm({ video, isOpen, onClose, onSuccess }: YouTu
                 placeholder="https://youtube.com/watch?v=... 또는 dQw4w9WgXcQ"
               />
               {formData.videoId && (
-                <p className="mt-1 text-sm text-gray-500">
-                  비디오 ID: {formData.videoId}
-                </p>
+                <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                  <p>비디오 ID: {formData.videoId}</p>
+                  {!video?.id && (
+                    <button
+                      type="button"
+                      onClick={() => fetchVideoMeta(formData.videoId)}
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      {fetchingMeta ? '불러오는 중...' : '정보 자동채우기'}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
