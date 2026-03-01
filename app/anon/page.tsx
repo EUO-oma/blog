@@ -30,6 +30,7 @@ export default function AnonPage() {
   const [msg, setMsg] = useState('')
   const [authorKey, setAuthorKey] = useState('')
   const [showEmojiPanel, setShowEmojiPanel] = useState(false)
+  const vibePhrases = ['오늘의 속마음', '익명 TMI', '한줄 썰', '퇴근각?', '소소한 고백']
 
   const flash = (t: string) => {
     setMsg(t)
@@ -75,12 +76,30 @@ export default function AnonPage() {
     setDraft((prev) => `${prev}${emoji}`)
   }
 
+  const addVibe = (text: string) => {
+    setDraft((prev) => (prev ? `${prev}\n${text} ` : `${text} `))
+  }
+
+  const badgeColor = (key: string) => {
+    const seed = key.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+    const palette = [
+      'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+      'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+      'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    ]
+    return palette[seed % palette.length]
+  }
+
   const myBadge = useMemo(() => (authorKey ? authorKey.replace('anon-', '익명-') : '익명-준비중'), [authorKey])
 
   return (
     <main className="max-w-3xl mx-auto space-y-3">
-      <h1 className="text-2xl sm:text-3xl font-bold">익명게시판</h1>
-      <p className="text-sm text-gray-500">엔터로 등록 · Shift+Enter 줄바꿈 · 삭제는 관리자만 가능</p>
+      <section className="rounded-2xl border border-fuchsia-200/80 dark:border-fuchsia-800/60 bg-gradient-to-r from-fuchsia-50 via-violet-50 to-indigo-50 dark:from-fuchsia-900/20 dark:via-violet-900/20 dark:to-indigo-900/20 p-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">익명게시판 ✨</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-300">엔터 전송 · Shift+Enter 줄바꿈 · 삭제는 관리자만 가능</p>
+      </section>
 
       <section className="rounded border border-gray-200 dark:border-gray-700 p-3 space-y-2">
         <p className="text-xs text-gray-500">내 익명키: {myBadge}</p>
@@ -120,17 +139,30 @@ export default function AnonPage() {
         </div>
 
         {showEmojiPanel && (
-          <div className="flex flex-wrap gap-1 rounded border border-gray-200 dark:border-gray-700 p-2 bg-white/70 dark:bg-gray-900/40">
-            {emojiList.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => addEmoji(emoji)}
-                className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
-                title={`이모지 ${emoji}`}
-              >
-                {emoji}
-              </button>
-            ))}
+          <div className="space-y-2 rounded border border-gray-200 dark:border-gray-700 p-2 bg-white/70 dark:bg-gray-900/40">
+            <div className="flex flex-wrap gap-1">
+              {emojiList.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => addEmoji(emoji)}
+                  className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+                  title={`이모지 ${emoji}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {vibePhrases.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => addVibe(v)}
+                  className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:opacity-80"
+                >
+                  #{v}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </section>
@@ -141,9 +173,15 @@ export default function AnonPage() {
         <section className="space-y-0">
           {rows.map((r) => (
             <article key={r.id} className="py-3 border-b border-gray-200/80 dark:border-gray-700/80">
-              <p className="text-sm whitespace-pre-wrap">{r.content}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`text-[11px] px-2 py-0.5 rounded-full ${badgeColor(String(r.authorKey || ''))}`}>
+                  {String(r.authorKey || '').replace('anon-', '익명-')}
+                </span>
+                <span className="text-[11px] text-gray-400">익명 토크</span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap leading-6">{r.content}</p>
               <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                <span>{String(r.authorKey || '').replace('anon-', '익명-')}</span>
+                <span />
                 <div className="flex items-center gap-2">
                   <span>{(r.createdAt as any)?.toDate?.()?.toLocaleString?.('ko-KR') || ''}</span>
                   {isOwner && r.id ? (
