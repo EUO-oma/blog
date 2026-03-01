@@ -60,9 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
     try {
       console.log('🔐 Google Sign-in: Starting authentication process')
-      const provider = new GoogleAuthProvider()
       
       // 추가 스코프 설정 (선택사항)
       provider.addScope('profile')
