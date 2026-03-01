@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   updateProfile
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -85,8 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 특정 오류에 대한 더 자세한 메시지 제공
       if (error.code === 'auth/configuration-not-found') {
         throw new Error('Firebase 인증 설정을 찾을 수 없습니다. Firebase Console에서 Google 로그인을 활성화했는지 확인해주세요.')
-      } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해주세요.')
+      } else if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+        // 모바일/인앱브라우저에서는 popup이 불안정하므로 redirect로 폴백
+        await signInWithRedirect(auth, provider)
+        return
       } else if (error.code === 'auth/cancelled-popup-request') {
         throw new Error('로그인이 취소되었습니다.')
       }
